@@ -167,8 +167,154 @@ def generate_scale_answer():
     return str(random.choices([1, 2, 3, 4, 5], weights=[2, 5, 15, 48, 30])[0])
 
 
+# Set untuk menyimpan ulasan/saran yang sudah digunakan agar tidak terjadi duplikat
+used_pendapat = set()
+used_saran = set()
+
+def generate_dynamic_fallback_pendapat():
+    part1 = [
+        "Jujur, website E-Surat 2 FT ini",
+        "Web E-Surat Unmul",
+        "Sistem e-surat yang baru ini",
+        "Aplikasi e-surat FT",
+        "Layanan e-surat FT Unmul",
+        "Menurutku, web surat-menyurat ini",
+        "Tampilan dan fitur E-Surat FT",
+        "Buat ngurus surat, web ini",
+    ]
+    part2 = [
+        "ngebantu banget sih buat mahasiswa,",
+        "bikin urusan jadi sat set,",
+        "anti-ribet dan praktis banget,",
+        "UI-nya udah friendly dan gampang dipahami,",
+        "enteng pas dibuka lewat HP,",
+        "responsif dan gak lemot pas diakses,",
+        "keren dan alurnya jelas,",
+        "bener-bener motong waktu pengurusan,"
+    ]
+    part3 = [
+        "jadinya ga perlu capek-capek antre di fakultas lagi.",
+        "gak ada drama bolak-balik ke loket.",
+        "tinggal klik-klik aja beres dari kosan.",
+        "bisa diajuin kapan aja dan di mana aja.",
+        "prosesnya kerasa lebih transparan dan gercep.",
+        "nyari menu atau fiturnya ga bikin pusing.",
+        "mahasiswa ga perlu ribet nyiapin berkas fisik lagi.",
+        "bintang lima sih buat kemudahannya."
+    ]
+    
+    p1 = random.choice(part1)
+    p2 = random.choice(part2)
+    p3 = random.choice(part3)
+    
+    direct = [
+        "Mantap sih, proses ajuin suratnya jadi kerasa sat set dan ga banyak drama.",
+        "Jujur ngebantu banget sih buat urusan surat, ga perlu ribet antre lagi.",
+        "UI-nya udah lumayan friendly dan gampang dipahami pas pertama kali nyoba.",
+        "Ringan banget pas dibuka lewat HP, jadi bisa ajuin surat kapan aja.",
+        "Suka banget sama alurnya yang simpel, ga bertele-tele pas input data.",
+        "Website-nya gampang dipahami, tampilannya bersih dan ga bikin bingung.",
+        "Akses lewat HP lancar jaya, ga ada kendala pas upload berkas.",
+        "Keren lah, sekarang urus surat-menyurat ga perlu buang-buang waktu lagi."
+    ]
+    
+    if random.random() < 0.5:
+        return f"{p1} {p2} {p3}"
+    else:
+        return random.choice(direct)
+
+def generate_dynamic_fallback_saran():
+    part1 = [
+        "Mungkin kedepannya",
+        "Saran aja sih,",
+        "Kalau bisa,",
+        "Moga aja nanti",
+        "Biar makin mantap,",
+        "Buat perbaikan,",
+        "Harapannya sih"
+    ]
+    part2 = [
+        "servernya di-upgrade dikit biar ga lemot",
+        "tampilan mobile-nya dibikin lebih responsif",
+        "ditambahin notifikasi status surat lewat WA atau email",
+        "tata letak menunya disederhanakan lagi",
+        "disediakan FAQ atau panduan singkat di halaman utama",
+        "proses loading website-nya dibikin lebih gercep",
+        "fitur tracking suratnya dibuat lebih detail alurnya",
+        "desain dashboard-nya dibuat lebih modern dan fresh"
+    ]
+    part3 = [
+        "pas lagi jam-jam sibuk banyak mahasiswa akses.",
+        "biar makin enak dipandang pas dibuka lewat HP.",
+        "jadi kita ga perlu sering-sering login buat ngecek.",
+        "biar ga kebingungan pas pertama kali ngajuin surat.",
+        "supaya mahasiswa baru ga bingung cara pakainya.",
+        "jadi ga nunggu lama pas loading data.",
+        "biar keliatan jelas suratnya lagi diproses di bagian mana.",
+        "biar ga bosen liat tampilan yang sekarang."
+    ]
+    
+    p1 = random.choice(part1)
+    p2 = random.choice(part2)
+    p3 = random.choice(part3)
+    
+    direct = [
+        "Mungkin servernya bisa di-upgrade dikit biar ga lemot pas lagi banyak yang akses.",
+        "Tampilan mobile-nya tolong dibikin lebih responsif biar pas dibuka di HP makin enak dilihat.",
+        "Kalau bisa ada notif lewat email atau WA biar kita tau progres suratnya udah sampai mana.",
+        "Tata letak menunya dibikin lebih simpel lagi biar makin gercep pas nyari fitur.",
+        "Loading page-nya tolong dipercepat lagi biar ga buang waktu pas loading formulir.",
+        "Mungkin bisa ditambah menu live chat atau helpdesk buat nanya kendala teknis.",
+        "Desain UI-nya kalau bisa dimodernisasi lagi biar keliatan lebih fresh dan kekinian.",
+        "Bagusnya ada history surat yang udah pernah diajuin biar gampang tracking data lama."
+    ]
+    
+    if random.random() < 0.5:
+        return f"{p1} {p2} {p3}"
+    else:
+        return random.choice(direct)
+
+def generate_varied_email(nama, nim):
+    # Bersihkan nama dari spasi ganda, karakter aneh, dsb.
+    clean_name = re.sub(r'[^a-zA-Z0-9\s]', '', nama).lower()
+    parts = [p for p in clean_name.split() if p]
+    if not parts:
+        parts = ["user"]
+        
+    prefix_tahun = str(nim)[:2] if nim else str(random.randint(15, 25))
+    
+    # Nickname keywords/elements
+    game_prefixes = ["shadow", "neon", "vortex", "cyber", "hyper", "zen", "el", "king", "lord", "pro", "racer", "hunter", "toxic", "phantom", "alpha", "omega", "silent", "dark", "frost"]
+    game_suffixes = ["gg", "pro", "gaming", "ml", "ff", "pubg", "boy", "girl", "xd", "god", "z", "xz", "99", "88", "123", "404", "lol"]
+    
+    email_types = [
+        # 1. Standard name variation (e.g. rian.mhd24, mhd_rian)
+        lambda: f"{'.'.join(parts)}{prefix_tahun}",
+        lambda: f"{'_'.join(parts)}{random.choice(['', prefix_tahun])}",
+        lambda: f"{parts[-1]}.{parts[0]}{prefix_tahun}",
+        # 2. Nickname style prefix (e.g. shadow.rian, neon_rian24)
+        lambda: f"{random.choice(game_prefixes)}{random.choice(['.', '_'])}{parts[0]}{random.choice(['', prefix_tahun])}",
+        # 3. Nickname style suffix (e.g. rian_gaming, rian_ml99)
+        lambda: f"{parts[0]}{random.choice(['.', '_'])}{random.choice(game_suffixes)}",
+        # 4. Mix of both (e.g. shadow_rian_gg)
+        lambda: f"{random.choice(game_prefixes)}_{parts[0]}_{random.choice(game_suffixes)}",
+        # 5. Cool abbreviations (e.g. mr24_gaming, etc.)
+        lambda: f"{''.join([p[0] for p in parts])}{prefix_tahun}_{random.choice(game_suffixes)}",
+        # 6. Random gamer style tag
+        lambda: f"{parts[0]}{random.choice(['x', 'z', '_tzy', '_sanz', '_sky'])}{random.choice(['', prefix_tahun])}"
+    ]
+    
+    email_prefix = random.choice(email_types)()
+    email_prefix = re.sub(r'[._]{2,}', '_', email_prefix)
+    email_prefix = email_prefix.strip('._')
+    
+    domains = ["gmail.com", "yahoo.com", "outlook.com", "hotmail.com", "ymail.com"]
+    domain = random.choice(domains)
+    
+    return f"{email_prefix}@{domain}"
+
 # Fungsi untuk memanggil API GPT untuk mendapatkan ulasan/saran
-def generate_ai_text(prompt_type):
+def generate_ai_text(prompt_type, max_retries=5):
     # Kumpulan aspek acak agar jawaban bervariasi dan tidak template
     aspek_list = [
         "kemudahan mencari menu surat",
@@ -179,58 +325,77 @@ def generate_ai_text(prompt_type):
         "aksesibilitas saat dibuka di handphone",
         "kenyamanan antarmuka pengguna",
     ]
-    aspek = random.choice(aspek_list)
-
-    if prompt_type == "pendapat":
-        prompt = (
-            "Kamu adalah mahasiswa teknik informatika Universitas Mulawarman (anak Gen Z). "
-            "Tuliskan 1 kalimat ulasan/pendapat singkat dan sangat santai memakai bahasa gaul/casual anak Gen Z "
-            "(seperti menggunakan kata 'ngebantu', 'ga ribet', 'sat set', 'lumayan', 'enak banget', 'friendly', dll.) "
-            "tentang kegunaan website 'E-Surat 2 FT Unmul'. "
-            f"Fokuskan ulasan pada aspek: {aspek}. "
-            "PENTING: Jangan pakai bahasa baku, kaku, atau formal. Hindari awalan monoton seperti 'Website ini...', 'Menurut saya...'. "
-            "Tuliskan teks polos saja, TANPA tanda bintang (*), tebal, miring, atau format markdown lainnya."
-        )
-    else:  # saran
-        prompt = (
-            "Kamu adalah mahasiswa teknik informatika Universitas Mulawarman (anak Gen Z). "
-            "Tuliskan 1 kalimat saran perbaikan yang singkat, santai, dan membangun memakai gaya bahasa anak Gen Z "
-            "(seperti menggunakan kata 'biar ga lemot', 'dibikin lebih gercep', 'mobile-friendly', 'tampilan makin rapi', dll.) "
-            "untuk website 'E-Surat 2 FT Unmul' ke depannya. "
-            f"Fokuskan saran pada aspek: {aspek}. "
-            "PENTING: Jangan pakai bahasa baku atau kata pembuka kaku seperti 'Saran saya...', 'Sebaiknya...', 'Diharapkan...'. "
-            "Tuliskan teks polos saja, TANPA tanda bintang (*), tebal, miring, atau format markdown lainnya."
-        )
+    
+    slang_pool = [
+        "kece", "mantul", "gokil", "gacor", "gila sih", "no debat", "worth it", 
+        "lancar jaya", "anti-ribet", "gercep", "abizz", "parah", "jujurly", 
+        "vibes-nya", "anw", "fyi", "btw", "sih", "deh", "dong", "cuy", "bro", 
+        "gaes", "menurut gw", "opini gw", "sebagai anak IT", "wajib dicoba", 
+        "kudu", "kudu cobain", "rekomen", "rekomended", "juara", "mantap betul",
+        "sat set", "anti drama", "gak ribet", "lumayan", "enak banget", "friendly"
+    ]
+    
+    target_set = used_pendapat if prompt_type == "pendapat" else used_saran
+    
+    for attempt in range(max_retries):
+        aspek = random.choice(aspek_list)
+        random_slang = random.sample(slang_pool, 2)
         
-    try:
-        response = requests.get(AI_API_URL, params={"text": prompt}, timeout=15)
-        if response.status_code == 200:
-            data = response.json()
-            ai_text = data.get("text") or data.get("result") or data.get("response") or data.get("reply") or str(data)
-            # Bersihkan tanda petik, dash khusus, dan semua tanda formatting markdown (seperti *)
-            ai_text = ai_text.strip().replace('"', '').replace('\u2011', '-')
-            ai_text = re.sub(r'[*_#`~]', '', ai_text)
-            return ai_text.strip()
-        else:
-            raise Exception(f"API Error Status: {response.status_code}")
-    except Exception as e:
         if prompt_type == "pendapat":
-            # Berikan beberapa fallback acak bergaya Gen Z
-            fallback_pendapat = [
-                "Jujur ngebantu banget sih buat urusan surat, ga perlu ribet antre lagi.",
-                "UI-nya udah lumayan friendly dan gampang dipahami pas pertama kali nyoba.",
-                "Mantap sih, proses ajuin suratnya jadi kerasa sat set dan ga banyak drama.",
-                "Ringan banget pas dibuka lewat HP, jadi bisa ajuin surat kapan aja."
-            ]
-            return random.choice(fallback_pendapat)
+            prompt = (
+                "Kamu adalah mahasiswa teknik informatika Universitas Mulawarman (anak Gen Z). "
+                "Tuliskan 1 kalimat ulasan/pendapat singkat dan sangat santai memakai bahasa gaul/casual anak Gen Z "
+                f"(sisipkan kata gaul/casual seperti '{random_slang[0]}' atau '{random_slang[1]}') "
+                "tentang kegunaan website 'E-Surat 2 FT Unmul'. "
+                f"Fokuskan ulasan pada aspek: {aspek}. "
+                "PENTING: Jangan pakai bahasa baku, kaku, atau formal. Hindari awalan monoton seperti 'Website ini...', 'Menurut saya...'. "
+                "Pastikan kalimatnya unik, orisinal, dan beda dari yang lain. "
+                "Tuliskan teks polos saja, TANPA tanda bintang (*), tebal, miring, atau format markdown lainnya."
+            )
+        else:  # saran
+            prompt = (
+                "Kamu adalah mahasiswa teknik informatika Universitas Mulawarman (anak Gen Z). "
+                "Tuliskan 1 kalimat saran perbaikan yang singkat, santai, dan membangun memakai gaya bahasa anak Gen Z "
+                f"(sisipkan kata gaul/casual seperti '{random_slang[0]}' or '{random_slang[1]}') "
+                "untuk website 'E-Surat 2 FT Unmul' ke depannya. "
+                f"Fokuskan saran pada aspek: {aspek}. "
+                "PENTING: Jangan pakai bahasa baku atau kata pembuka kaku seperti 'Saran saya...', 'Sebaiknya...', 'Diharapkan...'. "
+                "Pastikan kalimatnya unik, orisinal, dan beda dari yang lain. "
+                "Tuliskan teks polos saja, TANPA tanda bintang (*), tebal, miring, atau format markdown lainnya."
+            )
+            
+        try:
+            response = requests.get(AI_API_URL, params={"text": prompt}, timeout=15)
+            if response.status_code == 200:
+                data = response.json()
+                ai_text = data.get("text") or data.get("result") or data.get("response") or data.get("reply") or str(data)
+                ai_text = ai_text.strip().replace('"', '').replace('\u2011', '-')
+                ai_text = re.sub(r'[*_#`~]', '', ai_text)
+                ai_text = ai_text.strip()
+                
+                if ai_text and ai_text not in target_set:
+                    target_set.add(ai_text)
+                    return ai_text
+            else:
+                pass
+        except Exception:
+            pass
+            
+    # Fallback jika API gagal/hasilnya duplikat terus menerus
+    for _ in range(20):
+        if prompt_type == "pendapat":
+            val = generate_dynamic_fallback_pendapat()
         else:
-            fallback_saran = [
-                "Mungkin servernya bisa di-upgrade dikit biar ga lemot pas lagi banyak yang akses.",
-                "Tampilan mobile-nya tolong dibikin lebih responsif biar pas dibuka di HP makin enak dilihat.",
-                "Kalau bisa ada notif lewat email atau WA biar kita tau progres suratnya udah sampai mana.",
-                "Tata letak menunya dibikin lebih simpel lagi biar makin gercep pas nyari fitur."
-            ]
-            return random.choice(fallback_saran)
+            val = generate_dynamic_fallback_saran()
+            
+        if val not in target_set:
+            target_set.add(val)
+            return val
+            
+    # Absolute fallback
+    val = (generate_dynamic_fallback_pendapat() if prompt_type == "pendapat" else generate_dynamic_fallback_saran()) + f" {random.randint(10, 99)}"
+    target_set.add(val)
+    return val
 
 
 def generate_field_value(field, nama, nim, angkatan, pendapat, saran, email):
@@ -343,9 +508,8 @@ def run_auto_fill():
         except Exception:
             angkatan = "2021"
             
-        # Format email fiktif
-        email_prefix = nama.lower().replace(' ', '')
-        email = f"{email_prefix}{prefix_tahun}@gmail.com"
+        # Format email fiktif bervariasi (nickname game, inisial, dll)
+        email = generate_varied_email(nama, nim)
         
         # Ambil respon dari API GPT
         pendapat = generate_ai_text("pendapat")
