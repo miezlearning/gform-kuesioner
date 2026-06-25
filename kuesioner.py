@@ -162,9 +162,33 @@ def load_students_from_csv(file_path):
         return []
 
 
-# Fungsi menghasilkan nilai acak skala WebQual (1 sampai 5)
-def generate_scale_answer():
-    return str(random.choices([1, 2, 3, 4, 5], weights=[2, 5, 15, 48, 30])[0])
+# Fungsi menghasilkan nilai acak skala WebQual (1 sampai 5) yang disesuaikan dengan profil responden
+def generate_scale_answer(profile="puas_rata_rata"):
+    if profile == "sangat_puas":
+        # Cenderung memberikan nilai 4 atau 5
+        return str(random.choices([1, 2, 3, 4, 5], weights=[0, 1, 9, 35, 55])[0])
+    elif profile == "kritis":
+        # Cenderung memberikan nilai 2 atau 3 atau 4
+        return str(random.choices([1, 2, 3, 4, 5], weights=[10, 30, 45, 12, 3])[0])
+    else: # puas_rata_rata
+        # Cenderung memberikan nilai 3 atau 4
+        return str(random.choices([1, 2, 3, 4, 5], weights=[1, 4, 25, 55, 15])[0])
+
+# Fungsi untuk memformat nama agar terlihat seperti diketik manual oleh orang awam (alay/normal)
+def format_natural_name(nama):
+    nama_clean = nama.strip()
+    
+    style = random.choices(
+        ["title", "lower", "upper"],
+        weights=[70, 20, 10]
+    )[0]
+    
+    if style == "title":
+        return nama_clean.title()
+    elif style == "lower":
+        return nama_clean.lower()
+    else:
+        return nama_clean.upper()
 
 
 # Set untuk menyimpan ulasan/saran yang sudah digunakan agar tidak terjadi duplikat
@@ -386,7 +410,7 @@ def generate_ai_text(prompt_type, max_retries=5):
     return val
 
 
-def generate_field_value(field, nama, nim, angkatan, pendapat, saran, email):
+def generate_field_value(field, nama, nim, angkatan, pendapat, saran, email, profile):
     """
     Menentukan nilai untuk setiap field berdasarkan label dan tipe pertanyaan.
     """
@@ -406,7 +430,7 @@ def generate_field_value(field, nama, nim, angkatan, pendapat, saran, email):
         return email
     else:
         # Pertanyaan skala (Type 5 = linear scale, Type 2 = radio)
-        return generate_scale_answer()
+        return generate_scale_answer(profile)
 
 
 def build_partial_response(pages_data, fbzx, email):
@@ -486,8 +510,15 @@ def run_auto_fill():
     submit_url = FORM_URL.replace("/viewform", "/formResponse")
     
     for index, student in enumerate(selected_students):
-        nama = student['nama']
+        nama_raw = student['nama']
+        nama = format_natural_name(nama_raw)
         nim = student['nim']
+        
+        # Tentukan profil sikap responden secara acak agar hasil pengisian skala berkorelasi dan natural
+        profile = random.choices(
+            ["sangat_puas", "puas_rata_rata", "kritis"],
+            weights=[35, 55, 10]
+        )[0]
         
         # Deteksi angkatan secara dinamis dari NIM (ambil 2 digit pertama)
         try:
@@ -511,7 +542,7 @@ def run_auto_fill():
         for page in pages:
             page_values = []
             for field in page:
-                value = generate_field_value(field, nama, nim, angkatan, pendapat, saran, email)
+                value = generate_field_value(field, nama, nim, angkatan, pendapat, saran, email, profile)
                 page_values.append({
                     "entry_id": field["entry_id"],
                     "value": value,
