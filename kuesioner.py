@@ -17,7 +17,7 @@ FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSf7Ru04vJTdsVA8QkimGY8sGy2o
 AI_API_URL = "https://apis.prexzyvilla.site/ai/gpt-5"
 
 # 4. Target jumlah pengisian kuesioner yang Anda inginkan kali ini
-TARGET_SUBMISSIONS = 5 
+TARGET_SUBMISSIONS = 1 
 # =======================================================
 
 
