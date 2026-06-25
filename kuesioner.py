@@ -310,69 +310,36 @@ def is_too_similar(text, target_set, word_threshold=3, overlap_threshold=0.55):
     return False
 
 # Fungsi untuk memanggil API GPT untuk mendapatkan ulasan/saran
-def generate_ai_text(prompt_type, max_retries=8):
-    # Kumpulan aspek acak agar jawaban bervariasi dan tidak template
-    aspek_list = [
-        "kemudahan mencari menu surat",
-        "kecepatan loading atau respon website",
-        "tampilan visual yang rapi dan modern",
-        "kejelasan instruksi pengisian form",
-        "proses pengajuan surat yang praktis",
-        "aksesibilitas saat dibuka di handphone",
-        "kenyamanan antarmuka pengguna",
-    ]
-    
-    # Variasi awal kalimat agar AI tidak mengulangi struktur awal yang sama (simpel & wajar)
-    opening_styles_pendapat = [
-        "cukup lancar",
-        "lumayan fast respond",
-        "tampilannya oke",
-        "menu gampang dicari",
-        "dashboard cukup responsif",
-        "upload berkas lancar",
-        "tracking surat mudah",
-        "desainnya lumayan rapi",
-        "aksesnya lumayan cepat"
-    ]
-    
-    opening_styles_saran = [
-        "loading submit dipercepat",
-        "tombol kirim ganti warna",
-        "tambah notifikasi WhatsApp",
-        "tampilan mobile dirapikan",
-        "info max size diperjelas",
-        "percepat loading upload",
-        "menu KHS segera aktif"
-    ]
-    
+def generate_ai_text(prompt_type, max_retries=10):
     target_set = used_pendapat if prompt_type == "pendapat" else used_saran
     
     for attempt in range(max_retries):
-        aspek = random.choice(aspek_list)
-        opening = random.choice(opening_styles_pendapat) if prompt_type == "pendapat" else random.choice(opening_styles_saran)
-        
         if prompt_type == "pendapat":
             prompt = (
                 "Kamu adalah mahasiswa Universitas Mulawarman yang baru saja menggunakan website 'E-Surat 2 FT Unmul'. "
                 "Tuliskan 1 kalimat ulasan/pendapat yang SANGAT SINGKAT, SIMPEL, dan alami (hanya 3 sampai 6 kata saja). "
-                f"Tuliskan pendapat yang berfokus HANYA pada aspek: '{aspek}'. "
-                f"PENTING: Kalimat Anda HARUS dimulai dengan frasa pembuka berikut: '{opening}' "
-                "Jangan ditambahkan kalimat panjang lebar setelahnya, cukup tuliskan kelanjutannya agar menjadi kalimat pendek yang lengkap, padat, dan wajar. "
-                "Gunakan gaya mengetik mahasiswa yang santai, wajar, dan manusiawi (contoh: 'cukup lancar saat diakses', 'tampilannya oke dan rapi', 'menu gampang dicari di dashboard'). "
-                "Hindari bahasa kaku, tapi JANGAN menggunakan kata slang/alay yang berlebihan (seperti 'sat set', 'no debat', 'gacor', 'gokil', 'parah', dll). "
-                "Pastikan kalimatnya unik, orisinal, pendek, dan alami. "
+                "Pilih HANYA SATU dari topik berikut tentang website ini untuk ditulis:\n"
+                "- Tampilan dashboard atau menu sidebar yang rapi (contoh: 'tampilan menunya sudah rapi')\n"
+                "- Kemudahan proses pengajuan surat (contoh: 'pengajuan suratnya tidak ribet')\n"
+                "- Kecepatan respon/loading halaman (contoh: 'aksesnya lumayan cepat', 'cukup fast respond')\n"
+                "- Kemudahan tracking status surat (contoh: 'cek status surat mudah')\n"
+                "Hindari kalimat panjang atau kata penghubung bertumpuk. Tuliskan langsung intinya saja dalam gaya mengetik mahasiswa yang santai, wajar, dan manusiawi. "
+                "JANGAN menggunakan kata slang/alay yang berlebihan (seperti 'sat set', 'no debat', 'gacor', 'gokil', 'parah', dll). "
                 "Tuliskan teks polos saja, TANPA tanda bintang (*), tebal, miring, atau format markdown lainnya."
             )
         else:  # saran
             prompt = (
                 "Kamu adalah mahasiswa Universitas Mulawarman yang baru saja menggunakan website 'E-Surat 2 FT Unmul'. "
                 "Tuliskan 1 kalimat saran perbaikan yang SANGAT SINGKAT, SIMPEL, dan alami (hanya 3 sampai 6 kata saja). "
-                f"Tuliskan saran yang berfokus HANYA pada aspek: '{aspek}'. "
-                f"PENTING: Kalimat Anda HARUS dimulai dengan frasa pembuka berikut: '{opening}' "
-                "Jangan ditambahkan kalimat panjang lebar setelahnya, cukup tuliskan kelanjutannya agar menjadi kalimat pendek yang lengkap, padat, dan wajar. "
-                "Gunakan gaya mengetik mahasiswa yang santai, wajar, dan manusiawi (contoh: 'tombol kirim ganti warna biru', 'loading submit dipercepat responnya', 'tambah notifikasi WhatsApp otomatis'). "
-                "Hindari bahasa terlalu formal/kaku, tapi JANGAN menggunakan kata slang/alay yang berlebihan. "
-                "Pastikan kalimatnya unik, orisinal, pendek, dan alami. "
+                "Pilih HANYA SATU dari topik perbaikan berikut tentang website ini untuk dijadikan saran:\n"
+                "- Menambahkan batas maksimal file size upload slip UKT/KTM (contoh: 'infokan batas maksimal file upload')\n"
+                "- Mengubah warna merah pada tombol 'Kirim Permintaan' (contoh: 'warna tombol kirim ganti biru')\n"
+                "- Segera mengaktifkan fitur Permohonan KHS (contoh: 'menu KHS segera diaktifkan')\n"
+                "- Mempercepat loading saat submit berkas PDF (contoh: 'loading submit PDF dipercepat')\n"
+                "- Menambahkan notifikasi WhatsApp otomatis (contoh: 'tambah notifikasi WhatsApp')\n"
+                "- Merapikan tata letak tampilan versi mobile di HP (contoh: 'tampilan mobile dirapikan dikit')\n"
+                "Hindari kalimat panjang atau kata penghubung bertumpuk. Tuliskan langsung intinya saja dalam gaya mengetik mahasiswa yang santai, wajar, dan manusiawi. "
+                "JANGAN menggunakan kata slang/alay yang berlebihan. "
                 "Tuliskan teks polos saja, TANPA tanda bintang (*), tebal, miring, atau format markdown lainnya."
             )
             
