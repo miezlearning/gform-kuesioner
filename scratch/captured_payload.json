@@ -1,0 +1,47 @@
+{
+  "url": "https://docs.google.com/forms/d/e/1FAIpQLSf7Ru04vJTdsVA8QkimGY8sGy2olumHWhL0pPm7cr46eHPELA/formResponse",
+  "method": "POST",
+  "headers": {
+    "content-type": "application/x-www-form-urlencoded",
+    "origin": "https://docs.google.com",
+    "referer": "https://docs.google.com/forms/d/e/1FAIpQLSf7Ru04vJTdsVA8QkimGY8sGy2olumHWhL0pPm7cr46eHPELA/formResponse",
+    "upgrade-insecure-requests": "1",
+    "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/147.0.7727.15 Safari/537.36",
+    "sec-ch-ua": "\"HeadlessChrome\";v=\"147\", \"Not.A/Brand\";v=\"8\", \"Chromium\";v=\"147\"",
+    "sec-ch-ua-mobile": "?0",
+    "sec-ch-ua-platform": "\"Windows\""
+  },
+  "post_data": "entry.1831604431=Menurut+saya+website+ini+sudah+sangat+baik.&entry.1844992149=Saran+saya+adalah+terus+meningkatkan+kecepatan+akses.&entry.1531373470=4&entry.1019296480=4&entry.2050442328=4&entry.1531373470_sentinel=&entry.1019296480_sentinel=&entry.2050442328_sentinel=&fvv=1&partialResponse=%5B%5B%5Bnull%2C1263102269%2C%5B%22Playwright+Test+Responden%22%5D%2C0%5D%2C%5Bnull%2C1052711449%2C%5B%222409106099%22%5D%2C0%5D%2C%5Bnull%2C909243868%2C%5B%222024%22%5D%2C0%5D%2C%5Bnull%2C644587868%2C%5B%224%22%5D%2C0%5D%2C%5Bnull%2C1204149345%2C%5B%224%22%5D%2C0%5D%2C%5Bnull%2C1160960572%2C%5B%224%22%5D%2C0%5D%2C%5Bnull%2C1679488464%2C%5B%224%22%5D%2C0%5D%2C%5Bnull%2C1997403812%2C%5B%224%22%5D%2C0%5D%2C%5Bnull%2C81088305%2C%5B%224%22%5D%2C0%5D%2C%5Bnull%2C1516128006%2C%5B%224%22%5D%2C0%5D%2C%5Bnull%2C210452527%2C%5B%224%22%5D%2C0%5D%2C%5Bnull%2C1304503573%2C%5B%224%22%5D%2C0%5D%2C%5Bnull%2C1693152674%2C%5B%224%22%5D%2C0%5D%2C%5Bnull%2C2110136957%2C%5B%224%22%5D%2C0%5D%2C%5Bnull%2C1601385990%2C%5B%224%22%5D%2C0%5D%2C%5Bnull%2C1657901429%2C%5B%224%22%5D%2C0%5D%2C%5Bnull%2C439233770%2C%5B%224%22%5D%2C0%5D%2C%5Bnull%2C2146671926%2C%5B%224%22%5D%2C0%5D%5D%2Cnull%2C%22-8479196756277705778%22%2Cnull%2Cnull%2Cnull%2C%22playwright_test%40gmail.com%22%2C1%5D&pageHistory=0%2C1%2C2%2C3%2C4%2C5&fbzx=-8479196756277705778&submissionTimestamp=1782397205368",
+  "parsed_post_data": {
+    "entry.1831604431": [
+      "Menurut saya website ini sudah sangat baik."
+    ],
+    "entry.1844992149": [
+      "Saran saya adalah terus meningkatkan kecepatan akses."
+    ],
+    "entry.1531373470": [
+      "4"
+    ],
+    "entry.1019296480": [
+      "4"
+    ],
+    "entry.2050442328": [
+      "4"
+    ],
+    "fvv": [
+      "1"
+    ],
+    "partialResponse": [
+      "[[[null,1263102269,[\"Playwright Test Responden\"],0],[null,1052711449,[\"2409106099\"],0],[null,909243868,[\"2024\"],0],[null,644587868,[\"4\"],0],[null,1204149345,[\"4\"],0],[null,1160960572,[\"4\"],0],[null,1679488464,[\"4\"],0],[null,1997403812,[\"4\"],0],[null,81088305,[\"4\"],0],[null,1516128006,[\"4\"],0],[null,210452527,[\"4\"],0],[null,1304503573,[\"4\"],0],[null,1693152674,[\"4\"],0],[null,2110136957,[\"4\"],0],[null,1601385990,[\"4\"],0],[null,1657901429,[\"4\"],0],[null,439233770,[\"4\"],0],[null,2146671926,[\"4\"],0]],null,\"-8479196756277705778\",null,null,null,\"playwright_test@gmail.com\",1]"
+    ],
+    "pageHistory": [
+      "0,1,2,3,4,5"
+    ],
+    "fbzx": [
+      "-8479196756277705778"
+    ],
+    "submissionTimestamp": [
+      "1782397205368"
+    ]
+  }
+}
