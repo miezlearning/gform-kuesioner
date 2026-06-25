@@ -65,8 +65,17 @@ def extract_form_fields(form_url):
         fvv_input = soup.find("input", {"name": "fvv"})
         fvv = fvv_input.get("value") if fvv_input else "1"
         
-        pageHistory_input = soup.find("input", {"name": "pageHistory"})
-        pageHistory = pageHistory_input.get("value") if pageHistory_input else "0"
+        # Hitung jumlah halaman secara dinamis dari section break (type code 8)
+        num_pages = 0
+        for item in questions_list:
+            try:
+                if item[3] == 8:
+                    num_pages += 1
+            except (IndexError, TypeError):
+                continue
+        if num_pages == 0:
+            num_pages = 1
+        pageHistory = ",".join(str(i) for i in range(num_pages))
         
         session_data = {
             "fbzx": fbzx,
