@@ -173,34 +173,31 @@ used_saran = set()
 
 def generate_dynamic_fallback_pendapat():
     part1 = [
-        "Jujur, website E-Surat 2 FT ini",
-        "Web E-Surat Unmul",
-        "Sistem e-surat yang baru ini",
-        "Aplikasi e-surat FT",
-        "Layanan e-surat FT Unmul",
-        "Menurutku, web surat-menyurat ini",
-        "Tampilan dan fitur E-Surat FT",
-        "Buat ngurus surat, web ini",
+        "Secara keseluruhan, website E-Surat FT",
+        "Layanan e-surat Unmul ini",
+        "Sistem surat digital fakultas",
+        "Website E-Surat 2 FT",
+        "Menurut saya, aplikasi e-surat ini",
+        "Fitur pengajuan surat digital ini",
+        "Proses pengurusan surat lewat web ini",
     ]
     part2 = [
-        "ngebantu banget sih buat mahasiswa,",
-        "bikin urusan jadi sat set,",
-        "anti-ribet dan praktis banget,",
-        "UI-nya udah friendly dan gampang dipahami,",
-        "enteng pas dibuka lewat HP,",
-        "responsif dan gak lemot pas diakses,",
-        "keren dan alurnya jelas,",
-        "bener-bener motong waktu pengurusan,"
+        "sudah sangat membantu mahasiswa,",
+        "cukup praktis dan efisien untuk digunakan,",
+        "memiliki antarmuka yang mudah dipahami,",
+        "sangat mempermudah alur administrasi,",
+        "cukup responsif saat diakses dari HP,",
+        "menawarkan proses yang lebih cepat,",
+        "cukup memotong birokrasi manual,"
     ]
     part3 = [
-        "jadinya ga perlu capek-capek antre di fakultas lagi.",
-        "gak ada drama bolak-balik ke loket.",
-        "tinggal klik-klik aja beres dari kosan.",
-        "bisa diajuin kapan aja dan di mana aja.",
-        "prosesnya kerasa lebih transparan dan gercep.",
-        "nyari menu atau fiturnya ga bikin pusing.",
-        "mahasiswa ga perlu ribet nyiapin berkas fisik lagi.",
-        "bintang lima sih buat kemudahannya."
+        "sehingga tidak perlu mengantre lama di loket.",
+        "membuat pengajuan berkas jadi lebih ringkas.",
+        "serta sangat menghemat waktu mahasiswa.",
+        "meskipun tampilannya masih perlu sedikit adaptasi.",
+        "karena fiturnya langsung tepat sasaran.",
+        "sehingga prosesnya transparan dari awal sampai akhir.",
+        "dan memudahkan pemantauan dokumen dari mana saja."
     ]
     
     p1 = random.choice(part1)
@@ -208,14 +205,14 @@ def generate_dynamic_fallback_pendapat():
     p3 = random.choice(part3)
     
     direct = [
-        "Mantap sih, proses ajuin suratnya jadi kerasa sat set dan ga banyak drama.",
-        "Jujur ngebantu banget sih buat urusan surat, ga perlu ribet antre lagi.",
-        "UI-nya udah lumayan friendly dan gampang dipahami pas pertama kali nyoba.",
-        "Ringan banget pas dibuka lewat HP, jadi bisa ajuin surat kapan aja.",
-        "Suka banget sama alurnya yang simpel, ga bertele-tele pas input data.",
-        "Website-nya gampang dipahami, tampilannya bersih dan ga bikin bingung.",
-        "Akses lewat HP lancar jaya, ga ada kendala pas upload berkas.",
-        "Keren lah, sekarang urus surat-menyurat ga perlu buang-buang waktu lagi."
+        "Sistemnya sangat membantu mahasiswa dalam mengurus persuratan tanpa harus ke kampus.",
+        "Tampilan web cukup bersih dan alur pengajuannya mudah dipahami bagi pengguna baru.",
+        "Proses pengajuan surat jadi lebih praktis dan tidak memakan waktu lama.",
+        "Akses website cukup lancar dan responsif saat dibuka menggunakan smartphone.",
+        "Instruksi pengisian form sudah cukup jelas sehingga meminimalisir kesalahan data.",
+        "Fitur yang disediakan sudah sangat fungsional untuk kebutuhan administrasi mahasiswa.",
+        "Secara umum, website ini mempermudah urusan administrasi persuratan mahasiswa.",
+        "Sangat menghemat waktu karena seluruh prosesnya dilakukan secara digital."
     ]
     
     if random.random() < 0.5:
@@ -226,32 +223,31 @@ def generate_dynamic_fallback_pendapat():
 def generate_dynamic_fallback_saran():
     part1 = [
         "Mungkin kedepannya",
-        "Saran aja sih,",
-        "Kalau bisa,",
-        "Moga aja nanti",
-        "Biar makin mantap,",
-        "Buat perbaikan,",
-        "Harapannya sih"
+        "Alangkah baiknya jika",
+        "Saran saya,",
+        "Sebagai saran perbaikan,",
+        "Untuk pengembangan selanjutnya,",
+        "Harapannya,"
     ]
     part2 = [
-        "servernya di-upgrade dikit biar ga lemot",
-        "tampilan mobile-nya dibikin lebih responsif",
-        "ditambahin notifikasi status surat lewat WA atau email",
-        "tata letak menunya disederhanakan lagi",
-        "disediakan FAQ atau panduan singkat di halaman utama",
-        "proses loading website-nya dibikin lebih gercep",
-        "fitur tracking suratnya dibuat lebih detail alurnya",
-        "desain dashboard-nya dibuat lebih modern dan fresh"
+        "kecepatan loading website bisa lebih dioptimalkan",
+        "tampilan tata letak menu dibuat lebih ringkas dan simpel",
+        "ditambahin notifikasi status surat via email",
+        "panduan atau petunjuk pengisian di halaman utama lebih diperjelas",
+        "desain antarmuka pengguna dibuat lebih modern",
+        "keamanan data saat unggah dokumen lebih ditingkatkan",
+        "tampilan versi mobile dibuat lebih ramah pengguna",
+        "disediakan kolom FAQ untuk kendala teknis"
     ]
     part3 = [
-        "pas lagi jam-jam sibuk banyak mahasiswa akses.",
-        "biar makin enak dipandang pas dibuka lewat HP.",
-        "jadi kita ga perlu sering-sering login buat ngecek.",
-        "biar ga kebingungan pas pertama kali ngajuin surat.",
-        "supaya mahasiswa baru ga bingung cara pakainya.",
-        "jadi ga nunggu lama pas loading data.",
-        "biar keliatan jelas suratnya lagi diproses di bagian mana.",
-        "biar ga bosen liat tampilan yang sekarang."
+        "agar mahasiswa tidak menunggu lama saat mengakses.",
+        "supaya navigasi pencarian menu surat lebih cepat.",
+        "agar mahasiswa bisa memantau proses tanpa harus terus login.",
+        "khususnya bagi mahasiswa baru yang pertama kali menggunakan.",
+        "agar terkesan lebih menarik dan kekinian.",
+        "demi kenyamanan bersama dalam bertransaksi data.",
+        "sehingga nyaman saat diakses melalui smartphone.",
+        "untuk membantu mahasiswa yang mengalami kesulitan input."
     ]
     
     p1 = random.choice(part1)
@@ -259,14 +255,14 @@ def generate_dynamic_fallback_saran():
     p3 = random.choice(part3)
     
     direct = [
-        "Mungkin servernya bisa di-upgrade dikit biar ga lemot pas lagi banyak yang akses.",
-        "Tampilan mobile-nya tolong dibikin lebih responsif biar pas dibuka di HP makin enak dilihat.",
-        "Kalau bisa ada notif lewat email atau WA biar kita tau progres suratnya udah sampai mana.",
-        "Tata letak menunya dibikin lebih simpel lagi biar makin gercep pas nyari fitur.",
-        "Loading page-nya tolong dipercepat lagi biar ga buang waktu pas loading formulir.",
-        "Mungkin bisa ditambah menu live chat atau helpdesk buat nanya kendala teknis.",
-        "Desain UI-nya kalau bisa dimodernisasi lagi biar keliatan lebih fresh dan kekinian.",
-        "Bagusnya ada history surat yang udah pernah diajuin biar gampang tracking data lama."
+        "Mohon kecepatan akses website ditingkatkan terutama saat jam sibuk pengisian.",
+        "Sebaiknya ditambahkan fitur tracking status surat yang lebih detail agar mudah dipantau.",
+        "Tampilan navigasi menu mungkin bisa dibuat lebih sederhana lagi agar mudah dipahami.",
+        "Disarankan untuk mengoptimalkan tampilan mobile agar lebih responsif di berbagai perangkat.",
+        "Mungkin bisa ditambahkan panduan singkat atau petunjuk pengisian di setiap formulir.",
+        "Kecepatan respon website saat mengunggah lampiran dokumen perlu sedikit diperbaiki.",
+        "Harapannya ada integrasi notifikasi otomatis agar mahasiswa tahu jika surat sudah selesai diproses.",
+        "Desain halaman utama bisa dibuat lebih modern agar terlihat lebih profesional."
     ]
     
     if random.random() < 0.5:
@@ -326,41 +322,31 @@ def generate_ai_text(prompt_type, max_retries=5):
         "kenyamanan antarmuka pengguna",
     ]
     
-    slang_pool = [
-        "kece", "mantul", "gokil", "gacor", "gila sih", "no debat", "worth it", 
-        "lancar jaya", "anti-ribet", "gercep", "abizz", "parah", "jujurly", 
-        "vibes-nya", "anw", "fyi", "btw", "sih", "deh", "dong", "cuy", "bro", 
-        "gaes", "menurut gw", "opini gw", "sebagai anak IT", "wajib dicoba", 
-        "kudu", "kudu cobain", "rekomen", "rekomended", "juara", "mantap betul",
-        "sat set", "anti drama", "gak ribet", "lumayan", "enak banget", "friendly"
-    ]
-    
     target_set = used_pendapat if prompt_type == "pendapat" else used_saran
     
     for attempt in range(max_retries):
         aspek = random.choice(aspek_list)
-        random_slang = random.sample(slang_pool, 2)
         
         if prompt_type == "pendapat":
             prompt = (
-                "Kamu adalah mahasiswa teknik informatika Universitas Mulawarman (anak Gen Z). "
-                "Tuliskan 1 kalimat ulasan/pendapat singkat dan sangat santai memakai bahasa gaul/casual anak Gen Z "
-                f"(sisipkan kata gaul/casual seperti '{random_slang[0]}' atau '{random_slang[1]}') "
+                "Kamu adalah mahasiswa Universitas Mulawarman. "
+                "Tuliskan 1 kalimat ulasan/pendapat singkat yang santai namun tetap sopan dan wajar (semi-formal/standar mahasiswa) "
                 "tentang kegunaan website 'E-Surat 2 FT Unmul'. "
                 f"Fokuskan ulasan pada aspek: {aspek}. "
-                "PENTING: Jangan pakai bahasa baku, kaku, atau formal. Hindari awalan monoton seperti 'Website ini...', 'Menurut saya...'. "
-                "Pastikan kalimatnya unik, orisinal, dan beda dari yang lain. "
+                "Hindari bahasa yang terlalu formal/kaku, namun JANGAN menggunakan kata slang/alay yang berlebihan (seperti 'sat set', 'no debat', 'gacor', 'gokil', 'parah', dll). "
+                "Hindari awalan monoton seperti 'Website ini...', 'Menurut saya...'. "
+                "Pastikan kalimatnya unik, orisinal, dan bervariasi. "
                 "Tuliskan teks polos saja, TANPA tanda bintang (*), tebal, miring, atau format markdown lainnya."
             )
         else:  # saran
             prompt = (
-                "Kamu adalah mahasiswa teknik informatika Universitas Mulawarman (anak Gen Z). "
-                "Tuliskan 1 kalimat saran perbaikan yang singkat, santai, dan membangun memakai gaya bahasa anak Gen Z "
-                f"(sisipkan kata gaul/casual seperti '{random_slang[0]}' or '{random_slang[1]}') "
+                "Kamu adalah mahasiswa Universitas Mulawarman. "
+                "Tuliskan 1 kalimat saran perbaikan yang singkat, membangun, dan menggunakan gaya bahasa mahasiswa yang santai namun sopan (semi-formal) "
                 "untuk website 'E-Surat 2 FT Unmul' ke depannya. "
                 f"Fokuskan saran pada aspek: {aspek}. "
-                "PENTING: Jangan pakai bahasa baku atau kata pembuka kaku seperti 'Saran saya...', 'Sebaiknya...', 'Diharapkan...'. "
-                "Pastikan kalimatnya unik, orisinal, dan beda dari yang lain. "
+                "Hindari bahasa yang terlalu formal/kaku, namun JANGAN menggunakan kata slang/alay yang berlebihan (seperti 'sat set', 'biar ga lemot', dll). "
+                "Hindari kata pembuka kaku seperti 'Saran saya...', 'Sebaiknya...', 'Diharapkan...'. "
+                "Pastikan kalimatnya unik, orisinal, dan bervariasi. "
                 "Tuliskan teks polos saja, TANPA tanda bintang (*), tebal, miring, atau format markdown lainnya."
             )
             
