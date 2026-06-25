@@ -333,8 +333,40 @@ def generate_varied_email(nama, nim):
     
     return f"{email_prefix}@{domain}"
 
+# Fungsi pembantu untuk mendeteksi kemiripan awal kata (prefix) dan overlap kata (Jaccard Similarity)
+def is_too_similar(text, target_set, word_threshold=3, overlap_threshold=0.55):
+    # Bersihkan tanda baca dan ubah ke lowercase
+    clean_text = re.sub(r'[^\w\s]', '', text.lower()).strip()
+    text_words = [w for w in clean_text.split() if w]
+    if not text_words:
+        return False
+        
+    if len(text_words) < word_threshold:
+        return text in target_set
+        
+    prefix = " ".join(text_words[:word_threshold])
+    
+    for existing in target_set:
+        clean_existing = re.sub(r'[^\w\s]', '', existing.lower()).strip()
+        existing_words = [w for w in clean_existing.split() if w]
+        
+        # 1. Cek jika 3 kata pertama persis sama (prefix match)
+        if len(existing_words) >= word_threshold:
+            existing_prefix = " ".join(existing_words[:word_threshold])
+            if prefix == existing_prefix:
+                return True
+                
+        # 2. Cek overlap persentase kata (Jaccard Similarity)
+        intersection = set(text_words) & set(existing_words)
+        union = set(text_words) | set(existing_words)
+        jaccard = len(intersection) / len(union) if union else 0
+        if jaccard > overlap_threshold:
+            return True
+            
+    return False
+
 # Fungsi untuk memanggil API GPT untuk mendapatkan ulasan/saran
-def generate_ai_text(prompt_type, max_retries=5):
+def generate_ai_text(prompt_type, max_retries=8):
     # Kumpulan aspek acak agar jawaban bervariasi dan tidak template
     aspek_list = [
         "kemudahan mencari menu surat",
@@ -346,10 +378,35 @@ def generate_ai_text(prompt_type, max_retries=5):
         "kenyamanan antarmuka pengguna",
     ]
     
+    # Variasi awal kalimat agar AI tidak mengulangi struktur awal yang sama
+    opening_styles_pendapat = [
+        "Secara keseluruhan, saya merasa",
+        "Proses pengajuan surat di portal ini",
+        "Dashboard portal mahasiswa terasa",
+        "Saat mencoba menggunakan web ini,",
+        "Fitur pelacakan status suratnya",
+        "Menu-menu di bagian sidebar",
+        "Akses website melalui smartphone",
+        "Tampilan visual portal ini",
+        "Instruksi pengisian data di form"
+    ]
+    
+    opening_styles_saran = [
+        "Mungkin batas maksimal ukuran",
+        "Tombol berwarna merah untuk",
+        "Menu Permohonan KHS yang",
+        "Kecepatan loading saat submit",
+        "Integrasi notifikasi otomatis via",
+        "Informasi detail tentang status",
+        "Tampilan navigasi form sebaiknya",
+        "Desain halaman utama bisa"
+    ]
+    
     target_set = used_pendapat if prompt_type == "pendapat" else used_saran
     
     for attempt in range(max_retries):
         aspek = random.choice(aspek_list)
+        opening = random.choice(opening_styles_pendapat) if prompt_type == "pendapat" else random.choice(opening_styles_saran)
         
         if prompt_type == "pendapat":
             prompt = (
@@ -357,9 +414,9 @@ def generate_ai_text(prompt_type, max_retries=5):
                 "Tuliskan 1 kalimat ulasan/pendapat singkat yang santai namun tetap sopan, wajar, dan realistis (semi-formal/standar mahasiswa). "
                 f"Tuliskan pendapat yang berfokus HANYA pada aspek: '{aspek}'. "
                 "Untuk konteks, website ini memiliki menu sidebar pengajuan surat akademik (Surat Aktif Kuliah, SK Bebas Lab), form upload slip UKT dan KTM dengan dropdown peruntukkan, tabel tracking status surat (dengan DataTables search/sorting), dan banner peringatan verifikasi email di dashboard. "
+                f"PENTING: Kalimat Anda HARUS dimulai dengan frasa pembuka berikut: '{opening}' "
                 f"PENTING: Jangan sebutkan atau rangkum semua fitur di atas! Cukup pilih satu hal yang relevan dengan aspek '{aspek}' yang sedang dinilai. "
                 "Hindari bahasa kaku, tapi JANGAN menggunakan kata slang/alay yang berlebihan (seperti 'sat set', 'no debat', 'gacor', 'gokil', 'parah', dll). "
-                "Hindari awalan monoton seperti 'Website ini...', 'Menurut saya...'. "
                 "Pastikan kalimatnya unik, orisinal, pendek, dan alami. "
                 "Tuliskan teks polos saja, TANPA tanda bintang (*), tebal, miring, atau format markdown lainnya."
             )
@@ -369,9 +426,9 @@ def generate_ai_text(prompt_type, max_retries=5):
                 "Tuliskan 1 kalimat saran perbaikan singkat, membangun, dan menggunakan gaya bahasa mahasiswa yang santai namun sopan (semi-formal). "
                 f"Tuliskan saran yang berfokus HANYA pada aspek: '{aspek}'. "
                 "Untuk konteks, hal yang bisa diperbaiki di website ini antara lain: tidak adanya info batas maksimal file size upload slip UKT/KTM, tombol 'Kirim Permintaan' berwarna merah (danger) yang membingungkan, menu 'Permohonan KHS' masih under development, loading submit PDF terasa kurang cepat, atau perlunya notifikasi WhatsApp otomatis selain lewat email profil aktif. "
+                f"PENTING: Kalimat Anda HARUS dimulai dengan frasa pembuka berikut: '{opening}' "
                 f"PENTING: Jangan sebutkan atau rangkum semua kekurangan di atas! Cukup pilih satu hal yang relevan dengan aspek '{aspek}' untuk dijadikan saran perbaikan. "
                 "Hindari bahasa terlalu formal/kaku, tapi JANGAN menggunakan kata slang/alay yang berlebihan (seperti 'sat set', 'biar ga lemot', dll). "
-                "Hindari kata pembuka kaku seperti 'Saran saya...', 'Sebaiknya...', 'Diharapkan...'. "
                 "Pastikan kalimatnya unik, orisinal, pendek, dan alami. "
                 "Tuliskan teks polos saja, TANPA tanda bintang (*), tebal, miring, atau format markdown lainnya."
             )
@@ -385,7 +442,8 @@ def generate_ai_text(prompt_type, max_retries=5):
                 ai_text = re.sub(r'[*_#`~]', '', ai_text)
                 ai_text = ai_text.strip()
                 
-                if ai_text and ai_text not in target_set:
+                # Cek keunikan penuh serta kemiripan semantik
+                if ai_text and not is_too_similar(ai_text, target_set):
                     target_set.add(ai_text)
                     return ai_text
             else:
@@ -394,18 +452,18 @@ def generate_ai_text(prompt_type, max_retries=5):
             pass
             
     # Fallback jika API gagal/hasilnya duplikat terus menerus
-    for _ in range(20):
+    for _ in range(30):
         if prompt_type == "pendapat":
             val = generate_dynamic_fallback_pendapat()
         else:
             val = generate_dynamic_fallback_saran()
             
-        if val not in target_set:
+        if not is_too_similar(val, target_set):
             target_set.add(val)
             return val
             
     # Absolute fallback
-    val = (generate_dynamic_fallback_pendapat() if prompt_type == "pendapat" else generate_dynamic_fallback_saran()) + f" {random.randint(10, 99)}"
+    val = (generate_dynamic_fallback_pendapat() if prompt_type == "pendapat" else generate_dynamic_fallback_saran()) + f" {random.randint(100, 999)}"
     target_set.add(val)
     return val
 
