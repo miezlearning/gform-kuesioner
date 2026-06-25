@@ -92,7 +92,17 @@ def extract_form_structure(form_url):
         fvv = fvv_input.get("value") if fvv_input else "1"
         
         # Deteksi halaman email bawaan Google
-        has_email_page = soup.find("input", {"name": "emailAddress"}) is not None
+        # CATATAN: requests.get() hanya mengambil HTML statis (tanpa JS rendering),
+        # sehingga input emailAddress TIDAK akan ditemukan di HTML.
+        # Cara yang benar: deteksi dari FB_PUBLIC_LOAD_DATA_ metadata.
+        # raw_data[1][10][3] != None menandakan email collection aktif.
+        has_email_page = False
+        try:
+            email_setting = raw_data[1][10][3]
+            has_email_page = email_setting is not None and email_setting > 0
+        except (IndexError, TypeError):
+            # Fallback: cek HTML (mungkin berhasil di beberapa versi form)
+            has_email_page = soup.find("input", {"name": "emailAddress"}) is not None
         
         # Hitung total halaman (termasuk halaman email jika ada)
         num_pages = len(pages)
