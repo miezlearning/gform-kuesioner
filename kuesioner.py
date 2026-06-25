@@ -173,31 +173,31 @@ used_saran = set()
 
 def generate_dynamic_fallback_pendapat():
     part1 = [
-        "Secara keseluruhan, website E-Surat FT",
-        "Layanan e-surat Unmul ini",
-        "Sistem surat digital fakultas",
-        "Website E-Surat 2 FT",
-        "Menurut saya, aplikasi e-surat ini",
-        "Fitur pengajuan surat digital ini",
-        "Proses pengurusan surat lewat web ini",
+        "Secara keseluruhan, website E-Surat 2 FT",
+        "Layanan e-surat di portal mahasiswa ini",
+        "Sistem pengajuan surat digital fakultas",
+        "Website E-Surat 2 FT Unmul",
+        "Menurut saya, aplikasi e-surat baru ini",
+        "Fitur pengajuan surat akademik ini",
+        "Proses pengurusan surat secara online ini",
     ]
     part2 = [
-        "sudah sangat membantu mahasiswa,",
-        "cukup praktis dan efisien untuk digunakan,",
-        "memiliki antarmuka yang mudah dipahami,",
-        "sangat mempermudah alur administrasi,",
-        "cukup responsif saat diakses dari HP,",
-        "menawarkan proses yang lebih cepat,",
-        "cukup memotong birokrasi manual,"
+        "sudah sangat memudahkan mahasiswa,",
+        "sangat praktis dengan adanya pengelompokan menu di sidebar,",
+        "memiliki antarmuka (dashboard) yang bersih dan modern,",
+        "sangat membantu dalam efisiensi waktu,",
+        "cukup responsif ketika diakses melalui handphone,",
+        "membuat alur pengajuan dokumen menjadi lebih terstruktur,",
+        "cukup memudahkan pencarian status surat karena ada fitur pencarian,"
     ]
     part3 = [
-        "sehingga tidak perlu mengantre lama di loket.",
-        "membuat pengajuan berkas jadi lebih ringkas.",
-        "serta sangat menghemat waktu mahasiswa.",
-        "meskipun tampilannya masih perlu sedikit adaptasi.",
-        "karena fiturnya langsung tepat sasaran.",
-        "sehingga prosesnya transparan dari awal sampai akhir.",
-        "dan memudahkan pemantauan dokumen dari mana saja."
+        "sehingga tidak perlu bolak-balik ke kampus untuk menyerahkan berkas fisik.",
+        "terutama karena mahasiswa tinggal mengunggah scan slip UKT dan KTM.",
+        "serta adanya tabel tracking 'Semua Pengajuan' yang informatif.",
+        "ditambah adanya banner peringatan untuk memverifikasi email profil.",
+        "khususnya untuk mengajukan Surat Aktif Kuliah atau SK Bebas Lab secara cepat.",
+        "karena status verifikasi suratnya terlihat transparan.",
+        "sehingga mahasiswa dapat memantau progres suratnya kapan saja."
     ]
     
     p1 = random.choice(part1)
@@ -205,14 +205,14 @@ def generate_dynamic_fallback_pendapat():
     p3 = random.choice(part3)
     
     direct = [
-        "Sistemnya sangat membantu mahasiswa dalam mengurus persuratan tanpa harus ke kampus.",
-        "Tampilan web cukup bersih dan alur pengajuannya mudah dipahami bagi pengguna baru.",
-        "Proses pengajuan surat jadi lebih praktis dan tidak memakan waktu lama.",
-        "Akses website cukup lancar dan responsif saat dibuka menggunakan smartphone.",
-        "Instruksi pengisian form sudah cukup jelas sehingga meminimalisir kesalahan data.",
-        "Fitur yang disediakan sudah sangat fungsional untuk kebutuhan administrasi mahasiswa.",
-        "Secara umum, website ini mempermudah urusan administrasi persuratan mahasiswa.",
-        "Sangat menghemat waktu karena seluruh prosesnya dilakukan secara digital."
+        "Dashboard portal mahasiswa sangat rapi dengan menu navigasi sidebar yang mudah dipahami.",
+        "Proses pengajuan Surat Aktif Kuliah sangat praktis dengan pilihan peruntukkan seperti Beasiswa atau BPJS.",
+        "Adanya banner peringatan verifikasi email di dashboard sangat membantu mahasiswa agar tidak terlewat notifikasi.",
+        "Pengajuan SK Bebas Lab sangat efisien karena formulirnya singkat dan hanya memerlukan input tujuan keperluan.",
+        "Fitur tabel pelacakan pengajuan yang menggunakan sistem DataTables memudahkan pencarian status surat.",
+        "Proses upload slip UKT dan KTM pada form pengajuan surat akademik sudah berjalan dengan lancar.",
+        "Website ini mempermudah urusan administrasi persuratan tanpa harus antre fisik di loket fakultas.",
+        "Secara umum, alur pengajuan dari status 'Pengajuan Baru' hingga selesai diproses terlihat jelas."
     ]
     
     if random.random() < 0.5:
@@ -224,30 +224,30 @@ def generate_dynamic_fallback_saran():
     part1 = [
         "Mungkin kedepannya",
         "Alangkah baiknya jika",
-        "Saran saya,",
-        "Sebagai saran perbaikan,",
-        "Untuk pengembangan selanjutnya,",
-        "Harapannya,"
+        "Saran saya untuk perbaikan,",
+        "Sebagai masukan membangun,",
+        "Untuk pengembangan fitur selanjutnya,",
+        "Harapannya ke depan,"
     ]
     part2 = [
-        "kecepatan loading website bisa lebih dioptimalkan",
-        "tampilan tata letak menu dibuat lebih ringkas dan simpel",
-        "ditambahin notifikasi status surat via email",
-        "panduan atau petunjuk pengisian di halaman utama lebih diperjelas",
-        "desain antarmuka pengguna dibuat lebih modern",
-        "keamanan data saat unggah dokumen lebih ditingkatkan",
-        "tampilan versi mobile dibuat lebih ramah pengguna",
-        "disediakan kolom FAQ untuk kendala teknis"
+        "ditambahkan informasi batas ukuran file (max size) saat unggah berkas",
+        "tombol 'Kirim Permintaan' yang berwarna merah diganti dengan warna lain",
+        "menu yang masih dalam tahap pengembangan seperti 'Permohonan KHS' segera diselesaikan",
+        "kecepatan loading website lebih dioptimalkan terutama saat mengunggah dokumen",
+        "disediakan petunjuk pengisian singkat pada kolom deskripsi opsional",
+        "ditambahkan integrasi notifikasi status pengajuan via WhatsApp",
+        "tata letak form pengisian dibuat lebih ringkas di layar smartphone",
+        "status penolakan surat diberikan alasan atau catatan perbaikan yang jelas"
     ]
     part3 = [
-        "agar mahasiswa tidak menunggu lama saat mengakses.",
-        "supaya navigasi pencarian menu surat lebih cepat.",
-        "agar mahasiswa bisa memantau proses tanpa harus terus login.",
-        "khususnya bagi mahasiswa baru yang pertama kali menggunakan.",
-        "agar terkesan lebih menarik dan kekinian.",
-        "demi kenyamanan bersama dalam bertransaksi data.",
-        "sehingga nyaman saat diakses melalui smartphone.",
-        "untuk membantu mahasiswa yang mengalami kesulitan input."
+        "agar mahasiswa tidak bingung jika file slip UKT terlalu besar.",
+        "supaya tidak terkesan seperti tombol pembatalan atau terjadi error.",
+        "agar mahasiswa bisa memanfaatkan seluruh fitur layanan secara lengkap.",
+        "sehingga tidak memakan waktu lama saat submit pengajuan.",
+        "untuk membantu mahasiswa yang baru pertama kali menggunakan portal.",
+        "sehingga mahasiswa langsung tahu tanpa harus sering membuka email.",
+        "agar pengisian data lewat HP terasa lebih ramah pengguna.",
+        "agar mahasiswa tahu bagian berkas mana yang harus diperbaiki."
     ]
     
     p1 = random.choice(part1)
@@ -255,14 +255,14 @@ def generate_dynamic_fallback_saran():
     p3 = random.choice(part3)
     
     direct = [
-        "Mohon kecepatan akses website ditingkatkan terutama saat jam sibuk pengisian.",
-        "Sebaiknya ditambahkan fitur tracking status surat yang lebih detail agar mudah dipantau.",
-        "Tampilan navigasi menu mungkin bisa dibuat lebih sederhana lagi agar mudah dipahami.",
-        "Disarankan untuk mengoptimalkan tampilan mobile agar lebih responsif di berbagai perangkat.",
-        "Mungkin bisa ditambahkan panduan singkat atau petunjuk pengisian di setiap formulir.",
-        "Kecepatan respon website saat mengunggah lampiran dokumen perlu sedikit diperbaiki.",
-        "Harapannya ada integrasi notifikasi otomatis agar mahasiswa tahu jika surat sudah selesai diproses.",
-        "Desain halaman utama bisa dibuat lebih modern agar terlihat lebih profesional."
+        "Mohon batas maksimal ukuran file upload slip UKT atau KTM dicantumkan pada form.",
+        "Penggunaan warna tombol 'Kirim Permintaan' (warna merah) sebaiknya diganti agar tidak membingungkan.",
+        "Fitur notifikasi status surat bisa ditambahkan opsi WhatsApp selain melalui email aktif.",
+        "Petunjuk pengisian atau contoh format deskripsi sebaiknya disediakan langsung di bawah form.",
+        "Menu 'Permohonan KHS' yang masih dalam pengembangan diharapkan bisa segera diaktifkan.",
+        "Mohon optimalkan kecepatan respon saat melakukan pencarian surat di tabel Semua Pengajuan.",
+        "Catatan alasan penolakan surat perlu ditampilkan lebih jelas jika dokumen mahasiswa ditolak.",
+        "Desain dashboard bisa dibuat lebih modern dan ringkas lagi agar terkesan lebih profesional."
     ]
     
     if random.random() < 0.5:
@@ -329,24 +329,33 @@ def generate_ai_text(prompt_type, max_retries=5):
         
         if prompt_type == "pendapat":
             prompt = (
-                "Kamu adalah mahasiswa Universitas Mulawarman. "
-                "Tuliskan 1 kalimat ulasan/pendapat singkat yang santai namun tetap sopan dan wajar (semi-formal/standar mahasiswa) "
-                "tentang kegunaan website 'E-Surat 2 FT Unmul'. "
+                "Kamu adalah mahasiswa Universitas Mulawarman yang baru saja menggunakan website 'E-Surat 2 FT Unmul'. "
+                "Tuliskan 1 kalimat ulasan/pendapat singkat yang santai namun tetap sopan, wajar, dan realistis (semi-formal/standar mahasiswa). "
+                "Berikan ulasan berdasarkan fitur nyata berikut: "
+                "- Menu sidebar pengajuan surat akademik (Surat Aktif Kuliah, SK Bebas Lab, dll)\n"
+                "- Form upload slip UKT dan KTM serta dropdown 'Peruntukkan' (BPJS, Beasiswa, dll)\n"
+                "- Tabel pelacakan (tracking) status surat dengan DataTables search/sorting\n"
+                "- Banner peringatan di dashboard untuk memverifikasi email aktif\n"
                 f"Fokuskan ulasan pada aspek: {aspek}. "
-                "Hindari bahasa yang terlalu formal/kaku, namun JANGAN menggunakan kata slang/alay yang berlebihan (seperti 'sat set', 'no debat', 'gacor', 'gokil', 'parah', dll). "
+                "Hindari bahasa kaku, tapi JANGAN menggunakan kata slang/alay yang berlebihan (seperti 'sat set', 'no debat', 'gacor', 'gokil', 'parah', dll). "
                 "Hindari awalan monoton seperti 'Website ini...', 'Menurut saya...'. "
-                "Pastikan kalimatnya unik, orisinal, dan bervariasi. "
+                "Pastikan kalimatnya unik, orisinal, dan relevan dengan sistem tersebut. "
                 "Tuliskan teks polos saja, TANPA tanda bintang (*), tebal, miring, atau format markdown lainnya."
             )
         else:  # saran
             prompt = (
-                "Kamu adalah mahasiswa Universitas Mulawarman. "
-                "Tuliskan 1 kalimat saran perbaikan yang singkat, membangun, dan menggunakan gaya bahasa mahasiswa yang santai namun sopan (semi-formal) "
-                "untuk website 'E-Surat 2 FT Unmul' ke depannya. "
+                "Kamu adalah mahasiswa Universitas Mulawarman yang baru saja menggunakan website 'E-Surat 2 FT Unmul'. "
+                "Tuliskan 1 kalimat saran perbaikan yang singkat, membangun, dan menggunakan gaya bahasa mahasiswa yang santai namun sopan (semi-formal). "
+                "Berikan saran perbaikan berdasarkan detail nyata berikut: "
+                "- Informasi batas maksimal file size upload berkas slip UKT / KTM\n"
+                "- Warna tombol 'Kirim Permintaan' (sekarang warna merah / danger, sebaiknya warna lain)\n"
+                "- Fitur 'Permohonan KHS' yang masih berstatus 'Under Development' (Soon)\n"
+                "- Kecepatan loading saat submit formulir berkas PDF\n"
+                "- Penambahan notifikasi WhatsApp otomatis selain lewat email profil aktif\n"
                 f"Fokuskan saran pada aspek: {aspek}. "
-                "Hindari bahasa yang terlalu formal/kaku, namun JANGAN menggunakan kata slang/alay yang berlebihan (seperti 'sat set', 'biar ga lemot', dll). "
+                "Hindari bahasa terlalu formal/kaku, tapi JANGAN menggunakan kata slang/alay yang berlebihan (seperti 'sat set', 'biar ga lemot', dll). "
                 "Hindari kata pembuka kaku seperti 'Saran saya...', 'Sebaiknya...', 'Diharapkan...'. "
-                "Pastikan kalimatnya unik, orisinal, dan bervariasi. "
+                "Pastikan kalimatnya unik, orisinal, dan relevan. "
                 "Tuliskan teks polos saja, TANPA tanda bintang (*), tebal, miring, atau format markdown lainnya."
             )
             
