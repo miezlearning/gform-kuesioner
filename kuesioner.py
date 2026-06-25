@@ -26,8 +26,17 @@ TARGET_SUBMISSIONS = 5
 # =======================================================
 
 
-# Fungsi untuk mengekstrak ID pertanyaan (entry.XXXXX) secara otomatis dari Google Form
-def extract_form_fields(form_url):
+def extract_form_structure(form_url):
+    """
+    Mengekstrak struktur lengkap Google Form termasuk:
+    - Pertanyaan per halaman (page) beserta entry ID-nya
+    - Data session (fbzx, fvv)
+    - Mendeteksi apakah ada halaman email bawaan Google
+    
+    Google Forms multi-page mengirim data dengan format khusus:
+    - Halaman-halaman SEBELUM halaman terakhir -> dikirim via parameter 'partialResponse' (JSON)
+    - Halaman TERAKHIR -> dikirim sebagai top-level entry.XXXX fields biasa
+    """
     print("Sedang mengambil struktur Google Form secara otomatis...")
     try:
         response = requests.get(form_url, timeout=15)
@@ -36,7 +45,6 @@ def extract_form_fields(form_url):
             return None
             
         html = response.text
-        # Mencari data skeleton google form di dalam tag script
         match = re.search(r'FB_PUBLIC_LOAD_DATA_ = (.*?);', html, flags=re.S)
         if not match:
             print("Gagal menemukan struktur data form. Pastikan link gform Anda benar.")
@@ -45,18 +53,36 @@ def extract_form_fields(form_url):
         raw_data = json.loads(match.group(1))
         questions_list = raw_data[1][1]
         
-        mapped_fields = {}
+        # Kelompokkan pertanyaan per halaman (page)
+        # type_code 8 = Section Header (page break)
+        pages = []
+        current_page_fields = []
+        
         for item in questions_list:
             try:
-                # item[1] adalah label/teks pertanyaan
-                label = item[1].strip()
-                # item[4][0][0] adalah ID input uniknya (angka entry)
-                entry_id = f"entry.{item[4][0][0]}"
-                mapped_fields[label] = entry_id
+                type_code = item[3]
+                if type_code == 8:
+                    # Section header = mulai halaman baru
+                    # Simpan halaman sebelumnya (jika ada field)
+                    if current_page_fields:
+                        pages.append(current_page_fields)
+                    current_page_fields = []
+                else:
+                    label = item[1].strip()
+                    entry_id = item[4][0][0]  # Numeric ID tanpa prefix "entry."
+                    current_page_fields.append({
+                        "label": label,
+                        "entry_id": entry_id,
+                        "type": type_code  # 0=text, 1=textarea, 2=radio, 5=scale
+                    })
             except (IndexError, TypeError):
                 continue
-                
-        # Ekstrak data session (fbzx, fvv, pageHistory) untuk validasi form
+        
+        # Jangan lupa simpan halaman terakhir
+        if current_page_fields:
+            pages.append(current_page_fields)
+        
+        # Ekstrak data session (fbzx, fvv)
         soup = BeautifulSoup(html, "html.parser")
         
         fbzx_input = soup.find("input", {"name": "fbzx"})
@@ -65,40 +91,38 @@ def extract_form_fields(form_url):
         fvv_input = soup.find("input", {"name": "fvv"})
         fvv = fvv_input.get("value") if fvv_input else "1"
         
-        # Hitung jumlah halaman secara dinamis dari section break (type code 8)
-        num_pages = 0
-        for item in questions_list:
-            try:
-                if item[3] == 8:
-                    num_pages += 1
-            except (IndexError, TypeError):
-                continue
-        if num_pages == 0:
-            num_pages = 1
-            
-        # Cek apakah Google Form mengaktifkan pengumpulan email bawaan (Responder Input)
-        # Jika ya, halaman pengisian email dipisahkan di paling awal (Halaman 0),
-        # sehingga jumlah total halaman bertambah 1.
+        # Deteksi halaman email bawaan Google
         has_email_page = soup.find("input", {"name": "emailAddress"}) is not None
-        if has_email_page:
-            num_pages += 1
-            
-        pageHistory = ",".join(str(i) for i in range(num_pages))
         
-        session_data = {
+        # Hitung total halaman (termasuk halaman email jika ada)
+        num_pages = len(pages)
+        if has_email_page:
+            num_pages += 1  # Halaman email dihitung sebagai Page 0
+            
+        page_history = ",".join(str(i) for i in range(num_pages))
+        
+        # Print struktur untuk debugging
+        total_fields = sum(len(p) for p in pages)
+        print(f"Berhasil mendeteksi {total_fields} pertanyaan dalam {len(pages)} halaman.")
+        if has_email_page:
+            print(f"  Page 0: Email (bawaan Google Forms)")
+        for pi, page in enumerate(pages):
+            page_num = pi + 1 if has_email_page else pi
+            print(f"  Page {page_num}: {len(page)} pertanyaan")
+            for field in page:
+                print(f"    - entry.{field['entry_id']} -> '{field['label']}' (type={field['type']})")
+        print("-" * 50)
+        
+        return {
+            "pages": pages,
             "fbzx": fbzx,
             "fvv": fvv,
-            "pageHistory": pageHistory
+            "has_email_page": has_email_page,
+            "page_history": page_history,
         }
-                
-        print(f"Berhasil mendeteksi {len(mapped_fields)} pertanyaan dari Google Form.")
-        for label, entry in mapped_fields.items():
-            print(f"  - '{label}' -> {entry}")
-        print("-" * 50)
-        return mapped_fields, session_data
         
     except Exception as e:
-        print(f"Terjadi error saat ekstraksi ID form: {e}")
+        print(f"Terjadi error saat ekstraksi struktur form: {e}")
         return None
 
 
@@ -164,14 +188,88 @@ def generate_ai_text(prompt_type):
             return "Saran saya adalah meningkatkan kecepatan respon web agar tidak lambat saat diakses."
 
 
+def generate_field_value(field, nama, nim, angkatan, pendapat, saran, email):
+    """
+    Menentukan nilai untuk setiap field berdasarkan label dan tipe pertanyaan.
+    """
+    lbl_lower = field["label"].lower()
+    
+    if "nama" in lbl_lower:
+        return nama
+    elif "nim" in lbl_lower:
+        return nim
+    elif "angkatan" in lbl_lower:
+        return angkatan
+    elif "pendapat" in lbl_lower:
+        return pendapat
+    elif "saran" in lbl_lower:
+        return saran
+    elif "email" in lbl_lower:
+        return email
+    else:
+        # Pertanyaan skala (Type 5 = linear scale, Type 2 = radio)
+        return generate_scale_answer()
+
+
+def build_partial_response(pages_data, fbzx, email):
+    """
+    Membangun parameter 'partialResponse' untuk Google Forms multi-page.
+    
+    Format partialResponse (JSON string):
+    [
+      [
+        [null, entryId1, ["value1"], 0],
+        [null, entryId2, ["value2"], 0],
+        ...
+      ],
+      null,
+      "fbzx_value",
+      null,
+      null,
+      null,
+      "email@address.com",
+      1
+    ]
+    
+    pages_data = list of (entry_id, value) tuples untuk semua halaman SEBELUM halaman terakhir
+    """
+    entries = []
+    for entry_id, value in pages_data:
+        entries.append([None, entry_id, [str(value)], 0])
+    
+    partial = [
+        entries,
+        None,
+        fbzx,
+        None,
+        None,
+        None,
+        email,
+        1
+    ]
+    
+    return json.dumps(partial, separators=(',', ':'))
+
+
 # Fungsi utama proses pengisian otomatis
 def run_auto_fill():
-    # 1. Ekstrak mapping pertanyaan dari Google Form secara otomatis
-    result = extract_form_fields(FORM_URL)
-    if not result:
-        print("Ekstraksi ID form gagal. Proses dihentikan.")
+    # 1. Ekstrak struktur lengkap Google Form
+    form_data = extract_form_structure(FORM_URL)
+    if not form_data:
+        print("Ekstraksi struktur form gagal. Proses dihentikan.")
         return
-    mapped_fields, session_data = result
+    
+    pages = form_data["pages"]
+    fbzx = form_data["fbzx"]
+    fvv = form_data["fvv"]
+    has_email_page = form_data["has_email_page"]
+    page_history = form_data["page_history"]
+    
+    if len(pages) < 2:
+        print("Form hanya memiliki 1 halaman. Menggunakan mode submit biasa.")
+        # Fallback untuk form 1 halaman (tanpa partialResponse)
+        # ... (tidak diperlukan untuk form ini)
+        return
 
     # 2. Load data mahasiswa dari CSV
     all_students = load_students_from_csv(CSV_FILE_PATH)
@@ -208,49 +306,85 @@ def run_auto_fill():
         pendapat = generate_ai_text("pendapat")
         saran = generate_ai_text("saran")
         
-        # Susun payload data dinamis berdasarkan hasil ekstrak otomatis
-        payload = {}
-        payload.update(session_data)
-        has_manual_email = False
+        # ============================================================
+        # STEP 1: Generate values untuk SEMUA halaman
+        # ============================================================
+        all_page_values = []  # List of lists: [[{entry_id, value}, ...], ...]
         
-        for label, entry_id in mapped_fields.items():
-            lbl_lower = label.lower()
+        for page in pages:
+            page_values = []
+            for field in page:
+                value = generate_field_value(field, nama, nim, angkatan, pendapat, saran, email)
+                page_values.append({
+                    "entry_id": field["entry_id"],
+                    "value": value,
+                    "label": field["label"]
+                })
+            all_page_values.append(page_values)
+        
+        # ============================================================
+        # STEP 2: Build partialResponse dari halaman 1 s/d N-1
+        #         (semua halaman KECUALI halaman terakhir)
+        # ============================================================
+        partial_entries = []
+        for page_values in all_page_values[:-1]:  # Semua halaman kecuali terakhir
+            for field_val in page_values:
+                partial_entries.append((field_val["entry_id"], field_val["value"]))
+        
+        partial_response_json = build_partial_response(partial_entries, fbzx, email)
+        
+        # ============================================================
+        # STEP 3: Build top-level payload dari halaman TERAKHIR saja
+        # ============================================================
+        last_page = all_page_values[-1]
+        
+        payload = {}
+        for field_val in last_page:
+            entry_key = f"entry.{field_val['entry_id']}"
+            payload[entry_key] = field_val["value"]
             
-            if "nama" in lbl_lower:
-                payload[entry_id] = nama
-            elif "nim" in lbl_lower:
-                payload[entry_id] = nim
-            elif "angkatan" in lbl_lower:
-                payload[entry_id] = angkatan
-            elif "pendapat" in lbl_lower:
-                payload[entry_id] = pendapat
-            elif "saran" in lbl_lower:
-                payload[entry_id] = saran
-            elif "email" in lbl_lower:
-                payload[entry_id] = email
-                has_manual_email = True
-            else:
-                # Jika tidak cocok dengan kriteria di atas, diasumsikan sebagai pertanyaan skala (1-5)
-                payload[entry_id] = generate_scale_answer()
-                
-        # Jika gform menggunakan sistem pengumpulan email bawaan (bukan pertanyaan teks biasa)
-        if not has_manual_email:
+            # Untuk pertanyaan tipe scale (Type 5), Google Forms juga mengirim sentinel field
+            # Sentinel field dikirim dengan value kosong sebagai marker
+            # Cari type dari field asli di pages
+            for field in pages[-1]:
+                if field["entry_id"] == field_val["entry_id"] and field["type"] == 5:
+                    payload[f"{entry_key}_sentinel"] = ""
+                    break
+        
+        # Tambahkan parameter session dan partialResponse
+        payload["fvv"] = fvv
+        payload["partialResponse"] = partial_response_json
+        payload["pageHistory"] = page_history
+        payload["fbzx"] = fbzx
+        payload["submissionTimestamp"] = str(int(time.time() * 1000))
+        
+        # Jika gform menggunakan email bawaan
+        if has_email_page:
             payload["emailAddress"] = email
             
         headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+            "Content-Type": "application/x-www-form-urlencoded",
+            "Origin": "https://docs.google.com",
+            "Referer": f"{FORM_URL.replace('/viewform', '/formResponse')}",
         }
         
         try:
             response = requests.post(submit_url, data=payload, headers=headers)
             if response.status_code == 200:
-                print(f"[{index+1}/{num_to_select}] Sukses mengirim respon: {nama} ({nim} - {angkatan})")
+                # Verifikasi bahwa respon benar-benar berhasil (bukan error page)
+                success = "freebirdFormviewerViewResponseConfirmationMessage" in response.text or \
+                          "Jawaban Anda telah direkam" in response.text
+                if success:
+                    print(f"[{index+1}/{num_to_select}] ✓ Sukses mengirim respon: {nama} ({nim} - {angkatan})")
+                else:
+                    print(f"[{index+1}/{num_to_select}] ⚠ Dikirim tapi mungkin ada validasi error: {nama}")
                 print(f"    > Pendapat: {pendapat}")
                 print(f"    > Saran   : {saran}\n")
             else:
-                print(f"[{index+1}/{num_to_select}] Gagal mengirim untuk {nama}. Kode Status: {response.status_code}\n")
+                print(f"[{index+1}/{num_to_select}] ✗ Gagal mengirim untuk {nama}. Kode Status: {response.status_code}\n")
         except Exception as e:
-            print(f"[{index+1}/{num_to_select}] Error saat mengirim data {nama}: {e}\n")
+            print(f"[{index+1}/{num_to_select}] ✗ Error saat mengirim data {nama}: {e}\n")
             
         # Jeda pengiriman acak (3-7 detik)
         time.sleep(random.randint(3, 7))
