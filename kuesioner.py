@@ -75,6 +75,14 @@ def extract_form_fields(form_url):
                 continue
         if num_pages == 0:
             num_pages = 1
+            
+        # Cek apakah Google Form mengaktifkan pengumpulan email bawaan (Responder Input)
+        # Jika ya, halaman pengisian email dipisahkan di paling awal (Halaman 0),
+        # sehingga jumlah total halaman bertambah 1.
+        has_email_page = soup.find("input", {"name": "emailAddress"}) is not None
+        if has_email_page:
+            num_pages += 1
+            
         pageHistory = ",".join(str(i) for i in range(num_pages))
         
         session_data = {
