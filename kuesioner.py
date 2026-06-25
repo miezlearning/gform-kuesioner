@@ -4,6 +4,7 @@ import re
 import random
 import time
 import requests
+from bs4 import BeautifulSoup
 
 # ==================== CONFIGURATION ====================
 # 1. Nama file CSV database Anda
@@ -50,11 +51,29 @@ def extract_form_fields(form_url):
             except (IndexError, TypeError):
                 continue
                 
+        # Ekstrak data session (fbzx, fvv, pageHistory) untuk validasi form
+        soup = BeautifulSoup(html, "html.parser")
+        
+        fbzx_input = soup.find("input", {"name": "fbzx"})
+        fbzx = fbzx_input.get("value") if fbzx_input else ""
+        
+        fvv_input = soup.find("input", {"name": "fvv"})
+        fvv = fvv_input.get("value") if fvv_input else "1"
+        
+        pageHistory_input = soup.find("input", {"name": "pageHistory"})
+        pageHistory = pageHistory_input.get("value") if pageHistory_input else "0"
+        
+        session_data = {
+            "fbzx": fbzx,
+            "fvv": fvv,
+            "pageHistory": pageHistory
+        }
+                
         print(f"Berhasil mendeteksi {len(mapped_fields)} pertanyaan dari Google Form.")
         for label, entry in mapped_fields.items():
             print(f"  - '{label}' -> {entry}")
         print("-" * 50)
-        return mapped_fields
+        return mapped_fields, session_data
         
     except Exception as e:
         print(f"Terjadi error saat ekstraksi ID form: {e}")
@@ -112,7 +131,7 @@ def generate_ai_text(prompt_type):
         response = requests.get(AI_API_URL, params={"text": prompt}, timeout=15)
         if response.status_code == 200:
             data = response.json()
-            ai_text = data.get("result") or data.get("response") or data.get("reply") or str(data)
+            ai_text = data.get("text") or data.get("result") or data.get("response") or data.get("reply") or str(data)
             return ai_text.strip().replace('"', '')
         else:
             raise Exception(f"API Error Status: {response.status_code}")
@@ -126,10 +145,11 @@ def generate_ai_text(prompt_type):
 # Fungsi utama proses pengisian otomatis
 def run_auto_fill():
     # 1. Ekstrak mapping pertanyaan dari Google Form secara otomatis
-    mapped_fields = extract_form_fields(FORM_URL)
-    if not mapped_fields:
+    result = extract_form_fields(FORM_URL)
+    if not result:
         print("Ekstraksi ID form gagal. Proses dihentikan.")
         return
+    mapped_fields, session_data = result
 
     # 2. Load data mahasiswa dari CSV
     all_students = load_students_from_csv(CSV_FILE_PATH)
@@ -168,6 +188,7 @@ def run_auto_fill():
         
         # Susun payload data dinamis berdasarkan hasil ekstrak otomatis
         payload = {}
+        payload.update(session_data)
         has_manual_email = False
         
         for label, entry_id in mapped_fields.items():
