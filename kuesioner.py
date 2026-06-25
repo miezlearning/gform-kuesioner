@@ -169,18 +169,37 @@ def generate_scale_answer():
 
 # Fungsi untuk memanggil API GPT untuk mendapatkan ulasan/saran
 def generate_ai_text(prompt_type):
+    # Kumpulan aspek acak agar jawaban bervariasi dan tidak template
+    aspek_list = [
+        "kemudahan mencari menu surat",
+        "kecepatan loading atau respon website",
+        "tampilan visual yang rapi dan modern",
+        "kejelasan instruksi pengisian form",
+        "proses pengajuan surat yang praktis",
+        "aksesibilitas saat dibuka di handphone",
+        "kenyamanan antarmuka pengguna",
+    ]
+    aspek = random.choice(aspek_list)
+
     if prompt_type == "pendapat":
         prompt = (
-            "Kamu adalah mahasiswa teknik informatika Universitas Mulawarman. "
-            "Tuliskan 1 kalimat ulasan/pendapat singkat dan santai (dalam Bahasa Indonesia) "
+            "Kamu adalah mahasiswa teknik informatika Universitas Mulawarman (anak Gen Z). "
+            "Tuliskan 1 kalimat ulasan/pendapat singkat dan sangat santai memakai bahasa gaul/casual anak Gen Z "
+            "(seperti menggunakan kata 'ngebantu', 'ga ribet', 'sat set', 'lumayan', 'enak banget', 'friendly', dll.) "
             "tentang kegunaan website 'E-Surat 2 FT Unmul'. "
-            "Berikan ulasan yang positif tapi realistis. Jangan gunakan emoji dan jangan terlalu formal."
+            f"Fokuskan ulasan pada aspek: {aspek}. "
+            "PENTING: Jangan pakai bahasa baku, kaku, atau formal. Hindari awalan monoton seperti 'Website ini...', 'Menurut saya...'. "
+            "Tuliskan teks polos saja, TANPA tanda bintang (*), tebal, miring, atau format markdown lainnya."
         )
     else:  # saran
         prompt = (
-            "Kamu adalah mahasiswa teknik informatika Universitas Mulawarman. "
-            "Tuliskan 1 kalimat saran perbaikan yang singkat, logis, dan membangun (dalam Bahasa Indonesia) "
-            "untuk website 'E-Surat 2 FT Unmul' ke depannya. Jangan gunakan emoji."
+            "Kamu adalah mahasiswa teknik informatika Universitas Mulawarman (anak Gen Z). "
+            "Tuliskan 1 kalimat saran perbaikan yang singkat, santai, dan membangun memakai gaya bahasa anak Gen Z "
+            "(seperti menggunakan kata 'biar ga lemot', 'dibikin lebih gercep', 'mobile-friendly', 'tampilan makin rapi', dll.) "
+            "untuk website 'E-Surat 2 FT Unmul' ke depannya. "
+            f"Fokuskan saran pada aspek: {aspek}. "
+            "PENTING: Jangan pakai bahasa baku atau kata pembuka kaku seperti 'Saran saya...', 'Sebaiknya...', 'Diharapkan...'. "
+            "Tuliskan teks polos saja, TANPA tanda bintang (*), tebal, miring, atau format markdown lainnya."
         )
         
     try:
@@ -188,14 +207,30 @@ def generate_ai_text(prompt_type):
         if response.status_code == 200:
             data = response.json()
             ai_text = data.get("text") or data.get("result") or data.get("response") or data.get("reply") or str(data)
-            return ai_text.strip().replace('"', '').replace('\u2011', '-')
+            # Bersihkan tanda petik, dash khusus, dan semua tanda formatting markdown (seperti *)
+            ai_text = ai_text.strip().replace('"', '').replace('\u2011', '-')
+            ai_text = re.sub(r'[*_#`~]', '', ai_text)
+            return ai_text.strip()
         else:
             raise Exception(f"API Error Status: {response.status_code}")
     except Exception as e:
         if prompt_type == "pendapat":
-            return "Secara umum penggunaan website E-Surat ini cukup membantu urusan administrasi mahasiswa."
+            # Berikan beberapa fallback acak bergaya Gen Z
+            fallback_pendapat = [
+                "Jujur ngebantu banget sih buat urusan surat, ga perlu ribet antre lagi.",
+                "UI-nya udah lumayan friendly dan gampang dipahami pas pertama kali nyoba.",
+                "Mantap sih, proses ajuin suratnya jadi kerasa sat set dan ga banyak drama.",
+                "Ringan banget pas dibuka lewat HP, jadi bisa ajuin surat kapan aja."
+            ]
+            return random.choice(fallback_pendapat)
         else:
-            return "Saran saya adalah meningkatkan kecepatan respon web agar tidak lambat saat diakses."
+            fallback_saran = [
+                "Mungkin servernya bisa di-upgrade dikit biar ga lemot pas lagi banyak yang akses.",
+                "Tampilan mobile-nya tolong dibikin lebih responsif biar pas dibuka di HP makin enak dilihat.",
+                "Kalau bisa ada notif lewat email atau WA biar kita tau progres suratnya udah sampai mana.",
+                "Tata letak menunya dibikin lebih simpel lagi biar makin gercep pas nyari fitur."
+            ]
+            return random.choice(fallback_saran)
 
 
 def generate_field_value(field, nama, nim, angkatan, pendapat, saran, email):
