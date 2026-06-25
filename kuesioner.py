@@ -3,8 +3,13 @@ import json
 import re
 import random
 import time
+import sys
 import requests
 from bs4 import BeautifulSoup
+
+# Pastikan output terminal mendukung UTF-8 agar tidak terjadi crash encoding pada Windows
+if hasattr(sys.stdout, 'reconfigure'):
+    sys.stdout.reconfigure(encoding='utf-8')
 
 # ==================== CONFIGURATION ====================
 # 1. Nama file CSV database Anda
@@ -17,7 +22,7 @@ FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSf7Ru04vJTdsVA8QkimGY8sGy2o
 AI_API_URL = "https://apis.prexzyvilla.site/ai/gpt-5"
 
 # 4. Target jumlah pengisian kuesioner yang Anda inginkan kali ini
-TARGET_SUBMISSIONS = 1 
+TARGET_SUBMISSIONS = 5 
 # =======================================================
 
 
@@ -132,7 +137,7 @@ def generate_ai_text(prompt_type):
         if response.status_code == 200:
             data = response.json()
             ai_text = data.get("text") or data.get("result") or data.get("response") or data.get("reply") or str(data)
-            return ai_text.strip().replace('"', '')
+            return ai_text.strip().replace('"', '').replace('\u2011', '-')
         else:
             raise Exception(f"API Error Status: {response.status_code}")
     except Exception as e:
