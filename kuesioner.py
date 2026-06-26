@@ -3,21 +3,21 @@ import random
 import sys
 from typing import Dict, Any
 
-from config import (
+from src.config import (
     CSV_FILE_PATH,
     FORM_URL,
     TARGET_SUBMISSIONS,
     SUBMISSION_DELAY_MIN,
     SUBMISSION_DELAY_MAX
 )
-from csv_helper import load_students_from_csv
-from form_handler import GoogleFormHandler
-from generators import (
+from src.csv_helper import load_students_from_csv
+from src.form_handler import GoogleFormHandler
+from src.generators import (
     format_natural_name,
     generate_varied_email,
     generate_scale_answer
 )
-from ai_handler import AITextGenerator
+from src.ai_handler import AITextGenerator
 
 # Pastikan output terminal mendukung UTF-8 agar tidak terjadi crash encoding pada Windows
 if hasattr(sys.stdout, 'reconfigure'):
@@ -73,7 +73,6 @@ def run_auto_fill():
     
     if len(pages) < 2:
         print("Form hanya memiliki 1 halaman. Menggunakan mode submit biasa.")
-        # Fallback submit biasa bisa diimplementasikan di sini jika dibutuhkan di kemudian hari
         return
 
     # 3. Load data mahasiswa dari file CSV

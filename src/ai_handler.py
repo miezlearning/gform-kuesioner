@@ -2,8 +2,8 @@ import requests
 import random
 import re
 from typing import Set
-from config import AI_API_URL
-from generators import is_too_similar, get_fallback_text
+from .config import AI_API_URL
+from .generators import is_too_similar, get_fallback_text
 
 class AITextGenerator:
     """
