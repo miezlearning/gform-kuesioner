@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E-Surat 2 FT Unmul - Auto Questionnaire Filler</title>
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom Style -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar: Settings -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <i class="fa-solid fa-gears icon-accent"></i>
+                <h2>Pengaturan</h2>
+            </div>
+            
+            <form id="settings-form" class="settings-form">
+                <div class="form-group">
+                    <label for="form-url">
+                        <i class="fa-solid fa-link"></i> URL Google Form
+                    </label>
+                    <input type="url" id="form-url" placeholder="https://docs.google.com/forms/..." required>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="target-submissions">
+                            <i class="fa-solid fa-bullseye"></i> Target Responden
+                        </label>
+                        <input type="number" id="target-submissions" min="1" required>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="delay-min">
+                            <i class="fa-solid fa-hourglass-start"></i> Delay Min (detik)
+                        </label>
+                        <input type="number" id="delay-min" min="0" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="delay-max">
+                            <i class="fa-solid fa-hourglass-end"></i> Delay Max (detik)
+                        </label>
+                        <input type="number" id="delay-max" min="0" required>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>
+                        <i class="fa-solid fa-chart-pie"></i> Mode Distribusi Acak
+                    </label>
+                    <div class="radio-group">
+                        <label class="radio-label">
+                            <input type="radio" name="distribution-mode" value="rata" checked>
+                            <span class="radio-custom"></span>
+                            Bagi Rata
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="distribution-mode" value="proporsional">
+                            <span class="radio-custom"></span>
+                            Proporsional
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="distribution-mode" value="kustom">
+                            <span class="radio-custom"></span>
+                            Kustom Bobot (%)
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="sidebar-footer">
+                    <button type="submit" id="btn-start" class="btn btn-primary btn-block">
+                        <i class="fa-solid fa-play"></i> Mulai Pengisian
+                    </button>
+                    <button type="button" id="btn-stop" class="btn btn-danger btn-block hidden">
+                        <i class="fa-solid fa-stop"></i> Batal / Hentikan
+                    </button>
+                </div>
+            </form>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="main-header">
+                <div class="brand">
+                    <h1>E-Surat 2 FT Unmul</h1>
+                    <p>Auto Questionnaire Filler Panel</p>
+                </div>
+                <div class="server-status">
+                    <span class="status-dot online"></span>
+                    <span id="status-text">Terhubung</span>
+                </div>
+            </header>
+
+            <!-- Dashboard Cohorts Cards -->
+            <section class="dashboard-section">
+                <div class="section-title">
+                    <i class="fa-solid fa-users"></i>
+                    <h3>Dataset Angkatan Mahasiswa</h3>
+                    <div class="action-buttons">
+                        <button id="btn-select-all" class="btn-text"><i class="fa-solid fa-check-double"></i> Pilih Semua</button>
+                        <button id="btn-deselect-all" class="btn-text"><i class="fa-solid fa-times"></i> Hapus Pilihan</button>
+                        <button id="btn-reset-history" class="btn btn-warning"><i class="fa-solid fa-trash-can"></i> Reset Riwayat</button>
+                    </div>
+                </div>
+
+                <div id="cohorts-grid" class="cohorts-grid">
+                    <!-- Dynamic Cohort Cards will be injected here -->
+                    <div class="loading-placeholder">
+                        <i class="fa-solid fa-circle-notch fa-spin"></i> Memuat data...
+                    </div>
+                </div>
+                
+                <div id="custom-weight-alert" class="weight-total-bar hidden">
+                    <span>Total Bobot Kustom: <strong id="weight-total-percentage">0%</strong></span>
+                    <span id="weight-validation-msg" class="validation-error"><i class="fa-solid fa-triangle-exclamation"></i> Total persen harus bernilai 100%!</span>
+                </div>
+            </section>
+
+            <!-- Real-time Progress -->
+            <section class="progress-section hidden" id="progress-container">
+                <div class="progress-header">
+                    <span>Progres Pengisian: <strong id="progress-text">0/0</strong></span>
+                    <div class="progress-stats">
+                        <span class="stat-success"><i class="fa-solid fa-circle-check"></i> Sukses: <strong id="stat-success-count">0</strong></span>
+                        <span class="stat-failed"><i class="fa-solid fa-circle-xmark"></i> Gagal: <strong id="stat-failed-count">0</strong></span>
+                    </div>
+                </div>
+                <div class="progress-bar-container">
+                    <div class="progress-bar-fill" id="progress-bar-fill" style="width: 0%;"></div>
+                </div>
+            </section>
+
+            <!-- Terminal Output -->
+            <section class="terminal-section">
+                <div class="terminal-header">
+                    <div class="terminal-title">
+                        <i class="fa-solid fa-terminal"></i>
+                        <span>Live Execution Terminal Logs</span>
+                    </div>
+                    <div class="terminal-actions">
+                        <button id="btn-clear-terminal" class="btn-icon" title="Bersihkan Terminal">
+                            <i class="fa-solid fa-eraser"></i>
+                        </button>
+                        <button id="btn-toggle-autoscroll" class="btn-icon active" title="Auto-scroll Kebawah">
+                            <i class="fa-solid fa-arrow-down"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="terminal-body" id="terminal-body">
+                    <div class="terminal-line system">Sistem siap. Atur konfigurasi dan pilih angkatan untuk memulai.</div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Confirm Modal -->
+    <div id="modal-confirm" class="modal-overlay hidden">
+        <div class="modal-box">
+            <h3>Konfirmasi Reset Riwayat</h3>
+            <p>Apakah Anda yakin ingin mereset riwayat pengisian? Semua data mahasiswa yang terisi (NIM terdaftar) akan dihapus dari riwayat sehingga mereka dapat dipilih kembali.</p>
+            <div class="modal-actions">
+                <button id="btn-confirm-cancel" class="btn btn-secondary">Batal</button>
+                <button id="btn-confirm-reset" class="btn btn-danger">Ya, Reset</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
