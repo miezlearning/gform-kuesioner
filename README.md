@@ -1,95 +1,54 @@
-# 📋 Google Forms Questionnaire Auto-Filler (Kuesioner Auto)
+# 📋 Google Forms Questionnaire Auto-Filler
 
-[![Python Version](https://img.shields.io/badge/Python-3.8+-blue?style=flat-square&logo=python)](https://www.python.org/)
+[![Python](https://img.shields.io/badge/Python-3.8+-blue?style=flat-square&logo=python)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg?style=flat-square)](https://opensource.org/licenses/MIT)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-orange.svg?style=flat-square)](https://github.com/)
 
-Script otomatisasi pengisian Google Forms multi-page secara cerdas dan natural menggunakan dataset responden dari file CSV, dilengkapi dengan generator data realistis dan ulasan dinamis berbasis AI GPT.
-
----
-
-## ✨ Fitur Utama
-
-- **🧠 AI-Powered & Anti-Duplicate**: Menghasilkan ulasan (pendapat & saran) dinamis yang unik via GPT API dengan sistem filter *Jaccard Similarity* & *Prefix Matching* untuk mencegah adanya teks duplikat.
-- **🛡️ Fallback System**: Menyediakan template jawaban cadangan secara lokal yang siap digunakan apabila API mengalami kendala atau kehabisan limit.
-- **⚡ Auto-Scraping**: Mendeteksi struktur Google Form secara dinamis (ID entry, linear scale, tipe masukan, session `fbzx`, dan halaman email bawaan) tanpa perlu inspect HTML manual.
-- **📂 Multi-Page Support**: Mendukung pengisian Google Forms dengan banyak halaman menggunakan pemrosesan parameter `partialResponse`.
-- **🎭 Human-Like Simulation**:
-  - Profiling kepuasan responden secara acak (*sangat puas*, *kritis*, atau *rata-rata*).
-  - Variasi format pengetikan nama (*Title Case*, *lowercase*, *UPPERCASE*).
-  - Variasi gaya pembuatan email fiktif (gamer tag, nama inisial, singkatan).
-  - Jeda acak antar pengisian (random sleep) untuk menghindari deteksi bot.
-- **📦 Modular & CLI-Ready**: Kode terstruktur rapi dan memiliki versi CLI untuk kemudahan penggunaan lewat terminal.
+Script otomatisasi pengisian Google Forms multi-page secara cerdas dan natural menggunakan database responden dari file CSV, dilengkapi ulasan dinamis berbasis AI GPT.
 
 ---
 
-## 🛠️ Struktur Repositori
+## 📂 Struktur Proyek
 
-```text
-kuesioner_auto/
-│
-├── cli/
-│   └── kuesioner_cli.py     # Script eksekusi versi Command-Line Interface (CLI)
-│
-├── dataset/
-│   ├── 2024.csv             # Contoh database responden mahasiswa angkatan 2024
-│   └── 2025.csv             # Contoh database responden mahasiswa angkatan 2025
-│
-├── src/                     # Paket Modul Pendukung (Helper Modules)
-│   ├── __init__.py          # Penanda package python
-│   ├── config.py            # Konfigurasi konstan (URL Form, API, target, dll)
-│   ├── csv_helper.py        # Helper pemroses & pembaca data CSV
-│   ├── generators.py        # Logika pembuat data acak (nama, email, skala)
-│   ├── ai_handler.py        # Modul integrasi GPT API & ulasan dinamis
-│   └── form_handler.py      # Pengelola parsing & submit payload ke Google Form
-│
-├── kuesioner.py             # Script eksekusi utama versi standar (GUI/Default config)
-└── README.md                # Dokumentasi proyek
-```
+Klik pada folder atau berkas di bawah untuk membuka secara langsung:
+
+* 📂 **[cli/](./cli/)** - Folder eksekusi antarmuka terminal
+  * 📄 **[kuesioner_cli.py](./cli/kuesioner_cli.py)** - Script utama versi CLI
+* 📂 **[dataset/](./dataset/)** - Folder penyimpanan database mahasiswa (CSV)
+  * 📄 **[2024.csv](./dataset/2024.csv)** & **[2025.csv](./dataset/2025.csv)** - Sampel data responden
+* 📂 **[src/](./src/)** - Folder modul pembantu (Helpers)
+  * 📄 **[config.py](./src/config.py)** - Parameter konfigurasi default
+  * 📄 **[csv_helper.py](./src/csv_helper.py)** - Loader & parser berkas CSV
+  * 📄 **[generators.py](./src/generators.py)** - Generator data acak (nama, email, skala)
+  * 📄 **[ai_handler.py](./src/ai_handler.py)** - Integrator AI GPT & ulasan dinamis
+  * 📄 **[form_handler.py](./src/form_handler.py)** - Parser form & submit payload
+* 📄 **[kuesioner.py](./kuesioner.py)** - Script eksekusi utama (Default/GUI)
+* 📄 **[requirements.txt](./requirements.txt)** - Daftar dependensi pustaka python
 
 ---
 
 ## 🚀 Cara Penggunaan
 
 ### 1. Instalasi Dependensi
-Pastikan Anda memiliki Python 3.8+ dan jalankan instalasi dependensi berikut:
+Jalankan perintah ini di terminal Anda untuk menginstal pustaka yang diperlukan:
 ```bash
-pip install requests beautifulsoup4
+pip install -r requirements.txt
 ```
 
-### 2. Jalankan Versi Standar (Default)
-Menggunakan konfigurasi langsung dari berkas `src/config.py`:
+### 2. Menjalankan Script Standar
+Gunakan konfigurasi default yang ada di dalam `src/config.py`:
 ```bash
 python kuesioner.py
 ```
 
-### 3. Jalankan Versi CLI (Fleksibel)
-Anda dapat mengirim argumen masukan secara dinamis langsung lewat terminal:
+### 3. Menjalankan Script CLI
+Gunakan argumen terminal jika ingin merubah parameter secara dinamis:
 ```bash
-# Menampilkan menu bantuan & daftar argumen yang tersedia
+# Menampilkan menu bantuan & argumen
 python cli/kuesioner_cli.py --help
 
-# Menjalankan dengan target 10 pengisian
+# Mengisi kuesioner dengan target 10 responden
 python cli/kuesioner_cli.py --target 10
 
-# Menjalankan dengan file CSV dan form URL kustom
+# Mengisi kuesioner dengan berkas CSV dan URL kustom
 python cli/kuesioner_cli.py --csv dataset/2024.csv --url "https://docs.google.com/forms/d/e/.../viewform" --target 5
-
-# Mengatur jeda pengisian dinamis (misal jeda acak 2 s/d 5 detik)
-python cli/kuesioner_cli.py --min-delay 2 --max-delay 5 --target 3
 ```
-
----
-
-## ⚙️ Konfigurasi
-Anda dapat menyesuaikan parameter utama program melalui berkas `src/config.py` atau lewat variabel lingkungan (Environment Variables):
-- `CSV_FILE_PATH`: Path file CSV database responden.
-- `FORM_URL`: Link Google Form target.
-- `AI_API_URL`: Link API GPT pembangun ulasan.
-- `TARGET_SUBMISSIONS`: Jumlah pengisian yang diinginkan.
-- `SUBMISSION_DELAY_MIN` & `SUBMISSION_DELAY_MAX`: Rentang waktu tunggu pengisian.
-
----
-
-## 📄 Lisensi
-Proyek ini dilisensikan di bawah **MIT License** - lihat file [LICENSE](LICENSE) untuk detailnya.
