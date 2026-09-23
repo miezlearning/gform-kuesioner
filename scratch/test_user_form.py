@@ -1,5 +1,4 @@
 import sys
-import json
 sys.path.append('.')
 
 from src.form_handler import GoogleFormHandler
@@ -8,59 +7,32 @@ from src.answer_resolver import AnswerResolver
 
 test_url = "https://docs.google.com/forms/d/e/1FAIpQLSfx5v4xjqh9RE8UorAssOwZFcEqZZBYNir4aQynkW0xs4-yUg/viewform"
 
-print("==================================================")
-print("1. MEMERIKSA DAN MENGEKSTRAK STRUKTUR GOOGLE FORM")
-print("==================================================")
 handler = GoogleFormHandler(test_url)
 structure = handler.extract_structure()
-
-if not structure:
-    print("Gagal mengekstrak struktur Google Form. Periksa link form.")
-    sys.exit(1)
-
-print(f"Judul Form       : {structure.get('form_title')}")
-print(f"Deskripsi Form   : {structure.get('form_description')[:80]}...")
-print(f"Total Halaman    : {structure.get('num_pages')}")
-print(f"Halaman Email    : {structure.get('has_email_page')}")
-print(f"Total Pertanyaan : {len(structure.get('questions', []))}")
-print("-" * 50)
-
-print("\n==================================================")
-print("2. DAFTAR PERTANYAAN & OPSI YANG TERBACA")
-print("==================================================")
-for idx, q in enumerate(structure.get('questions', [])):
-    req_mark = "*" if q.get("required") else ""
-    print(f"[{idx+1}] [{q.get('type_name')}] {q.get('label')}{req_mark} (entry.{q.get('entry_id')})")
-    print(f"    Bagian/Section : {q.get('section_title')} (Halaman {q.get('page_index')+1})")
-    if q.get("options"):
-        print(f"    Pilihan Opsi   : {q.get('options')}")
-    if q.get("scale_bounds"):
-        sb = q.get("scale_bounds")
-        print(f"    Rentang Skala  : {sb.get('min')} ({sb.get('min_label')}) s/d {sb.get('max')} ({sb.get('max_label')})")
-    print(f"    Saran Aturan   : {q.get('suggested_rule')}")
-    print()
-
-print("\n==================================================")
-print("3. SIMULASI RESOLUSI JAWABAN (TANPA SUBMIT)")
-print("==================================================")
-students = load_students_from_csv('dataset/2024.csv')
-if not students:
-    students = [{"nama": "Budi Santoso", "nim": "2409106099", "angkatan": "2024"}]
-
-test_student = students[0]
-print(f"Sampel Responden : {test_student.get('nama')} ({test_student.get('nim')} - Angkatan {test_student.get('angkatan')})")
-print(f"Profil Kepuasan  : Sangat Puas\n")
-
 resolver = AnswerResolver()
-simulated_answers = resolver.resolve_all_pages(structure['pages'], test_student, profile="sangat_puas")
 
-for page_idx, page in enumerate(simulated_answers):
-    print(f"--- HALAMAN {page_idx + 1} ---")
-    for item in page:
-        print(f"  entry.{item['entry_id']} -> [{item['label'][:40]}]")
-        print(f"     => Jawaban: {item['value']}")
+sample_students = []
+for yr in ['2024', '2023', '2022', '2021']:
+    st = load_students_from_csv(f'dataset/{yr}.csv')
+    if st:
+        sample_students.append(st[0])
+        if len(st) > 1:
+            sample_students.append(st[1])
+
+print(f"\nUJI KESINKRONAN DATA DENGAN PDDIKTI PADA {len(sample_students)} MAHASISWA:\n")
+
+for i, student in enumerate(sample_students[:4]):
+    print(f"{'='*60}")
+    print(f"Responden #{i+1}: {student['nama']} ({student['nim']}) - Angkatan {student['angkatan']}")
+    print(f"{'='*60}")
+    
+    pages_ans = resolver.resolve_all_pages(structure['pages'], student, profile="sangat_puas")
+    
+    # Cetak hanya pertanyaan identitas & beberapa skala
+    for p_idx, page in enumerate(pages_ans):
+        if p_idx <= 1:  # Halaman 1 & 2 (Informed consent & Identitas)
+            for item in page:
+                print(f"  {item['label'][:35]:35s} => {item['value']}")
+        elif p_idx == 2:
+            print(f"  [Contoh Skala Halaman 3]             => {page[0]['value']}")
     print()
-
-print("==================================================")
-print("TEST SELESAI. TIDAK ADA DATA YANG DI-SUBMIT KE GOOGLE.")
-print("==================================================")

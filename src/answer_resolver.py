@@ -4,7 +4,11 @@ from typing import Dict, Any, List, Optional, Union
 from .generators import (
     format_natural_name,
     generate_varied_email,
-    generate_scale_answer
+    generate_scale_answer,
+    infer_gender,
+    get_natural_semester,
+    get_natural_age,
+    get_natural_university
 )
 from .ai_handler import AITextGenerator
 
@@ -128,15 +132,43 @@ class AnswerResolver:
         if any(k in lbl_lower for k in ["email", "e-mail", "surel"]):
             return generate_varied_email(student.get("nama", "user"), student.get("nim", "20"))
 
-        # Deteksi Kolom CSV Lainnya (Program Studi, Fakultas, IPK, dll.)
+        # Deteksi Kolom CSV Lainnya (Program Studi, Fakultas, IPK, Perguruan Tinggi, dll.)
         for csv_key, csv_val in student.items():
             if csv_key not in ["nim", "nama", "angkatan"] and csv_val:
-                if csv_key in lbl_lower or lbl_lower in csv_key:
+                if csv_key in lbl_lower or lbl_lower in csv_key or any(k in lbl_lower for k in ["prodi", "jurusan", "program studi", "fakultas", "universitas", "kampus"]):
                     if options:
+                        # 1. Exact match (case insensitive)
                         for opt in options:
                             if opt.strip().lower() == csv_val.strip().lower():
                                 return opt
-                        # Jika kolom CSV tidak cocok dengan opsi yang ada di form, pilih opsi valid
+                        
+                        # 2. Smart partial / token match (e.g. "Pendidikan Dokter" -> "S1 Kedokteran", "Farmasi" -> "S1 Farmasi")
+                        val_clean = csv_val.strip().lower()
+                        if "dokter" in val_clean or "kedokteran" in val_clean:
+                            val_tokens = ["dokter", "kedokteran"]
+                        elif "farmasi" in val_clean or "apoteker" in val_clean:
+                            val_tokens = ["farmasi", "apoteker"]
+                        elif "keperawatan" in val_clean or "ners" in val_clean:
+                            val_tokens = ["keperawatan", "ners", "perawat"]
+                        elif "kebidanan" in val_clean or "bidan" in val_clean:
+                            val_tokens = ["kebidanan", "bidan"]
+                        elif "gizi" in val_clean:
+                            val_tokens = ["gizi"]
+                        elif "kesehatan masyarakat" in val_clean or "kesmas" in val_clean:
+                            val_tokens = ["kesehatan masyarakat", "kesmas"]
+                        elif "informatika" in val_clean:
+                            val_tokens = ["informatika"]
+                        elif "sistem informasi" in val_clean:
+                            val_tokens = ["sistem informasi"]
+                        else:
+                            val_tokens = [t for t in re.split(r'\W+', val_clean) if len(t) > 3]
+
+                        for opt in options:
+                            opt_lower = opt.strip().lower()
+                            if any(tok in opt_lower for tok in val_tokens):
+                                return opt
+
+                        # Jika tidak ada yang cocok, pilih salah satu opsi valid
                         return random.choice(options)
                     return csv_val
 
@@ -168,9 +200,20 @@ class AnswerResolver:
                     for opt in options:
                         if gender_csv.lower() in opt.lower():
                             return opt
-                return random.choice(options)
+                # Klasifikasi akurat gender berdasarkan nama mahasiswa Indonesia
+                nama_mhs = student.get("nama", "")
+                return infer_gender(nama_mhs, options)
+
+            # D. Jika opsi adalah Semester
+            if any(k in lbl_lower for k in ["semester"]):
+                angkatan_mhs = student.get("angkatan", f"20{student.get('nim', '24')[:2]}")
+                return get_natural_semester(angkatan_mhs, options)
+
+            # E. Perguruan Tinggi / Kampus
+            if any(k in lbl_lower for k in ["perguruan tinggi", "kampus", "universitas"]):
+                return get_natural_university(options)
                 
-            # D. Jika opsi adalah Skala Likert teks (Sangat Sesuai/Setuju, Sesuai/Setuju, dll.)
+            # F. Jika opsi adalah Skala Likert teks (Sangat Sesuai/Setuju, Sesuai/Setuju, dll.)
             opt_str = " ".join([o.lower() for o in options])
             if any(k in opt_str for k in ["sesuai", "setuju"]):
                 # Klasifikasikan opsi berdasarkan sentimen
@@ -201,19 +244,13 @@ class AnswerResolver:
                         return neg_high[0]
                 return random.choice(options)
 
-            # E. Pertanyaan Kesediaan / Informed Consent (misal: 'Saya Bersedia')
+            # G. Pertanyaan Kesediaan / Informed Consent (misal: 'Saya Bersedia')
             if any(k in lbl_lower for k in ["bersedia", "persetujuan", "consent", "partisipasi"]):
                 for opt in options:
                     if "bersedia" in opt.lower() or "setuju" in opt.lower() or "ya" in opt.lower():
                         return opt
-
-            # F. Perguruan Tinggi / Kampus
-            if any(k in lbl_lower for k in ["perguruan tinggi", "kampus", "universitas"]):
-                for opt in options:
-                    if "mulawarman" in opt.lower():
-                        return opt
                         
-            # G. Opsi umum lainnya: pilih salah satu opsi yang tersedia
+            # H. Opsi umum lainnya: pilih salah satu opsi yang tersedia
             if options:
                 return random.choice(options)
             return "1"
@@ -229,14 +266,8 @@ class AnswerResolver:
         if type_code in (0, 1):
             # A. Usia / Umur
             if any(k in lbl_lower for k in ["usia", "umur", "age"]):
-                angkatan_mhs = student.get("angkatan", "")
-                if angkatan_mhs and angkatan_mhs.isdigit():
-                    # Mahasiswa S1 umumnya berusia 18-24
-                    calculated_age = 2026 - int(angkatan_mhs) + 18
-                    age = max(18, min(24, calculated_age))
-                else:
-                    age = random.randint(19, 22)
-                return str(age)
+                angkatan_mhs = student.get("angkatan", f"20{student.get('nim', '24')[:2]}")
+                return get_natural_age(angkatan_mhs)
 
             # B. Nomor Handphone / WhatsApp / Kontak
             if any(k in lbl_lower for k in ["handphone", "hp", "telepon", "whatsapp", "wa", "no telp"]):
@@ -254,9 +285,14 @@ class AnswerResolver:
 
             # E. Perguruan Tinggi / Kampus
             if any(k in lbl_lower for k in ["perguruan tinggi", "kampus", "universitas"]):
-                return "Universitas Mulawarman"
+                return get_natural_university()
 
-            # F. Ulasan & Pendapat
+            # F. Semester
+            if any(k in lbl_lower for k in ["semester"]):
+                angkatan_mhs = student.get("angkatan", f"20{student.get('nim', '24')[:2]}")
+                return get_natural_semester(angkatan_mhs)
+
+            # G. Ulasan & Pendapat
             if any(k in lbl_lower for k in ["pendapat", "ulasan", "review", "kesan", "pandangan", "tanggapan"]):
                 return self.ai.generate_text("pendapat")
             if any(k in lbl_lower for k in ["saran", "masukan", "kritik", "rekomendasi", "harapan"]):

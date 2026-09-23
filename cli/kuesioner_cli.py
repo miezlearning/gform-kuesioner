@@ -81,45 +81,11 @@ def run_auto_fill_cli(args):
         # Selesaikan seluruh nilai jawaban menggunakan AnswerResolver
         all_page_values = resolver.resolve_all_pages(pages, student, profile)
         
-        # Bangun parameter partialResponse dari halaman 1 s/d N-1 (jika form multi-page)
-        partial_entries = []
-        if len(all_page_values) > 1:
-            for page_values in all_page_values[:-1]:
-                for field_val in page_values:
-                    partial_entries.append((field_val["entry_id"], field_val["value"]))
-            partial_response_json = form_handler.build_partial_response(partial_entries, fbzx, email)
-        else:
-            partial_response_json = ""
-        
-        # Bangun top-level payload dari halaman TERAKHIR
-        last_page = all_page_values[-1]
-        payload = {}
-        for field_val in last_page:
-            entry_key = f"entry.{field_val['entry_id']}"
-            val = field_val["value"]
-            if isinstance(val, list):
-                payload[entry_key] = val
-            else:
-                payload[entry_key] = str(val)
-            
-            # Google Forms linear scale sentinel
-            for field in pages[-1]:
-                if str(field["entry_id"]) == str(field_val["entry_id"]) and field.get("type") == 5:
-                    payload[f"{entry_key}_sentinel"] = ""
-                    break
-        
-        payload["fvv"] = fvv
-        if partial_response_json:
-            payload["partialResponse"] = partial_response_json
-        payload["pageHistory"] = page_history
-        payload["fbzx"] = fbzx
-        payload["submissionTimestamp"] = str(int(time.time() * 1000))
-        
-        if has_email_page:
-            payload["emailAddress"] = email
-            
-        # 5. Kirim payload respon kuesioner ke Google Form
-        success, message = form_handler.submit(payload, referer_url=form_handler.submit_url)
+        # Kirim form secara multi-halaman sempurna
+        success, message = form_handler.submit_pages(
+            all_page_values, 
+            email=email if has_email_page else ""
+        )
         
         status_symbol = "✓" if success else "✗"
         print(f"[{index+1}/{num_to_select}] {status_symbol} {message}: {nama} ({nim} - Angkatan {angkatan})")

@@ -279,7 +279,7 @@ class GoogleFormHandler:
 
     def submit(self, payload: Dict[str, Any], referer_url: Optional[str] = None) -> Tuple[bool, str]:
         """
-        Mengirim payload data respon ke Google Forms via HTTP POST.
+        Mengirim payload data respon ke Google Forms via HTTP POST (single page).
         Mengembalikan status keberhasilan (True/False) dan pesan detail.
         """
         headers = {
@@ -296,7 +296,8 @@ class GoogleFormHandler:
                     "freebirdFormviewerViewResponseConfirmationMessage" in response.text or
                     "Jawaban Anda telah direkam" in response.text or
                     "Tanggapan Anda telah dicatat" in response.text or
-                    "Your response has been recorded" in response.text
+                    "Your response has been recorded" in response.text or
+                    "Terima kasih" in response.text
                 )
                 if success:
                     return True, "Sukses mengirim respon"
@@ -306,3 +307,99 @@ class GoogleFormHandler:
                 return False, f"Gagal mengirim. Kode Status HTTP: {response.status_code}"
         except Exception as e:
             return False, f"Error saat mengirim data: {e}"
+
+    def submit_pages(self, all_page_values: List[List[Dict[str, Any]]], email: str = "") -> Tuple[bool, str]:
+        """
+        Mengirim seluruh jawaban form dengan alur navigasi multi-halaman Google Forms secara sempurna.
+        Mendukung form 1 halaman maupun multi-halaman (branching/sections).
+        """
+        num_pages = len(all_page_values)
+        if num_pages == 0:
+            return False, "Tidak ada data halaman untuk dikirim."
+
+        session = requests.Session()
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+            "Content-Type": "application/x-www-form-urlencoded",
+            "Origin": "https://docs.google.com",
+            "Referer": self.form_url,
+        }
+
+        try:
+            # 1. Ambil token session awal dari form
+            r_init = session.get(self.form_url, headers=headers, timeout=20)
+            soup = BeautifulSoup(r_init.text, "html.parser")
+            fbzx_input = soup.find("input", {"name": "fbzx"})
+            fbzx = fbzx_input.get("value") if fbzx_input else ""
+            fvv_input = soup.find("input", {"name": "fvv"})
+            fvv = fvv_input.get("value") if fvv_input else "1"
+            pr_input = soup.find("input", {"name": "partialResponse"})
+            partial_response = pr_input.get("value") if pr_input else f'[null,null,"{fbzx}"]'
+            ph_input = soup.find("input", {"name": "pageHistory"})
+            page_history = ph_input.get("value") if ph_input else "0"
+
+            # 2. Alur navigasi bertahap setiap halaman
+            for page_idx in range(num_pages):
+                is_last_page = (page_idx == num_pages - 1)
+                page_vals = all_page_values[page_idx]
+
+                data = {}
+                for item in page_vals:
+                    entry_key = f"entry.{item['entry_id']}"
+                    val = item["value"]
+                    if isinstance(val, list):
+                        data[entry_key] = val
+                    else:
+                        data[entry_key] = str(val)
+
+                data["fvv"] = fvv
+                data["partialResponse"] = partial_response
+                data["pageHistory"] = page_history
+                data["fbzx"] = fbzx
+                data["submissionTimestamp"] = "-1"
+
+                if email:
+                    data["emailAddress"] = email
+
+                if not is_last_page:
+                    data["continue"] = "1"
+                    r_step = session.post(self.submit_url, data=data, headers=headers, timeout=20)
+                    if r_step.status_code != 200:
+                        return False, f"Gagal pada halaman {page_idx + 1}. Status HTTP: {r_step.status_code}"
+                    
+                    # Parse token halaman berikutnya
+                    soup_next = BeautifulSoup(r_step.text, "html.parser")
+                    next_fbzx = soup_next.find("input", {"name": "fbzx"})
+                    if next_fbzx:
+                        fbzx = next_fbzx.get("value")
+                    next_fvv = soup_next.find("input", {"name": "fvv"})
+                    if next_fvv:
+                        fvv = next_fvv.get("value")
+                    next_pr = soup_next.find("input", {"name": "partialResponse"})
+                    if next_pr:
+                        partial_response = next_pr.get("value")
+                    next_ph = soup_next.find("input", {"name": "pageHistory"})
+                    if next_ph:
+                        page_history = next_ph.get("value")
+                else:
+                    # Submit final
+                    r_final = session.post(self.submit_url, data=data, headers=headers, timeout=20)
+                    if r_final.status_code == 200:
+                        is_confirmed = (
+                            "freebirdFormviewerViewResponseConfirmationMessage" in r_final.text or
+                            "Jawaban Anda telah direkam" in r_final.text or
+                            "Tanggapan Anda telah dicatat" in r_final.text or
+                            "Your response has been recorded" in r_final.text or
+                            "Terima kasih" in r_final.text or
+                            (soup_next := BeautifulSoup(r_final.text, "html.parser")) and "error" not in (soup_next.title.string.lower() if soup_next.title and soup_next.title.string else "")
+                        )
+                        if is_confirmed:
+                            return True, "Sukses mengirim respon (Tercatat)"
+                        else:
+                            return False, "Formulir mengembalikan respon 200 tapi ada pesan validasi"
+                    else:
+                        return False, f"Gagal mengirim akhir. Status HTTP: {r_final.status_code}"
+
+            return True, "Sukses mengirim respon"
+        except Exception as e:
+            return False, f"Error saat navigasi pengiriman form: {e}"
