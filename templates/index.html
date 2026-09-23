@@ -25,7 +25,12 @@
                     <label for="form-url">
                         <i class="fa-solid fa-link"></i> URL Google Form
                     </label>
-                    <input type="url" id="form-url" placeholder="https://docs.google.com/forms/..." required>
+                    <div class="input-action-group">
+                        <input type="url" id="form-url" placeholder="https://docs.google.com/forms/..." required>
+                        <button type="button" id="btn-scan-form" class="btn btn-secondary btn-sm" title="Baca seluruh pertanyaan dari Google Form ini">
+                            <i class="fa-solid fa-magnifying-glass"></i> Baca Form
+                        </button>
+                    </div>
                 </div>
                 
                 <div class="form-row">
@@ -121,6 +126,36 @@
                 <div id="custom-weight-alert" class="weight-total-bar hidden">
                     <span>Total Bobot Kustom: <strong id="weight-total-percentage">0%</strong></span>
                     <span id="weight-validation-msg" class="validation-error"><i class="fa-solid fa-triangle-exclamation"></i> Total persen harus bernilai 100%!</span>
+                </div>
+            </section>
+
+            <!-- Form Questions & Rules Customization Section -->
+            <section class="questions-section" id="questions-section">
+                <div class="section-title">
+                    <div class="section-title-left">
+                        <i class="fa-solid fa-clipboard-question"></i>
+                        <div>
+                            <h3>Pertanyaan Form & Penyesuaian Jawaban</h3>
+                            <p class="section-subtitle" id="form-info-subtitle">Memuat struktur pertanyaan Google Form...</p>
+                        </div>
+                    </div>
+                    <div class="action-buttons">
+                        <span class="badge-count" id="badge-question-count">0 Pertanyaan</span>
+                        <button id="btn-toggle-questions" class="btn btn-sm btn-secondary" title="Sembunyikan / Tampilkan Daftar">
+                            <i class="fa-solid fa-chevron-up"></i> <span id="toggle-text">Ciutkan</span>
+                        </button>
+                        <button id="btn-reset-rules" class="btn btn-sm btn-text" title="Kembalikan semua aturan ke rekomendasi otomatis">
+                            <i class="fa-solid fa-rotate-left"></i> Reset Aturan
+                        </button>
+                    </div>
+                </div>
+
+                <div id="questions-wrapper" class="questions-wrapper">
+                    <div id="questions-list" class="questions-list">
+                        <div class="loading-placeholder">
+                            <i class="fa-solid fa-circle-notch fa-spin"></i> Membaca seluruh pertanyaan form...
+                        </div>
+                    </div>
                 </div>
             </section>
 

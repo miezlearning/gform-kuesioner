@@ -17,6 +17,7 @@ from src.csv_helper import load_students_from_csv
 from src.history_helper import load_history, save_to_history, clear_history
 from src.form_handler import GoogleFormHandler
 from src.ai_handler import AITextGenerator
+from src.answer_resolver import AnswerResolver
 from src.generators import (
     format_natural_name,
     generate_varied_email,
@@ -59,34 +60,6 @@ class JobStatus:
             self.failed_count = 0
 
 job_status = JobStatus()
-
-def generate_field_value(
-    field: Dict[str, Any], 
-    nama: str, 
-    nim: str, 
-    angkatan: str, 
-    pendapat: str, 
-    saran: str, 
-    email: str, 
-    profile: str
-) -> str:
-    """Menentukan nilai untuk setiap field berdasarkan label dan tipe pertanyaan."""
-    lbl_lower = field["label"].lower()
-    
-    if "nama" in lbl_lower:
-        return nama
-    elif "nim" in lbl_lower:
-        return nim
-    elif "angkatan" in lbl_lower:
-        return angkatan
-    elif "pendapat" in lbl_lower:
-        return pendapat
-    elif "saran" in lbl_lower:
-        return saran
-    elif "email" in lbl_lower:
-        return email
-    else:
-        return generate_scale_answer(profile)
 
 def get_available_cohorts() -> List[str]:
     """Membaca daftar angkatan berdasarkan file CSV di folder dataset."""
@@ -205,9 +178,10 @@ def distribute_targets(target: int, cohorts: List[str], mode: str, custom_weight
 
     return cohort_targets, remaining_students
 
-def run_web_fill(target: int, cohorts: List[str], mode: str, custom_weights: dict, min_delay: int, max_delay: int, url: str):
+def run_web_fill(target: int, cohorts: List[str], mode: str, custom_weights: dict, min_delay: int, max_delay: int, url: str, question_rules: dict = None):
     global job_status
     history = load_history()
+    question_rules = question_rules or {}
     
     targets, remaining_students = distribute_targets(target, cohorts, mode, custom_weights, history)
     
@@ -235,10 +209,11 @@ def run_web_fill(target: int, cohorts: List[str], mode: str, custom_weights: dic
     job_status.add_log("Mengekstrak struktur Google Form...", "info")
     form_handler = GoogleFormHandler(url)
     ai_generator = AITextGenerator()
+    resolver = AnswerResolver(ai_generator)
     
     form_data = form_handler.extract_structure()
     if not form_data:
-        job_status.add_log("Gagal mengekstrak struktur Google Form. Periksa internet atau URL Anda.", "error")
+        job_status.add_log("Gagal mengekstrak struktur Google Form. Periksa koneksi internet atau link form Anda.", "error")
         job_status.is_running = False
         return
         
@@ -247,17 +222,19 @@ def run_web_fill(target: int, cohorts: List[str], mode: str, custom_weights: dic
     fvv = form_data["fvv"]
     has_email_page = form_data["has_email_page"]
     page_history = form_data["page_history"]
+    form_title = form_data.get("form_title", "Google Form")
     
-    job_status.add_log("Struktur form berhasil dimuat. Memulai pengisian...", "success")
+    job_status.add_log(f"Form '{form_title}' terdeteksi ({len(pages)} halaman). Memulai pengisian...", "success")
+    if question_rules:
+        job_status.add_log(f"Menerapkan {len(question_rules)} aturan kustom pada pertanyaan.", "info")
     
     for index, (student, angkatan) in enumerate(selected_pool):
         if not job_status.is_running:
             job_status.add_log("Proses pengisian dibatalkan oleh pengguna.", "warning")
             break
             
-        nama_raw = student['nama']
-        nama = format_natural_name(nama_raw)
-        nim = student['nim']
+        nama = format_natural_name(student.get('nama', 'Mahasiswa'))
+        nim = student.get('nim', '')
         
         job_status.add_log(f"[{index+1}/{actual_target}] Mengisi: {nama} ({nim} - Angkatan {angkatan})...", "info")
         
@@ -267,41 +244,41 @@ def run_web_fill(target: int, cohorts: List[str], mode: str, custom_weights: dic
         )[0]
         
         email = generate_varied_email(nama, nim)
-        pendapat = ai_generator.generate_text("pendapat")
-        saran = ai_generator.generate_text("saran")
         
-        all_page_values = []
-        for page in pages:
-            page_values = []
-            for field in page:
-                value = generate_field_value(field, nama, nim, angkatan, pendapat, saran, email, profile)
-                page_values.append({
-                    "entry_id": field["entry_id"],
-                    "value": value,
-                    "label": field["label"]
-                })
-            all_page_values.append(page_values)
-            
+        # Selesaikan seluruh nilai jawaban menggunakan AnswerResolver
+        all_page_values = resolver.resolve_all_pages(pages, student, profile, question_rules)
+        
+        # Bangun partialResponse (halaman 1 s/d N-1 jika multi-page)
         partial_entries = []
-        for page_values in all_page_values[:-1]:
-            for field_val in page_values:
-                partial_entries.append((field_val["entry_id"], field_val["value"]))
-                
-        partial_response_json = form_handler.build_partial_response(partial_entries, fbzx, email)
+        if len(all_page_values) > 1:
+            for page_values in all_page_values[:-1]:
+                for field_val in page_values:
+                    partial_entries.append((field_val["entry_id"], field_val["value"]))
+            partial_response_json = form_handler.build_partial_response(partial_entries, fbzx, email)
+        else:
+            partial_response_json = ""
         
+        # Bangun top-level payload dari halaman terakhir
         last_page = all_page_values[-1]
         payload = {}
         for field_val in last_page:
             entry_key = f"entry.{field_val['entry_id']}"
-            payload[entry_key] = field_val["value"]
+            val = field_val["value"]
+            if isinstance(val, list):
+                # Checkbox multi-value
+                payload[entry_key] = val
+            else:
+                payload[entry_key] = str(val)
             
+            # Google Forms linear scale sentinel
             for field in pages[-1]:
-                if field["entry_id"] == field_val["entry_id"] and field["type"] == 5:
+                if str(field["entry_id"]) == str(field_val["entry_id"]) and field.get("type") == 5:
                     payload[f"{entry_key}_sentinel"] = ""
                     break
                     
         payload["fvv"] = fvv
-        payload["partialResponse"] = partial_response_json
+        if partial_response_json:
+            payload["partialResponse"] = partial_response_json
         payload["pageHistory"] = page_history
         payload["fbzx"] = fbzx
         payload["submissionTimestamp"] = str(int(time.time() * 1000))
@@ -315,8 +292,11 @@ def run_web_fill(target: int, cohorts: List[str], mode: str, custom_weights: dic
             save_to_history(nim)
             job_status.success_count += 1
             job_status.add_log(f"  ✓ Sukses: {nama} ({nim})", "success")
-            job_status.add_log(f"    > Pendapat: \"{pendapat}\"", "info")
-            job_status.add_log(f"    > Saran   : \"{saran}\"", "info")
+            # Tampilkan sample ulasan jika ada field ulasan/saran
+            for p in all_page_values:
+                for item in p:
+                    if any(k in item['label'].lower() for k in ["pendapat", "saran", "masukan", "ulasan"]):
+                        job_status.add_log(f"    > {item['label'][:25]}...: \"{item['value']}\"", "info")
         else:
             job_status.failed_count += 1
             job_status.add_log(f"  ✗ Gagal: {nama} ({nim}) - Detail: {message}", "error")
@@ -337,6 +317,31 @@ def run_web_fill(target: int, cohorts: List[str], mode: str, custom_weights: dic
 @app.route("/")
 def home():
     return render_template("index.html")
+
+@app.route("/api/parse-form", methods=["POST"])
+def parse_form():
+    """Membaca dan mengekstrak seluruh pertanyaan & opsi dari Google Form URL."""
+    data = request.json or {}
+    url = data.get("url") or FORM_URL
+    if not url:
+        return jsonify({"success": False, "message": "URL Google Form wajib diisi."}), 400
+        
+    handler = GoogleFormHandler(url)
+    structure = handler.extract_structure()
+    if not structure:
+        return jsonify({
+            "success": False, 
+            "message": "Gagal membaca struktur Google Form. Pastikan link Google Form benar, publik, dan berformat https://docs.google.com/forms/d/e/.../viewform"
+        }), 400
+        
+    return jsonify({
+        "success": True,
+        "form_title": structure.get("form_title", "Formulir Google"),
+        "form_description": structure.get("form_description", ""),
+        "num_pages": structure.get("num_pages", len(structure.get("pages", []))),
+        "questions": structure.get("questions", []),
+        "has_email_page": structure.get("has_email_page", False)
+    })
 
 @app.route("/api/status", methods=["GET"])
 def get_status():
@@ -383,6 +388,7 @@ def start_job():
     min_delay = int(data.get("min_delay", SUBMISSION_DELAY_MIN))
     max_delay = int(data.get("max_delay", SUBMISSION_DELAY_MAX))
     url = data.get("url", FORM_URL)
+    question_rules = data.get("question_rules", {})
     
     if not cohorts:
         return jsonify({"success": False, "message": "Pilih minimal satu angkatan!"}), 400
@@ -393,7 +399,7 @@ def start_job():
     # Jalankan background thread
     job_status.thread = threading.Thread(
         target=run_web_fill,
-        args=(target, cohorts, mode, custom_weights, min_delay, max_delay, url)
+        args=(target, cohorts, mode, custom_weights, min_delay, max_delay, url, question_rules)
     )
     job_status.thread.daemon = True
     job_status.thread.start()
