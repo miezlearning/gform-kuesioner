@@ -1,213 +1,574 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="id" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>E-Surat 2 FT Unmul - Auto Questionnaire Filler</title>
-    <!-- Google Fonts: Inter -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
-    <!-- FontAwesome for Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Custom Style -->
+    <title>FormPilot Studio - Universal Google Form Automation Engine</title>
+    <!-- Fonts: Inter & JetBrains Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <!-- Lucide Icons (Official shadcn/ui community icon set) -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Custom Style System -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
-    <div class="app-container">
-        <!-- Sidebar: Settings -->
-        <aside class="sidebar">
-            <div class="sidebar-header">
-                <i class="fa-solid fa-gears icon-accent"></i>
-                <h2>Pengaturan</h2>
-            </div>
-            
-            <form id="settings-form" class="settings-form">
-                <div class="form-group">
-                    <label for="form-url">
-                        <i class="fa-solid fa-link"></i> URL Google Form
-                    </label>
-                    <div class="input-action-group">
-                        <input type="url" id="form-url" placeholder="https://docs.google.com/forms/..." required>
-                        <button type="button" id="btn-scan-form" class="btn btn-secondary btn-sm" title="Baca seluruh pertanyaan dari Google Form ini">
-                            <i class="fa-solid fa-magnifying-glass"></i> Baca Form
-                        </button>
-                    </div>
-                </div>
-                
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="target-submissions">
-                            <i class="fa-solid fa-bullseye"></i> Target Responden
-                        </label>
-                        <input type="number" id="target-submissions" min="1" required>
-                    </div>
-                </div>
-                
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="delay-min">
-                            <i class="fa-solid fa-hourglass-start"></i> Delay Min (detik)
-                        </label>
-                        <input type="number" id="delay-min" min="0" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="delay-max">
-                            <i class="fa-solid fa-hourglass-end"></i> Delay Max (detik)
-                        </label>
-                        <input type="number" id="delay-max" min="0" required>
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label>
-                        <i class="fa-solid fa-chart-pie"></i> Mode Distribusi Acak
-                    </label>
-                    <div class="radio-group">
-                        <label class="radio-label">
-                            <input type="radio" name="distribution-mode" value="rata" checked>
-                            <span class="radio-custom"></span>
-                            Bagi Rata
-                        </label>
-                        <label class="radio-label">
-                            <input type="radio" name="distribution-mode" value="proporsional">
-                            <span class="radio-custom"></span>
-                            Proporsional
-                        </label>
-                        <label class="radio-label">
-                            <input type="radio" name="distribution-mode" value="kustom">
-                            <span class="radio-custom"></span>
-                            Kustom Bobot (%)
-                        </label>
-                    </div>
-                </div>
-                
-                <div class="sidebar-footer">
-                    <button type="submit" id="btn-start" class="btn btn-primary btn-block">
-                        <i class="fa-solid fa-play"></i> Mulai Pengisian
-                    </button>
-                    <button type="button" id="btn-stop" class="btn btn-danger btn-block hidden">
-                        <i class="fa-solid fa-stop"></i> Batal / Hentikan
-                    </button>
-                </div>
-            </form>
-        </aside>
-
-        <!-- Main Content -->
-        <main class="main-content">
-            <header class="main-header">
+    <div class="app-shell">
+        <!-- Top Navigation Bar (Shadcn / Obsidian Header) -->
+        <header class="navbar">
+            <div class="navbar-left">
                 <div class="brand">
-                    <h1>E-Surat 2 FT Unmul</h1>
-                    <p>Auto Questionnaire Filler Panel</p>
+                    <div class="brand-logo">
+                        <i data-lucide="sparkles"></i>
+                    </div>
+                    <div class="brand-text">
+                        <span class="brand-title">FormPilot <span class="brand-badge">Studio</span></span>
+                        <span class="brand-desc">Universal Google Form Intelligence & Responding Engine</span>
+                    </div>
                 </div>
-                <div class="server-status">
+            </div>
+
+            <!-- Segmented Navigation Tabs -->
+            <nav class="nav-tabs" role="tablist">
+                <button class="nav-tab active" data-tab="tab-inspect" role="tab" aria-selected="true">
+                    <i data-lucide="scan-search"></i>
+                    <span>1. Inspeksi Form</span>
+                    <span class="tab-indicator-count hidden" id="tab-questions-badge">0</span>
+                </button>
+                <button class="nav-tab" data-tab="tab-datasets" role="tab" aria-selected="false">
+                    <i data-lucide="database"></i>
+                    <span>2. Dataset & Target</span>
+                    <span class="tab-indicator-count" id="tab-cohorts-badge">0</span>
+                </button>
+                <button class="nav-tab" data-tab="tab-runner" role="tab" aria-selected="false">
+                    <i data-lucide="terminal"></i>
+                    <span>3. Eksekusi & Monitor</span>
+                    <span class="status-indicator-dot" id="runner-live-dot"></span>
+                </button>
+                <button class="nav-tab" data-tab="tab-history" role="tab" aria-selected="false">
+                    <i data-lucide="history"></i>
+                    <span>4. Riwayat & Analisis</span>
+                    <span class="tab-indicator-count" id="tab-history-badge">0</span>
+                </button>
+            </nav>
+
+            <div class="navbar-right">
+                <div class="system-status-pill" id="system-status-pill">
                     <span class="status-dot online"></span>
-                    <span id="status-text">Terhubung</span>
+                    <span class="status-label" id="status-text">Server Siap</span>
                 </div>
-            </header>
+                <button id="btn-quick-start" class="btn btn-emerald btn-sm" title="Mulai pengisian langsung">
+                    <i data-lucide="play"></i>
+                    <span>Mulai</span>
+                </button>
+                <button id="btn-quick-stop" class="btn btn-destructive btn-sm hidden" title="Hentikan proses saat ini">
+                    <i data-lucide="square"></i>
+                    <span>Stop</span>
+                </button>
+            </div>
+        </header>
 
-            <!-- Dashboard Cohorts Cards -->
-            <section class="dashboard-section">
-                <div class="section-title">
-                    <i class="fa-solid fa-users"></i>
-                    <h3>Dataset Angkatan Mahasiswa</h3>
-                    <div class="action-buttons">
-                        <button id="btn-select-all" class="btn-text"><i class="fa-solid fa-check-double"></i> Pilih Semua</button>
-                        <button id="btn-deselect-all" class="btn-text"><i class="fa-solid fa-times"></i> Hapus Pilihan</button>
-                        <button id="btn-reset-history" class="btn btn-warning"><i class="fa-solid fa-trash-can"></i> Reset Riwayat</button>
-                    </div>
-                </div>
-
-                <div id="cohorts-grid" class="cohorts-grid">
-                    <!-- Dynamic Cohort Cards will be injected here -->
-                    <div class="loading-placeholder">
-                        <i class="fa-solid fa-circle-notch fa-spin"></i> Memuat data...
-                    </div>
-                </div>
-                
-                <div id="custom-weight-alert" class="weight-total-bar hidden">
-                    <span>Total Bobot Kustom: <strong id="weight-total-percentage">0%</strong></span>
-                    <span id="weight-validation-msg" class="validation-error"><i class="fa-solid fa-triangle-exclamation"></i> Total persen harus bernilai 100%!</span>
-                </div>
-            </section>
-
-            <!-- Form Questions & Rules Customization Section -->
-            <section class="questions-section" id="questions-section">
-                <div class="section-title">
-                    <div class="section-title-left">
-                        <i class="fa-solid fa-clipboard-question"></i>
+        <!-- Main Tabbed View Container -->
+        <main class="main-viewport">
+            
+            <!-- ========================================== -->
+            <!-- TAB 1: FORM INSPECTOR & RULE CONFIGURATOR  -->
+            <!-- ========================================== -->
+            <div class="tab-panel active" id="tab-inspect" role="tabpanel">
+                <!-- Hero Form URL Input Card -->
+                <section class="card hero-input-card">
+                    <div class="card-header">
+                        <div class="card-header-icon">
+                            <i data-lucide="link"></i>
+                        </div>
                         <div>
-                            <h3>Pertanyaan Form & Penyesuaian Jawaban</h3>
-                            <p class="section-subtitle" id="form-info-subtitle">Memuat struktur pertanyaan Google Form...</p>
+                            <h2 class="card-title">Target Google Form</h2>
+                            <p class="card-subtitle">Masukkan tautan formulir Google Forms publik apa saja (kuesioner, evaluasi, survei, pendaftaran).</p>
                         </div>
                     </div>
-                    <div class="action-buttons">
-                        <span class="badge-count" id="badge-question-count">0 Pertanyaan</span>
-                        <button id="btn-toggle-questions" class="btn btn-sm btn-secondary" title="Sembunyikan / Tampilkan Daftar">
-                            <i class="fa-solid fa-chevron-up"></i> <span id="toggle-text">Ciutkan</span>
+                    <div class="card-body">
+                        <div class="url-input-wrapper">
+                            <div class="input-icon-prefix">
+                                <i data-lucide="globe"></i>
+                            </div>
+                            <input type="url" id="form-url" class="form-control url-input" placeholder="https://docs.google.com/forms/d/e/.../viewform" required autocomplete="off">
+                            <button type="button" id="btn-scan-form" class="btn btn-primary btn-scan">
+                                <i data-lucide="scan"></i>
+                                <span>Baca & Analisis Form</span>
+                            </button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Form Metadata Card (Visible after scanning) -->
+                <section class="card meta-info-card hidden" id="form-meta-card">
+                    <div class="meta-info-grid">
+                        <div class="meta-item">
+                            <span class="meta-label"><i data-lucide="file-text"></i> Judul Form:</span>
+                            <strong class="meta-value" id="meta-form-title">-</strong>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label"><i data-lucide="layers"></i> Total Halaman:</span>
+                            <span class="badge badge-zinc" id="meta-form-pages">- Halaman</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label"><i data-lucide="help-circle"></i> Total Pertanyaan:</span>
+                            <span class="badge badge-indigo" id="meta-form-count">- Pertanyaan</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label"><i data-lucide="mail"></i> Email Wajib:</span>
+                            <span class="badge badge-zinc" id="meta-form-email">-</span>
+                        </div>
+                    </div>
+                    <div class="meta-description" id="meta-form-desc"></div>
+                </section>
+
+                <!-- Questions List & Rule Tuner -->
+                <section class="card questions-studio-card">
+                    <div class="card-header flex-between">
+                        <div class="card-header-left">
+                            <div class="card-header-icon">
+                                <i data-lucide="sliders"></i>
+                            </div>
+                            <div>
+                                <h2 class="card-title">Daftar Pertanyaan & Aturan Jawaban</h2>
+                                <p class="card-subtitle">Kustomisasi bagaimana sistem menjawab setiap butir pertanyaan secara otomatis atau spesifik.</p>
+                            </div>
+                        </div>
+                        <div class="card-header-actions">
+                            <div class="search-mini">
+                                <i data-lucide="search"></i>
+                                <input type="text" id="filter-question-search" placeholder="Cari pertanyaan...">
+                            </div>
+                            <button type="button" id="btn-expand-all" class="btn btn-outline btn-sm" title="Buka Semua Kartu">
+                                <i data-lucide="maximize-2"></i>
+                            </button>
+                            <button type="button" id="btn-collapse-all" class="btn btn-outline btn-sm" title="Ciutkan Semua Kartu">
+                                <i data-lucide="minimize-2"></i>
+                            </button>
+                            <button type="button" id="btn-reset-rules" class="btn btn-secondary btn-sm" title="Kembalikan semua aturan ke rekomendasi cerdas">
+                                <i data-lucide="rotate-ccw"></i>
+                                <span>Reset Aturan</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="card-body">
+                        <!-- Questions Filter Pills -->
+                        <div class="filter-pills" id="question-filter-pills">
+                            <button class="filter-pill active" data-filter="all">Semua Tipe</button>
+                            <button class="filter-pill" data-filter="choice">Pilihan Ganda</button>
+                            <button class="filter-pill" data-filter="scale">Skala Linier</button>
+                            <button class="filter-pill" data-filter="text">Teks Singkat / Ulasan</button>
+                            <button class="filter-pill" data-filter="checkbox">Kotak Centang</button>
+                        </div>
+
+                        <!-- Questions Container -->
+                        <div id="questions-list" class="questions-list">
+                            <div class="empty-state">
+                                <i data-lucide="file-search" class="empty-icon"></i>
+                                <h3>Belum Ada Form Terbaca</h3>
+                                <p>Tempelkan URL Google Form di atas dan klik <strong>Baca & Analisis Form</strong> untuk memuat seluruh pertanyaan dan opsi formulir.</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- ========================================== -->
+            <!-- TAB 2: DATASET & TARGET MANAGER           -->
+            <!-- ========================================== -->
+            <div class="tab-panel" id="tab-datasets" role="tabpanel">
+                <div class="grid-layout-2col">
+                    <!-- Left Column: Datasets Selector -->
+                    <div class="grid-col">
+                        <section class="card">
+                            <div class="card-header flex-between">
+                                <div class="card-header-left">
+                                    <div class="card-header-icon">
+                                        <i data-lucide="users"></i>
+                                    </div>
+                                    <div>
+                                        <h2 class="card-title">Dataset Responden Mahasiswa</h2>
+                                        <p class="card-subtitle">Pilih cohort atau database mahasiswa yang akan dijadikan identitas pengisi.</p>
+                                    </div>
+                                </div>
+                                <div class="card-header-actions">
+                                    <button id="btn-select-all" class="btn btn-outline btn-sm">
+                                        <i data-lucide="check-check"></i>
+                                        <span>Pilih Semua</span>
+                                    </button>
+                                    <button id="btn-deselect-all" class="btn btn-outline btn-sm">
+                                        <i data-lucide="x"></i>
+                                        <span>Hapus</span>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div id="cohorts-grid" class="cohorts-cards-grid">
+                                    <div class="empty-state">
+                                        <i data-lucide="loader-2" class="empty-icon spin"></i>
+                                        <p>Memuat database mahasiswa...</p>
+                                    </div>
+                                </div>
+
+                                <div id="custom-weight-alert" class="weight-total-bar hidden">
+                                    <div class="weight-label">
+                                        <i data-lucide="pie-chart"></i>
+                                        <span>Total Bobot Kustom: <strong id="weight-total-percentage">0%</strong></span>
+                                    </div>
+                                    <span id="weight-validation-msg" class="validation-error">
+                                        <i data-lucide="alert-triangle"></i> Total bobot harus bernilai 100%!
+                                    </span>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+
+                    <!-- Right Column: Target & Timing Configuration -->
+                    <div class="grid-col">
+                        <section class="card">
+                            <div class="card-header">
+                                <div class="card-header-icon">
+                                    <i data-lucide="sliders-horizontal"></i>
+                                </div>
+                                <div>
+                                    <h2 class="card-title">Parameter Target & Delay Pengiriman</h2>
+                                    <p class="card-subtitle">Atur jumlah pengisian dan delay humanis acak agar terhindar dari pemblokiran bot.</p>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <!-- Target Count -->
+                                <div class="form-group mb-4">
+                                    <label for="target-submissions" class="form-label">
+                                        <i data-lucide="target"></i> Target Jumlah Respon
+                                    </label>
+                                    <div class="target-input-row">
+                                        <input type="number" id="target-submissions" class="form-control" min="1" value="10" required>
+                                        <div class="target-presets">
+                                            <button type="button" class="preset-btn" data-val="5">5</button>
+                                            <button type="button" class="preset-btn" data-val="10">10</button>
+                                            <button type="button" class="preset-btn" data-val="25">25</button>
+                                            <button type="button" class="preset-btn" data-val="50">50</button>
+                                            <button type="button" class="preset-btn" data-val="100">100</button>
+                                        </div>
+                                    </div>
+                                    <span class="field-hint">Jumlah entri tanggapan yang akan disubmit ke Google Forms.</span>
+                                </div>
+
+                                <!-- Delay Timing -->
+                                <div class="form-group mb-4">
+                                    <label class="form-label">
+                                        <i data-lucide="clock"></i> Jeda Pengiriman Acak (Detik)
+                                    </label>
+                                    <div class="delay-row">
+                                        <div class="delay-col">
+                                            <span class="sub-label">Min Delay:</span>
+                                            <input type="number" id="delay-min" class="form-control" min="0" value="2" required>
+                                        </div>
+                                        <div class="delay-separator">—</div>
+                                        <div class="delay-col">
+                                            <span class="sub-label">Max Delay:</span>
+                                            <input type="number" id="delay-max" class="form-control" min="0" value="5" required>
+                                        </div>
+                                    </div>
+                                    <span class="field-hint">Memberikan jeda acak antar submisi agar pola pengiriman tampak alami.</span>
+                                </div>
+
+                                <!-- Distribution Strategy -->
+                                <div class="form-group mb-4">
+                                    <label class="form-label">
+                                        <i data-lucide="split"></i> Strategi Distribusi Responden
+                                    </label>
+                                    <div class="segmented-control">
+                                        <label class="segment-btn">
+                                            <input type="radio" name="distribution-mode" value="rata" checked>
+                                            <span class="segment-content">
+                                                <i data-lucide="equal"></i> Bagi Rata
+                                            </span>
+                                        </label>
+                                        <label class="segment-btn">
+                                            <input type="radio" name="distribution-mode" value="proporsional">
+                                            <span class="segment-content">
+                                                <i data-lucide="percent"></i> Proporsional
+                                            </span>
+                                        </label>
+                                        <label class="segment-btn">
+                                            <input type="radio" name="distribution-mode" value="kustom">
+                                            <span class="segment-content">
+                                                <i data-lucide="sliders"></i> Bobot Kustom
+                                            </span>
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <!-- Sentimen Kepuasan Default -->
+                                <div class="form-group">
+                                    <label class="form-label">
+                                        <i data-lucide="smile"></i> Pola Sentimen Kepuasan Responden
+                                    </label>
+                                    <div class="sentiment-cards">
+                                        <label class="sentiment-card">
+                                            <input type="radio" name="sentiment-profile" value="puas_rata_rata" checked>
+                                            <div class="sentiment-box">
+                                                <span class="sentiment-icon">😊</span>
+                                                <span class="sentiment-title">Puas Alami</span>
+                                                <span class="sentiment-desc">Dominan Setuju/Puas dengan variasi realistis</span>
+                                            </div>
+                                        </label>
+                                        <label class="sentiment-card">
+                                            <input type="radio" name="sentiment-profile" value="sangat_puas">
+                                            <div class="sentiment-box">
+                                                <span class="sentiment-icon">🌟</span>
+                                                <span class="sentiment-title">Sangat Positif</span>
+                                                <span class="sentiment-desc">Dominan Sangat Setuju / Nilai Tertinggi</span>
+                                            </div>
+                                        </label>
+                                        <label class="sentiment-card">
+                                            <input type="radio" name="sentiment-profile" value="kritis">
+                                            <div class="sentiment-box">
+                                                <span class="sentiment-icon">🤔</span>
+                                                <span class="sentiment-title">Kritis / Beragam</span>
+                                                <span class="sentiment-desc">Distribusi jawaban menyebar rata & kritis</span>
+                                            </div>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========================================== -->
+            <!-- TAB 3: EXECUTION STUDIO & LIVE MONITOR     -->
+            <!-- ========================================== -->
+            <div class="tab-panel" id="tab-runner" role="tabpanel">
+                <!-- Action Controls Sticky Header -->
+                <div class="runner-controls-bar">
+                    <div class="runner-status-group">
+                        <div class="runner-badge" id="runner-badge-status">
+                            <span class="pulse-dot"></span>
+                            <span id="runner-badge-text">Siap Mengeksekusi</span>
+                        </div>
+                        <div class="runner-active-info" id="runner-active-info">
+                            Pilih dataset & atur target sebelum memulai.
+                        </div>
+                    </div>
+
+                    <div class="runner-actions">
+                        <button type="button" id="btn-start" class="btn btn-emerald btn-lg">
+                            <i data-lucide="play"></i>
+                            <span>Mulai Pengisian Otomatis</span>
                         </button>
-                        <button id="btn-reset-rules" class="btn btn-sm btn-text" title="Kembalikan semua aturan ke rekomendasi otomatis">
-                            <i class="fa-solid fa-rotate-left"></i> Reset Aturan
+                        <button type="button" id="btn-stop" class="btn btn-destructive btn-lg hidden">
+                            <i data-lucide="square"></i>
+                            <span>Hentikan Pengisian</span>
                         </button>
                     </div>
                 </div>
 
-                <div id="questions-wrapper" class="questions-wrapper">
-                    <div id="questions-list" class="questions-list">
-                        <div class="loading-placeholder">
-                            <i class="fa-solid fa-circle-notch fa-spin"></i> Membaca seluruh pertanyaan form...
+                <!-- Progress & Metrics Cards -->
+                <div class="metrics-row">
+                    <div class="metric-card">
+                        <div class="metric-icon metric-icon-primary">
+                            <i data-lucide="target"></i>
+                        </div>
+                        <div class="metric-content">
+                            <span class="metric-label">Target Selesai</span>
+                            <div class="metric-value">
+                                <span id="metric-completed">0</span>
+                                <span class="metric-divider">/</span>
+                                <span id="metric-total">0</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="metric-card">
+                        <div class="metric-icon metric-icon-success">
+                            <i data-lucide="check-circle-2"></i>
+                        </div>
+                        <div class="metric-content">
+                            <span class="metric-label">Sukses Terkirim</span>
+                            <div class="metric-value text-emerald" id="metric-success">0</div>
+                        </div>
+                    </div>
+
+                    <div class="metric-card">
+                        <div class="metric-icon metric-icon-danger">
+                            <i data-lucide="x-circle"></i>
+                        </div>
+                        <div class="metric-content">
+                            <span class="metric-label">Gagal / Ditolak</span>
+                            <div class="metric-value text-rose" id="metric-failed">0</div>
+                        </div>
+                    </div>
+
+                    <div class="metric-card">
+                        <div class="metric-icon metric-icon-warning">
+                            <i data-lucide="hourglass"></i>
+                        </div>
+                        <div class="metric-content">
+                            <span class="metric-label">Sisa Antrean</span>
+                            <div class="metric-value text-amber" id="metric-remaining">0</div>
                         </div>
                     </div>
                 </div>
-            </section>
 
-            <!-- Real-time Progress -->
-            <section class="progress-section hidden" id="progress-container">
-                <div class="progress-header">
-                    <span>Progres Pengisian: <strong id="progress-text">0/0</strong></span>
-                    <div class="progress-stats">
-                        <span class="stat-success"><i class="fa-solid fa-circle-check"></i> Sukses: <strong id="stat-success-count">0</strong></span>
-                        <span class="stat-failed"><i class="fa-solid fa-circle-xmark"></i> Gagal: <strong id="stat-failed-count">0</strong></span>
+                <!-- Progress Bar Card -->
+                <div class="card progress-card mb-4" id="progress-container">
+                    <div class="progress-info-row">
+                        <span class="progress-stage-title" id="progress-status-desc">Menunggu inisiasi...</span>
+                        <span class="progress-percent" id="progress-percent-text">0%</span>
+                    </div>
+                    <div class="progress-track">
+                        <div class="progress-bar-fill" id="progress-bar-fill" style="width: 0%;"></div>
                     </div>
                 </div>
-                <div class="progress-bar-container">
-                    <div class="progress-bar-fill" id="progress-bar-fill" style="width: 0%;"></div>
-                </div>
-            </section>
 
-            <!-- Terminal Output -->
-            <section class="terminal-section">
-                <div class="terminal-header">
-                    <div class="terminal-title">
-                        <i class="fa-solid fa-terminal"></i>
-                        <span>Live Execution Terminal Logs</span>
+                <!-- Obsidian / VS Code Live Terminal Logs -->
+                <section class="card terminal-card">
+                    <div class="terminal-topbar">
+                        <div class="terminal-traffic-lights">
+                            <span class="traffic-dot red"></span>
+                            <span class="traffic-dot yellow"></span>
+                            <span class="traffic-dot green"></span>
+                        </div>
+                        <div class="terminal-title">
+                            <i data-lucide="terminal"></i>
+                            <span>LIVE STREAM TERMINAL</span>
+                        </div>
+                        <div class="terminal-filter-tabs">
+                            <button class="term-tab active" data-filter="all">Semua</button>
+                            <button class="term-tab" data-filter="success">Sukses</button>
+                            <button class="term-tab" data-filter="info">Info</button>
+                            <button class="term-tab" data-filter="warning">Peringatan</button>
+                            <button class="term-tab" data-filter="danger">Error</button>
+                        </div>
+                        <div class="terminal-tools">
+                            <button id="btn-copy-terminal" class="btn-icon" title="Salin Log ke Clipboard">
+                                <i data-lucide="copy"></i>
+                            </button>
+                            <button id="btn-clear-terminal" class="btn-icon" title="Bersihkan Terminal">
+                                <i data-lucide="trash-2"></i>
+                            </button>
+                            <button id="btn-toggle-autoscroll" class="btn-icon active" title="Auto-scroll ke baris terbaru">
+                                <i data-lucide="arrow-down-to-line"></i>
+                            </button>
+                        </div>
                     </div>
-                    <div class="terminal-actions">
-                        <button id="btn-clear-terminal" class="btn-icon" title="Bersihkan Terminal">
-                            <i class="fa-solid fa-eraser"></i>
-                        </button>
-                        <button id="btn-toggle-autoscroll" class="btn-icon active" title="Auto-scroll Kebawah">
-                            <i class="fa-solid fa-arrow-down"></i>
-                        </button>
+                    <div class="terminal-body" id="terminal-body">
+                        <div class="terminal-line system">
+                            <span class="term-time">[00:00:00]</span>
+                            <span class="term-tag">[SYSTEM]</span>
+                            <span class="term-text">FormPilot Studio siap. Masukkan URL formulir dan pilih dataset untuk memulai eksekusi.</span>
+                        </div>
                     </div>
-                </div>
-                <div class="terminal-body" id="terminal-body">
-                    <div class="terminal-line system">Sistem siap. Atur konfigurasi dan pilih angkatan untuk memulai.</div>
-                </div>
-            </section>
+                </section>
+            </div>
+
+            <!-- ========================================== -->
+            <!-- TAB 4: HISTORY & ANALYTICS                -->
+            <!-- ========================================== -->
+            <div class="tab-panel" id="tab-history" role="tabpanel">
+                <section class="card">
+                    <div class="card-header flex-between">
+                        <div class="card-header-left">
+                            <div class="card-header-icon">
+                                <i data-lucide="history"></i>
+                            </div>
+                            <div>
+                                <h2 class="card-title">Riwayat Pengisian & Rekap Responden</h2>
+                                <p class="card-subtitle">Daftar identitas mahasiswa yang sudah pernah digunakan agar tidak terjadi duplikasi NIM.</p>
+                            </div>
+                        </div>
+                        <div class="card-header-actions">
+                            <button id="btn-refresh-history" class="btn btn-outline btn-sm">
+                                <i data-lucide="refresh-cw"></i>
+                                <span>Muat Ulang</span>
+                            </button>
+                            <button id="btn-export-history" class="btn btn-secondary btn-sm">
+                                <i data-lucide="download"></i>
+                                <span>Ekspor CSV</span>
+                            </button>
+                            <button id="btn-reset-history" class="btn btn-destructive btn-sm">
+                                <i data-lucide="trash"></i>
+                                <span>Reset Riwayat</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <!-- History Search & Stats -->
+                        <div class="history-controls-bar">
+                            <div class="search-box">
+                                <i data-lucide="search"></i>
+                                <input type="text" id="history-search-input" placeholder="Cari nama, NIM, prodi, atau cohort...">
+                            </div>
+                            <div class="history-stat-badge">
+                                Total Pernah Mengisi: <strong id="history-total-count">0</strong> Mahasiswa
+                            </div>
+                        </div>
+
+                        <!-- History Table -->
+                        <div class="table-responsive">
+                            <table class="data-table" id="history-table">
+                                <thead>
+                                    <tr>
+                                        <th>No.</th>
+                                        <th>NIM</th>
+                                        <th>Nama Mahasiswa</th>
+                                        <th>Angkatan</th>
+                                        <th>Program Studi</th>
+                                        <th>Dataset Asal</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="history-table-body">
+                                    <tr>
+                                        <td colspan="6" class="text-center py-6 text-muted">
+                                            <i data-lucide="inbox" class="empty-icon-sm"></i>
+                                            <p>Belum ada riwayat pengisian.</p>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+            </div>
         </main>
     </div>
 
-    <!-- Confirm Modal -->
-    <div id="modal-confirm" class="modal-overlay hidden">
-        <div class="modal-box">
-            <h3>Konfirmasi Reset Riwayat</h3>
-            <p>Apakah Anda yakin ingin mereset riwayat pengisian? Semua data mahasiswa yang terisi (NIM terdaftar) akan dihapus dari riwayat sehingga mereka dapat dipilih kembali.</p>
-            <div class="modal-actions">
+    <!-- Confirm Modal (Shadcn Dialog style) -->
+    <div id="modal-confirm" class="modal-backdrop hidden">
+        <div class="modal-dialog">
+            <div class="modal-header">
+                <div class="modal-header-icon danger">
+                    <i data-lucide="alert-triangle"></i>
+                </div>
+                <div>
+                    <h3 class="modal-title">Konfirmasi Reset Riwayat</h3>
+                    <p class="modal-desc">Tindakan ini akan mengosongkan seluruh riwayat identitas mahasiswa yang telah digunakan.</p>
+                </div>
+            </div>
+            <div class="modal-body">
+                <p>Setelah direset, seluruh NIM mahasiswa akan kembali berstatus <strong>Tersedia</strong> sehingga dapat dipilih ulang pada proses pengisian berikutnya.</p>
+            </div>
+            <div class="modal-footer">
                 <button id="btn-confirm-cancel" class="btn btn-secondary">Batal</button>
-                <button id="btn-confirm-reset" class="btn btn-danger">Ya, Reset</button>
+                <button id="btn-confirm-reset" class="btn btn-destructive">Ya, Reset Riwayat</button>
             </div>
         </div>
     </div>
 
+    <!-- Toast Notification Container -->
+    <div class="toast-container" id="toast-container"></div>
+
+    <!-- Main JavaScript Logic -->
     <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+    <script>
+        // Inisialisasi ikon Lucide
+        lucide.createIcons();
+    </script>
 </body>
 </html>

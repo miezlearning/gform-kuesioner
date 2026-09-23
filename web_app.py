@@ -389,6 +389,41 @@ def reset_history():
         return jsonify({"success": True, "message": "Riwayat berhasil direset."})
     return jsonify({"success": False, "message": "Gagal mereset riwayat."}), 500
 
+@app.route("/api/history", methods=["GET"])
+def get_history_details():
+    """Mengembalikan daftar lengkap mahasiswa dan NIM yang telah mengisi form."""
+    history_nims = set(load_history())
+    cohorts = get_available_cohorts()
+    details = []
+    seen = set()
+    for c in cohorts:
+        students = load_students_from_csv(f"dataset/{c}.csv")
+        for s in students:
+            nim = s.get("nim", "")
+            if nim in history_nims and nim not in seen:
+                seen.add(nim)
+                details.append({
+                    "nim": nim,
+                    "nama": s.get("nama", "-"),
+                    "angkatan": s.get("angkatan", "-"),
+                    "prodi": s.get("program studi", "-"),
+                    "dataset": c
+                })
+    for nim in history_nims:
+        if nim not in seen:
+            seen.add(nim)
+            details.append({
+                "nim": nim,
+                "nama": "Mahasiswa",
+                "angkatan": f"20{nim[:2]}" if len(nim) >= 2 else "-",
+                "prodi": "-",
+                "dataset": "Riwayat Tersimpan"
+            })
+    return jsonify({
+        "total": len(history_nims),
+        "items": details
+    })
+
 @app.route("/api/stream")
 def stream_logs():
     def generate():

@@ -1,99 +1,218 @@
+// ==========================================================================
+// FormPilot Studio - Universal Form Automation App Logic
+// ==========================================================================
+
 document.addEventListener("DOMContentLoaded", () => {
-    // DOM Elements
+    // --- State Variables ---
+    let cohortsData = [];
+    let checkedCohorts = new Set();
+    let customWeights = {};
+    let formQuestions = [];
+    let questionRules = {};
+    let isRunning = false;
+    let isAutoscroll = true;
+    let eventSource = null;
+    let activeTermFilter = "all";
+    let activeQuestionFilter = "all";
+    let historyData = [];
+
+    // --- DOM Elements ---
+    // Navigation
+    const navTabs = document.querySelectorAll(".nav-tab");
+    const tabPanels = document.querySelectorAll(".tab-panel");
+    const tabQuestionsBadge = document.getElementById("tab-questions-badge");
+    const tabCohortsBadge = document.getElementById("tab-cohorts-badge");
+    const tabHistoryBadge = document.getElementById("tab-history-badge");
+    const statusText = document.getElementById("status-text");
+    const statusDot = document.querySelector(".status-dot");
+    const runnerLiveDot = document.getElementById("runner-live-dot");
+
+    // Quick Actions
+    const btnQuickStart = document.getElementById("btn-quick-start");
+    const btnQuickStop = document.getElementById("btn-quick-stop");
+
+    // Tab 1: Form Inspector
     const formUrlInput = document.getElementById("form-url");
+    const btnScanForm = document.getElementById("btn-scan-form");
+    const formMetaCard = document.getElementById("form-meta-card");
+    const metaFormTitle = document.getElementById("meta-form-title");
+    const metaFormPages = document.getElementById("meta-form-pages");
+    const metaFormCount = document.getElementById("meta-form-count");
+    const metaFormEmail = document.getElementById("meta-form-email");
+    const metaFormDesc = document.getElementById("meta-form-desc");
+    const questionsList = document.getElementById("questions-list");
+    const filterQuestionSearch = document.getElementById("filter-question-search");
+    const questionFilterPills = document.querySelectorAll(".filter-pill");
+    const btnExpandAll = document.getElementById("btn-expand-all");
+    const btnCollapseAll = document.getElementById("btn-collapse-all");
+    const btnResetRules = document.getElementById("btn-reset-rules");
+
+    // Tab 2: Datasets & Targets
+    const cohortsGrid = document.getElementById("cohorts-grid");
+    const btnSelectAll = document.getElementById("btn-select-all");
+    const btnDeselectAll = document.getElementById("btn-deselect-all");
     const targetInput = document.getElementById("target-submissions");
+    const presetBtns = document.querySelectorAll(".preset-btn");
     const delayMinInput = document.getElementById("delay-min");
     const delayMaxInput = document.getElementById("delay-max");
     const distributionRadios = document.getElementsByName("distribution-mode");
-    const cohortsGrid = document.getElementById("cohorts-grid");
-    const btnStart = document.getElementById("btn-start");
-    const btnStop = document.getElementById("btn-stop");
-    const btnSelectAll = document.getElementById("btn-select-all");
-    const btnDeselectAll = document.getElementById("btn-deselect-all");
-    const btnResetHistory = document.getElementById("btn-reset-history");
-    const btnClearTerminal = document.getElementById("btn-clear-terminal");
-    const btnToggleAutoscroll = document.getElementById("btn-toggle-autoscroll");
-    const terminalBody = document.getElementById("terminal-body");
-    
-    // Questions Section Elements
-    const btnScanForm = document.getElementById("btn-scan-form");
-    const questionsSection = document.getElementById("questions-section");
-    const questionsWrapper = document.getElementById("questions-wrapper");
-    const questionsList = document.getElementById("questions-list");
-    const btnToggleQuestions = document.getElementById("btn-toggle-questions");
-    const toggleText = document.getElementById("toggle-text");
-    const btnResetRules = document.getElementById("btn-reset-rules");
-    const badgeQuestionCount = document.getElementById("badge-question-count");
-    const formInfoSubtitle = document.getElementById("form-info-subtitle");
-    
-    // Progress Section
-    const progressContainer = document.getElementById("progress-container");
-    const progressText = document.getElementById("progress-text");
-    const statSuccessCount = document.getElementById("stat-success-count");
-    const statFailedCount = document.getElementById("stat-failed-count");
-    const progressBarFill = document.getElementById("progress-bar-fill");
-    
-    // Custom Weights Bar
     const customWeightAlert = document.getElementById("custom-weight-alert");
     const weightTotalPercentage = document.getElementById("weight-total-percentage");
     const weightValidationMsg = document.getElementById("weight-validation-msg");
-    
-    // Modals
+
+    // Tab 3: Execution Studio & Terminal
+    const btnStart = document.getElementById("btn-start");
+    const btnStop = document.getElementById("btn-stop");
+    const runnerBadgeStatus = document.getElementById("runner-badge-status");
+    const runnerBadgeText = document.getElementById("runner-badge-text");
+    const runnerActiveInfo = document.getElementById("runner-active-info");
+    const metricCompleted = document.getElementById("metric-completed");
+    const metricTotal = document.getElementById("metric-total");
+    const metricSuccess = document.getElementById("metric-success");
+    const metricFailed = document.getElementById("metric-failed");
+    const metricRemaining = document.getElementById("metric-remaining");
+    const progressBarFill = document.getElementById("progress-bar-fill");
+    const progressPercentText = document.getElementById("progress-percent-text");
+    const progressStatusDesc = document.getElementById("progress-status-desc");
+    const terminalBody = document.getElementById("terminal-body");
+    const btnClearTerminal = document.getElementById("btn-clear-terminal");
+    const btnCopyTerminal = document.getElementById("btn-copy-terminal");
+    const btnToggleAutoscroll = document.getElementById("btn-toggle-autoscroll");
+    const termTabs = document.querySelectorAll(".term-tab");
+
+    // Tab 4: History & Analytics
+    const historyTableBody = document.getElementById("history-table-body");
+    const historySearchInput = document.getElementById("history-search-input");
+    const historyTotalCount = document.getElementById("history-total-count");
+    const btnRefreshHistory = document.getElementById("btn-refresh-history");
+    const btnExportHistory = document.getElementById("btn-export-history");
+    const btnResetHistory = document.getElementById("btn-reset-history");
+
+    // Modal & Toast
     const modalConfirm = document.getElementById("modal-confirm");
     const btnConfirmCancel = document.getElementById("btn-confirm-cancel");
     const btnConfirmReset = document.getElementById("btn-confirm-reset");
-    
-    // State Variables
-    let cohortsData = [];
-    let checkedCohorts = new Set();
-    let customWeights = {}; // { cohort: percentage_int }
-    let formQuestions = [];
-    let questionRules = {}; // { entry_id: rule_object }
-    let isQuestionsCollapsed = false;
-    let isAutoscroll = true;
-    let eventSource = null;
-    let statusInterval = null;
-    let isRunning = false;
+    const toastContainer = document.getElementById("toast-container");
 
-    // Initialize application
+    // Initialize Studio
     init();
 
     function init() {
-        fetchStatus(true); // Load initial setup
+        setupTabs();
         setupEventListeners();
+        fetchStatus(true);
+        loadHistory();
+        renderIcons();
     }
 
-    function setupEventListeners() {
-        // Scan Form questions
-        if (btnScanForm) {
-            btnScanForm.addEventListener("click", () => {
-                const url = formUrlInput.value.trim();
-                if (url) fetchFormStructure(url);
+    function renderIcons() {
+        if (window.lucide) {
+            window.lucide.createIcons();
+        }
+    }
+
+    // --- Toast Notifications ---
+    function showToast(message, type = "info") {
+        const toast = document.createElement("div");
+        toast.className = `toast ${type}`;
+        
+        let iconName = "info";
+        if (type === "success") iconName = "check-circle";
+        if (type === "error") iconName = "alert-circle";
+        
+        toast.innerHTML = `<i data-lucide="${iconName}"></i> <span>${message}</span>`;
+        toastContainer.appendChild(toast);
+        renderIcons();
+
+        setTimeout(() => {
+            toast.style.opacity = "0";
+            toast.style.transform = "translateX(20px)";
+            toast.style.transition = "all 0.25s ease";
+            setTimeout(() => toast.remove(), 250);
+        }, 3500);
+    }
+
+    // --- Tab Navigation System ---
+    function setupTabs() {
+        navTabs.forEach(tab => {
+            tab.addEventListener("click", () => {
+                switchTab(tab.getAttribute("data-tab"));
             });
-        }
+        });
+    }
 
-        // Toggle questions panel collapse
-        if (btnToggleQuestions) {
-            btnToggleQuestions.addEventListener("click", toggleQuestionsView);
-        }
-
-        // Reset all rules to smart default
-        if (btnResetRules) {
-            btnResetRules.addEventListener("click", resetAllRules);
-        }
-
-        // Clear terminal
-        btnClearTerminal.addEventListener("click", () => {
-            terminalBody.innerHTML = '<div class="terminal-line system">Terminal dibersihkan.</div>';
+    function switchTab(tabId) {
+        navTabs.forEach(t => {
+            const isActive = t.getAttribute("data-tab") === tabId;
+            t.classList.toggle("active", isActive);
+            t.setAttribute("aria-selected", isActive ? "true" : "false");
         });
 
-        // Toggle Autoscroll
-        btnToggleAutoscroll.addEventListener("click", () => {
-            isAutoscroll = !isAutoscroll;
-            btnToggleAutoscroll.classList.toggle("active", isAutoscroll);
+        tabPanels.forEach(p => {
+            p.classList.toggle("active", p.id === tabId);
         });
 
-        // Mode Distribusi Change
+        renderIcons();
+    }
+
+    // --- Event Listeners ---
+    function setupEventListeners() {
+        // Scan Form
+        btnScanForm.addEventListener("click", () => {
+            const url = formUrlInput.value.trim();
+            if (!url) {
+                showToast("Silakan masukkan URL Google Form terlebih dahulu.", "error");
+                formUrlInput.focus();
+                return;
+            }
+            fetchFormStructure(url);
+        });
+
+        formUrlInput.addEventListener("keydown", (e) => {
+            if (e.key === "Enter") {
+                e.preventDefault();
+                btnScanForm.click();
+            }
+        });
+
+        // Filter Pertanyaan
+        filterQuestionSearch.addEventListener("input", (e) => {
+            filterQuestions(e.target.value.toLowerCase(), activeQuestionFilter);
+        });
+
+        questionFilterPills.forEach(pill => {
+            pill.addEventListener("click", () => {
+                questionFilterPills.forEach(p => p.classList.remove("active"));
+                pill.classList.add("active");
+                activeQuestionFilter = pill.getAttribute("data-filter");
+                filterQuestions(filterQuestionSearch.value.toLowerCase(), activeQuestionFilter);
+            });
+        });
+
+        // Expand / Collapse Cards
+        btnExpandAll.addEventListener("click", () => toggleAllQuestions(true));
+        btnCollapseAll.addEventListener("click", () => toggleAllQuestions(false));
+        btnResetRules.addEventListener("click", resetAllRules);
+
+        // Target Preset Buttons
+        presetBtns.forEach(btn => {
+            btn.addEventListener("click", () => {
+                targetInput.value = btn.getAttribute("data-val");
+            });
+        });
+
+        // Cohort Selection Controls
+        btnSelectAll.addEventListener("click", () => {
+            checkedCohorts = new Set(cohortsData.map(c => c.cohort));
+            updateCohortsUI();
+        });
+
+        btnDeselectAll.addEventListener("click", () => {
+            checkedCohorts.clear();
+            updateCohortsUI();
+        });
+
+        // Distribution Mode
         distributionRadios.forEach(radio => {
             radio.addEventListener("change", (e) => {
                 toggleWeightControls(e.target.value === "kustom");
@@ -101,535 +220,103 @@ document.addEventListener("DOMContentLoaded", () => {
             });
         });
 
-        // Select All / Deselect All
-        btnSelectAll.addEventListener("click", () => {
-            checkedCohorts.clear();
-            cohortsData.forEach(c => checkedCohorts.add(c.cohort));
-            renderCohorts();
-            validateWeights();
+        // Start & Stop Triggers
+        btnStart.addEventListener("click", startFilling);
+        btnQuickStart.addEventListener("click", () => {
+            switchTab("tab-runner");
+            startFilling();
         });
 
-        btnDeselectAll.addEventListener("click", () => {
-            checkedCohorts.clear();
-            renderCohorts();
-            validateWeights();
+        btnStop.addEventListener("click", stopFilling);
+        btnQuickStop.addEventListener("click", stopFilling);
+
+        // Terminal Tools
+        btnClearTerminal.addEventListener("click", () => {
+            terminalBody.innerHTML = `<div class="terminal-line system"><span class="term-time">[${getCurrentTime()}]</span><span class="term-tag">[SYSTEM]</span><span class="term-text">Terminal dibersihkan.</span></div>`;
         });
 
-        // Reset History Modals
-        btnResetHistory.addEventListener("click", () => {
-            modalConfirm.classList.remove("hidden");
+        btnCopyTerminal.addEventListener("click", () => {
+            const text = terminalBody.innerText;
+            navigator.clipboard.writeText(text).then(() => {
+                showToast("Log terminal berhasil disalin ke clipboard.", "success");
+            });
         });
 
-        btnConfirmCancel.addEventListener("click", () => {
-            modalConfirm.classList.add("hidden");
+        btnToggleAutoscroll.addEventListener("click", () => {
+            isAutoscroll = !isAutoscroll;
+            btnToggleAutoscroll.classList.toggle("active", isAutoscroll);
+            showToast(`Auto-scroll ${isAutoscroll ? "diaktifkan" : "dinonaktifkan"}.`, "info");
         });
 
-        btnConfirmReset.addEventListener("click", () => {
-            modalConfirm.classList.add("hidden");
-            resetHistory();
+        termTabs.forEach(tab => {
+            tab.addEventListener("click", () => {
+                termTabs.forEach(t => t.classList.remove("active"));
+                tab.classList.add("active");
+                activeTermFilter = tab.getAttribute("data-filter");
+                filterTerminalLogs();
+            });
         });
 
-        // Submit form (Start Job)
-        document.getElementById("settings-form").addEventListener("submit", (e) => {
-            e.preventDefault();
-            if (isRunning) return;
-            startJob();
-        });
+        // History Tools
+        btnRefreshHistory.addEventListener("click", loadHistory);
+        btnExportHistory.addEventListener("click", exportHistoryCSV);
+        btnResetHistory.addEventListener("click", () => modalConfirm.classList.remove("hidden"));
+        btnConfirmCancel.addEventListener("click", () => modalConfirm.classList.add("hidden"));
+        btnConfirmReset.addEventListener("click", confirmResetHistory);
 
-        // Stop Job button
-        btnStop.addEventListener("click", stopJob);
+        historySearchInput.addEventListener("input", (e) => {
+            renderHistoryTable(e.target.value.toLowerCase());
+        });
     }
 
-    // Toggle showing weight inputs/sliders
-    function toggleWeightControls(show) {
-        const weightControls = document.querySelectorAll(".cohort-weight-control");
-        weightControls.forEach(ctrl => {
-            if (show) {
-                ctrl.classList.remove("hidden");
-            } else {
-                ctrl.classList.add("hidden");
-            }
-        });
-        
-        if (show) {
-            customWeightAlert.classList.remove("hidden");
-            // Auto allocate equal weights if empty or 0
-            const activeCount = checkedCohorts.size;
-            if (activeCount > 0) {
-                let sum = 0;
-                checkedCohorts.forEach(c => {
-                    if (!customWeights[c]) {
-                        customWeights[c] = Math.floor(100 / activeCount);
-                    }
-                    sum += customWeights[c];
-                });
-                
-                // Adjust rounding difference to first element
-                if (sum !== 100) {
-                    const first = Array.from(checkedCohorts)[0];
-                    customWeights[first] += (100 - sum);
-                }
-                
-                // Sync to inputs
-                checkedCohorts.forEach(c => {
-                    const slider = document.getElementById(`slider-${c}`);
-                    const input = document.getElementById(`val-${c}`);
-                    if (slider) slider.value = customWeights[c];
-                    if (input) input.value = customWeights[c];
-                });
-            }
-        } else {
-            customWeightAlert.classList.add("hidden");
-        }
-    }
-
-    // Validate weights sum to 100%
-    function validateWeights() {
-        const mode = document.querySelector('input[name="distribution-mode"]:checked').value;
-        
-        if (checkedCohorts.size === 0) {
-            btnStart.disabled = true;
-            btnStart.title = "Pilih minimal satu angkatan!";
-            return;
-        }
-
-        if (mode !== "kustom") {
-            btnStart.disabled = false;
-            btnStart.title = "";
-            return;
-        }
-
-        let total = 0;
-        checkedCohorts.forEach(c => {
-            total += parseInt(customWeights[c] || 0);
-        });
-
-        weightTotalPercentage.textContent = `${total}%`;
-
-        if (total !== 100) {
-            btnStart.disabled = true;
-            weightValidationMsg.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> Total persen harus bernilai 100% (saat ini ${total}%)`;
-            weightValidationMsg.className = "validation-error";
-        } else {
-            btnStart.disabled = false;
-            weightValidationMsg.innerHTML = `<i class="fa-solid fa-circle-check"></i> Total bobot valid (100%)`;
-            weightValidationMsg.className = "validation-error success";
-        }
-    }
-
-    // Fetch cohort stats and default configs
+    // --- API Interactions ---
     function fetchStatus(isInitial = false) {
         fetch("/api/status")
             .then(res => res.json())
             .then(data => {
-                cohortsData = data.stats;
-                
-                // Sync configs on initial load
                 if (isInitial) {
-                    formUrlInput.value = data.default_url;
-                    targetInput.value = data.default_target;
-                    delayMinInput.value = data.default_delay_min;
-                    delayMaxInput.value = data.default_delay_max;
-                    
-                    // Check all cohorts by default on first load
-                    cohortsData.forEach(c => checkedCohorts.add(c.cohort));
+                    if (data.default_url) formUrlInput.value = data.default_url;
+                    if (data.default_target) targetInput.value = data.default_target;
+                    if (data.default_delay_min !== undefined) delayMinInput.value = data.default_delay_min;
+                    if (data.default_delay_max !== undefined) delayMaxInput.value = data.default_delay_max;
 
-                    // Auto fetch form structure
+                    // Auto-scan initial form if present
                     if (data.default_url) {
                         fetchFormStructure(data.default_url);
                     }
                 }
 
-                renderCohorts();
-                
-                // Restore run state if server page was reloaded but server is running a job
-                if (data.is_running && !isRunning) {
-                    setIsRunning(true);
-                    progressContainer.classList.remove("hidden");
+                cohortsData = data.stats || [];
+                tabCohortsBadge.textContent = cohortsData.length;
+
+                if (checkedCohorts.size === 0 && cohortsData.length > 0) {
+                    // Default: Pilih dataset kesehatan atau dataset pertama
+                    const defaultCohort = cohortsData.find(c => c.cohort.includes("kesehatan")) || cohortsData[0];
+                    checkedCohorts.add(defaultCohort.cohort);
+                }
+
+                renderCohortsCards();
+
+                // Periksa apakah server sedang menjalankan task
+                if (data.is_running) {
+                    setExecutionRunning(true);
                     updateProgressUI(data.job_progress);
-                    startStreaming();
-                } else if (!data.is_running && isRunning) {
-                    setIsRunning(false);
-                    stopStreaming();
-                } else if (isRunning) {
-                    updateProgressUI(data.job_progress);
-                }
-
-                validateWeights();
-            })
-            .catch(err => {
-                console.error("Gagal memuat status dari server:", err);
-                appendTerminalLine("Gagal menghubungi server untuk update data status.", "error");
-            });
-    }
-
-    // Update Progress panel counters
-    function updateProgressUI(progress) {
-        progressText.textContent = `${progress.completed}/${progress.target}`;
-        statSuccessCount.textContent = progress.success;
-        statFailedCount.textContent = progress.failed;
-        
-        const pct = progress.target > 0 ? (progress.completed / progress.target) * 100 : 0;
-        progressBarFill.style.width = `${pct}%`;
-    }
-
-    // Render cards to DOM
-    function renderCohorts() {
-        const isKustomMode = document.querySelector('input[name="distribution-mode"]:checked').value === "kustom";
-        
-        if (cohortsData.length === 0) {
-            cohortsGrid.innerHTML = `
-                <div class="loading-placeholder">
-                    <i class="fa-solid fa-circle-xmark"></i> Tidak ditemukan file CSV di folder dataset/
-                </div>`;
-            return;
-        }
-
-        // Simpan referensi input/slider untuk input kustom agar posisinya stabil
-        cohortsGrid.innerHTML = "";
-        cohortsData.forEach(c => {
-            const isChecked = checkedCohorts.has(c.cohort);
-            const pctFilled = c.total > 0 ? (c.filled / c.total) * 100 : 0;
-            
-            // Default weight
-            if (!customWeights[c.cohort]) {
-                customWeights[c.cohort] = 0;
-            }
-
-            const card = document.createElement("div");
-            card.className = `cohort-card ${isChecked ? 'selected' : ''}`;
-            card.innerHTML = `
-                <div class="cohort-select-wrapper">
-                    <span class="cohort-name">Angkatan ${c.cohort}</span>
-                    <div class="card-checkbox">
-                        <i class="fa-solid fa-check"></i>
-                    </div>
-                </div>
-                
-                <div class="cohort-stats">
-                    <div class="stat-item">
-                        <span>Total Data:</span>
-                        <span>${c.total}</span>
-                    </div>
-                    <div class="stat-item">
-                        <span>Sudah Diisi:</span>
-                        <span>${c.filled}</span>
-                    </div>
-                    <div class="stat-item">
-                        <span>Sisa:</span>
-                        <span>${c.remaining}</span>
-                    </div>
-                    <div class="cohort-progress" title="${pctFilled.toFixed(1)}% terisi">
-                        <div class="cohort-progress-fill" style="width: ${pctFilled}%"></div>
-                    </div>
-                </div>
-
-                <div class="cohort-weight-control ${isKustomMode && isChecked ? '' : 'hidden'}" id="weight-ctrl-${c.cohort}">
-                    <div class="weight-label">
-                        <span>Bobot Pengisian:</span>
-                        <span id="label-val-${c.cohort}">${customWeights[c.cohort]}%</span>
-                    </div>
-                    <div class="slider-wrapper">
-                        <input type="range" id="slider-${c.cohort}" min="0" max="100" value="${customWeights[c.cohort]}">
-                        <input type="number" id="val-${c.cohort}" min="0" max="100" class="weight-val-input" value="${customWeights[c.cohort]}">
-                    </div>
-                </div>
-            `;
-
-            // Prevent event capture issues by stopping slider/input click propagation
-            const weightCtrl = card.querySelector(`#weight-ctrl-${c.cohort}`);
-            if (weightCtrl) {
-                weightCtrl.addEventListener("click", (e) => {
-                    e.stopPropagation();
-                });
-            }
-
-            // Click listener for selecting card
-            card.addEventListener("click", () => {
-                if (checkedCohorts.has(c.cohort)) {
-                    checkedCohorts.delete(c.cohort);
-                    card.classList.remove("selected");
-                    if (weightCtrl) weightCtrl.classList.add("hidden");
+                    if (!eventSource) startSSEStream();
                 } else {
-                    checkedCohorts.add(c.cohort);
-                    card.classList.add("selected");
-                    if (isKustomMode && weightCtrl) {
-                        weightCtrl.classList.remove("hidden");
-                    }
-                }
-                
-                // Adjust weights after select change
-                adjustWeightsAfterSelection();
-                validateWeights();
-            });
-
-            // Sliders listener
-            const slider = card.querySelector(`#slider-${c.cohort}`);
-            const numInput = card.querySelector(`#val-${c.cohort}`);
-            const labelVal = card.querySelector(`#label-val-${c.cohort}`);
-
-            if (slider && numInput) {
-                const updateVal = (newVal) => {
-                    newVal = Math.max(0, Math.min(100, parseInt(newVal) || 0));
-                    customWeights[c.cohort] = newVal;
-                    slider.value = newVal;
-                    numInput.value = newVal;
-                    labelVal.textContent = `${newVal}%`;
-                    validateWeights();
-                };
-
-                slider.addEventListener("input", (e) => updateVal(e.target.value));
-                numInput.addEventListener("input", (e) => updateVal(e.target.value));
-            }
-
-            cohortsGrid.appendChild(card);
-        });
-    }
-
-    // Auto balance weights when checking/unchecking cohorts in custom mode
-    function adjustWeightsAfterSelection() {
-        const mode = document.querySelector('input[name="distribution-mode"]:checked').value;
-        if (mode !== "kustom" || checkedCohorts.size === 0) return;
-
-        // Collect current values
-        let sum = 0;
-        checkedCohorts.forEach(c => {
-            sum += customWeights[c] || 0;
-        });
-
-        if (sum === 0 || sum !== 100) {
-            // Recalculate evenly
-            const val = Math.floor(100 / checkedCohorts.size);
-            checkedCohorts.forEach(c => {
-                customWeights[c] = val;
-            });
-            
-            // Adjust difference to the first one
-            const remaining = 100 - (val * checkedCohorts.size);
-            if (remaining > 0) {
-                const first = Array.from(checkedCohorts)[0];
-                customWeights[first] += remaining;
-            }
-
-            // Sync HTML elements
-            checkedCohorts.forEach(c => {
-                const s = document.getElementById(`slider-${c}`);
-                const v = document.getElementById(`val-${c}`);
-                const l = document.getElementById(`label-val-${c}`);
-                if (s) s.value = customWeights[c];
-                if (v) v.value = customWeights[c];
-                if (l) l.textContent = `${customWeights[c]}%`;
-            });
-        }
-    }
-
-    // Set UI Mode (Running / Stop)
-    function setIsRunning(running) {
-        isRunning = running;
-        if (running) {
-            btnStart.classList.add("hidden");
-            btnStop.classList.remove("hidden");
-            btnResetHistory.disabled = true;
-            btnSelectAll.disabled = true;
-            btnDeselectAll.disabled = true;
-            if (btnScanForm) btnScanForm.disabled = true;
-            if (btnResetRules) btnResetRules.disabled = true;
-            
-            // Disable settings input during run
-            formUrlInput.disabled = true;
-            targetInput.disabled = true;
-            delayMinInput.disabled = true;
-            delayMaxInput.disabled = true;
-            distributionRadios.forEach(r => r.disabled = true);
-            document.querySelectorAll(".weight-val-input").forEach(i => i.disabled = true);
-            document.querySelectorAll('input[type="range"]').forEach(r => r.disabled = true);
-            document.querySelectorAll(".rule-select").forEach(s => s.disabled = true);
-            document.querySelectorAll(".rule-input").forEach(i => i.disabled = true);
-        } else {
-            btnStart.classList.remove("hidden");
-            btnStop.classList.add("hidden");
-            btnResetHistory.disabled = false;
-            btnSelectAll.disabled = false;
-            btnDeselectAll.disabled = false;
-            if (btnScanForm) btnScanForm.disabled = false;
-            if (btnResetRules) btnResetRules.disabled = false;
-            
-            formUrlInput.disabled = false;
-            targetInput.disabled = false;
-            delayMinInput.disabled = false;
-            delayMaxInput.disabled = false;
-            distributionRadios.forEach(r => r.disabled = false);
-            document.querySelectorAll(".weight-val-input").forEach(i => i.disabled = false);
-            document.querySelectorAll('input[type="range"]').forEach(r => r.disabled = false);
-            document.querySelectorAll(".rule-select").forEach(s => s.disabled = false);
-            document.querySelectorAll(".rule-input").forEach(i => i.disabled = false);
-        }
-    }
-
-    // Start questionnaire filler process
-    function startJob() {
-        const mode = document.querySelector('input[name="distribution-mode"]:checked').value;
-        const payload = {
-            url: formUrlInput.value.trim ? formUrlInput.value.trim() : formUrlInput.value,
-            target: parseInt(targetInput.value),
-            min_delay: parseInt(delayMinInput.value),
-            max_delay: parseInt(delayMaxInput.value),
-            mode: mode,
-            cohorts: Array.from(checkedCohorts),
-            weights: {},
-            question_rules: questionRules
-        };
-
-        if (mode === "kustom") {
-            checkedCohorts.forEach(c => {
-                payload.weights[c] = customWeights[c];
-            });
-        }
-
-        setIsRunning(true);
-        progressContainer.classList.remove("hidden");
-        updateProgressUI({ completed: 0, target: payload.target, success: 0, failed: 0 });
-        
-        terminalBody.innerHTML = '<div class="terminal-line system">Memulai koneksi ke server...</div>';
-
-        fetch("/api/start", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload)
-        })
-        .then(res => res.json())
-        .then(data => {
-            if (data.success) {
-                startStreaming();
-            } else {
-                appendTerminalLine(`Gagal memulai pekerjaan: ${data.message}`, "error");
-                setIsRunning(false);
-            }
-        })
-        .catch(err => {
-            console.error("Gagal menghubungi API start:", err);
-            appendTerminalLine("Gagal memanggil API Start Server.", "error");
-            setIsRunning(false);
-        });
-    }
-
-    // Stop execution
-    function stopJob() {
-        appendTerminalLine("Mengirim permintaan penghentian...", "warning");
-        fetch("/api/stop", { method: "POST" })
-            .then(res => res.json())
-            .then(data => {
-                if (!data.success) {
-                    appendTerminalLine(`Penghentian gagal: ${data.message}`, "error");
-                }
-            })
-            .catch(err => console.error("Gagal stop job:", err));
-    }
-
-    // Reset filled database history
-    function resetHistory() {
-        appendTerminalLine("Mereset database riwayat pengisian...", "warning");
-        fetch("/api/reset-history", { method: "POST" })
-            .then(res => res.json())
-            .then(data => {
-                if (data.success) {
-                    appendTerminalLine("Riwayat berhasil direset.", "success");
-                    fetchStatus(); // Refresh stats
-                } else {
-                    appendTerminalLine(`Reset gagal: ${data.message}`, "error");
+                    if (isRunning) setExecutionRunning(false);
                 }
             })
             .catch(err => {
-                console.error("Gagal reset:", err);
-                appendTerminalLine("Gagal mereset riwayat pengisian.", "error");
+                console.error("Gagal mengambil status:", err);
+                statusText.textContent = "Koneksi Terputus";
+                statusDot.className = "status-dot";
             });
     }
 
-    // SSE EventSource listening
-    function startStreaming() {
-        if (eventSource) {
-            eventSource.close();
-        }
-
-        eventSource = new EventSource("/api/stream");
-        
-        eventSource.onmessage = (event) => {
-            const data = JSON.parse(event.data);
-            
-            if (data.text === "[FINISHED]") {
-                appendTerminalLine("Proses streaming selesai.", "system");
-                stopStreaming();
-                setIsRunning(false);
-                fetchStatus(); // Final status sync
-                return;
-            }
-
-            appendTerminalLine(data.text, data.type, data.time);
-        };
-
-        eventSource.onerror = (err) => {
-            console.error("EventSource Error:", err);
-            appendTerminalLine("Koneksi log terputus. Mencoba menghubungkan kembali...", "warning");
-        };
-
-        // Poll status every 1.5 seconds to sync dashboard bars
-        if (statusInterval) clearInterval(statusInterval);
-        statusInterval = setInterval(() => {
-            fetchStatus();
-        }, 1500);
-    }
-
-    function stopStreaming() {
-        if (eventSource) {
-            eventSource.close();
-            eventSource = null;
-        }
-        if (statusInterval) {
-            clearInterval(statusInterval);
-            statusInterval = null;
-        }
-    }
-
-    // Append a line in terminal box
-    function appendTerminalLine(text, type = "info", timeStr = null) {
-        if (!timeStr) {
-            const now = new Date();
-            const pad = (n) => String(n).padStart(2, '0');
-            timeStr = `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
-        }
-
-        const line = document.createElement("div");
-        line.className = `terminal-line ${type}`;
-        
-        const timeSpan = document.createElement("span");
-        timeSpan.className = "line-time";
-        timeSpan.textContent = `[${timeStr}] `;
-        
-        line.appendChild(timeSpan);
-        line.appendChild(document.createTextNode(text));
-        
-        terminalBody.appendChild(line);
-
-        if (isAutoscroll) {
-            terminalBody.scrollTop = terminalBody.scrollHeight;
-        }
-    }
-
-    // ==================== FORM QUESTIONS & RULE ENGINE ====================
-
-    // Fetch and extract form questions from backend
     function fetchFormStructure(url) {
-        if (!url) return;
-        
-        if (badgeQuestionCount) badgeQuestionCount.textContent = "Memindai...";
-        if (formInfoSubtitle) formInfoSubtitle.textContent = "Sedang mengekstrak seluruh pertanyaan...";
-        if (questionsList) {
-            questionsList.innerHTML = `
-                <div class="loading-placeholder">
-                    <i class="fa-solid fa-circle-notch fa-spin"></i> Sedang membaca struktur form & daftar pertanyaan...
-                </div>
-            `;
-        }
+        btnScanForm.disabled = true;
+        btnScanForm.innerHTML = `<i data-lucide="loader-2" class="spin"></i> <span>Menganalisis...</span>`;
+        renderIcons();
 
         fetch("/api/parse-form", {
             method: "POST",
@@ -638,284 +325,702 @@ document.addEventListener("DOMContentLoaded", () => {
         })
         .then(res => res.json())
         .then(data => {
+            btnScanForm.disabled = false;
+            btnScanForm.innerHTML = `<i data-lucide="scan"></i> <span>Baca & Analisis Form</span>`;
+            renderIcons();
+
             if (data.success) {
                 formQuestions = data.questions || [];
-                if (badgeQuestionCount) badgeQuestionCount.textContent = `${formQuestions.length} Pertanyaan`;
-                if (formInfoSubtitle) formInfoSubtitle.innerHTML = `<strong>${data.form_title}</strong> (${data.num_pages} Halaman${data.has_email_page ? ' + Email' : ''})`;
-                
-                // Initialize default rules from backend suggested rules
-                questionRules = {};
-                formQuestions.forEach(q => {
-                    questionRules[q.entry_id] = q.suggested_rule || { mode: "auto" };
-                });
+                tabQuestionsBadge.textContent = formQuestions.length;
+                tabQuestionsBadge.classList.remove("hidden");
 
-                renderQuestions();
-                appendTerminalLine(`Form "${data.form_title}" berhasil dimuat: ${formQuestions.length} pertanyaan terdeteksi.`, "success");
+                // Render Metadata
+                metaFormTitle.textContent = data.form_title || "Formulir Google";
+                metaFormPages.textContent = `${data.num_pages || 1} Halaman`;
+                metaFormCount.textContent = `${formQuestions.length} Pertanyaan`;
+                metaFormEmail.textContent = data.has_email_page ? "Wajib Diisi" : "Tidak";
+                metaFormDesc.textContent = data.form_description || "Formulir tidak memiliki deskripsi tambahan.";
+                formMetaCard.classList.remove("hidden");
+
+                renderQuestionsList();
+                showToast(`Form berhasil dianalisis: ${formQuestions.length} pertanyaan terdeteksi.`, "success");
             } else {
-                if (badgeQuestionCount) badgeQuestionCount.textContent = "Gagal";
-                if (formInfoSubtitle) formInfoSubtitle.textContent = data.message || "Gagal memuat form";
-                if (questionsList) {
-                    questionsList.innerHTML = `
-                        <div class="loading-placeholder">
-                            <i class="fa-solid fa-triangle-exclamation" style="color: var(--color-error)"></i> ${data.message || "Gagal membaca struktur Google Form."}
-                        </div>
-                    `;
-                }
-                appendTerminalLine(`Gagal membaca form: ${data.message}`, "error");
+                showToast(data.message || "Gagal membaca struktur formulir.", "error");
             }
         })
         .catch(err => {
-            console.error("Gagal parse form:", err);
-            if (badgeQuestionCount) badgeQuestionCount.textContent = "Error";
-            if (formInfoSubtitle) formInfoSubtitle.textContent = "Terjadi kesalahan saat menghubungi server";
-            if (questionsList) {
-                questionsList.innerHTML = `
-                    <div class="loading-placeholder">
-                        <i class="fa-solid fa-triangle-exclamation" style="color: var(--color-error)"></i> Terjadi kesalahan koneksi saat membaca struktur form.
-                    </div>
-                `;
-            }
-            appendTerminalLine("Gagal memanggil API /api/parse-form.", "error");
+            btnScanForm.disabled = false;
+            btnScanForm.innerHTML = `<i data-lucide="scan"></i> <span>Baca & Analisis Form</span>`;
+            renderIcons();
+            showToast("Terjadi kesalahan jaringan saat membaca form.", "error");
         });
     }
 
-    // Toggle collapse of questions panel
-    function toggleQuestionsView() {
-        isQuestionsCollapsed = !isQuestionsCollapsed;
-        if (questionsWrapper) questionsWrapper.classList.toggle("collapsed", isQuestionsCollapsed);
-        if (btnToggleQuestions) {
-            btnToggleQuestions.innerHTML = isQuestionsCollapsed ? 
-                '<i class="fa-solid fa-chevron-down"></i> <span id="toggle-text">Bentangkan</span>' : 
-                '<i class="fa-solid fa-chevron-up"></i> <span id="toggle-text">Ciutkan</span>';
-        }
-    }
-
-    // Reset all rules back to suggested defaults
-    function resetAllRules() {
-        questionRules = {};
-        formQuestions.forEach(q => {
-            questionRules[q.entry_id] = q.suggested_rule || { mode: "auto" };
-        });
-        renderQuestions();
-        appendTerminalLine("Aturan seluruh pertanyaan berhasil direset ke rekomendasi otomatis.", "info");
-    }
-
-    // Render questions grouped by section / page
-    function renderQuestions() {
-        if (!questionsList) return;
-
+    // --- Render Questions Studio (Tab 1) ---
+    function renderQuestionsList() {
         if (!formQuestions || formQuestions.length === 0) {
             questionsList.innerHTML = `
-                <div class="loading-placeholder">
-                    <i class="fa-solid fa-circle-question"></i> Tidak ada pertanyaan yang terdeteksi pada form ini.
+                <div class="empty-state">
+                    <i data-lucide="file-x" class="empty-icon"></i>
+                    <h3>Tidak Ada Pertanyaan Terdeteksi</h3>
+                    <p>Pastikan tautan Google Form publik dan dapat diakses tanpa login terbatas organisasi.</p>
                 </div>
             `;
+            renderIcons();
             return;
         }
 
-        // Group by page_index
-        const pageGroups = {};
-        formQuestions.forEach(q => {
-            const pIdx = q.page_index || 0;
-            if (!pageGroups[pIdx]) {
-                pageGroups[pIdx] = {
-                    title: q.section_title || `Halaman ${pIdx + 1}`,
-                    questions: []
-                };
-            }
-            pageGroups[pIdx].questions.push(q);
-        });
-
         questionsList.innerHTML = "";
+        formQuestions.forEach((q, idx) => {
+            const entryId = String(q.entry_id);
+            const defaultRule = q.suggested_rule || { mode: "auto" };
+            if (!questionRules[entryId]) {
+                questionRules[entryId] = { ...defaultRule };
+            }
 
-        let globalIndex = 1;
-        Object.keys(pageGroups).forEach(pIdx => {
-            const grp = pageGroups[pIdx];
-            const groupEl = document.createElement("div");
-            groupEl.className = "page-group";
-            
-            groupEl.innerHTML = `
-                <div class="page-group-header">
-                    <div class="page-group-title">
-                        <i class="fa-regular fa-file-lines"></i>
-                        <span>${grp.title} (Halaman ${parseInt(pIdx) + 1})</span>
+            const currentRule = questionRules[entryId];
+            const card = document.createElement("div");
+            card.className = "question-card";
+            card.setAttribute("data-id", entryId);
+            card.setAttribute("data-type", getQuestionTypeCategory(q.type));
+
+            const typeLabel = q.type_name || `Type ${q.type}`;
+            const reqBadge = q.required ? `<span class="badge badge-amber"><i data-lucide="asterisk"></i> Wajib</span>` : `<span class="badge badge-zinc">Opsional</span>`;
+
+            card.innerHTML = `
+                <div class="question-card-header" onclick="this.parentElement.classList.toggle('active')">
+                    <div class="question-card-left">
+                        <span class="question-num-badge">Q${idx + 1}</span>
+                        <div class="question-title-group">
+                            <span class="question-label">${escapeHtml(q.label)}${q.required ? '<span class="question-req-star">*</span>' : ''}</span>
+                            <div class="question-tags">
+                                <span class="badge badge-indigo">${typeLabel}</span>
+                                ${reqBadge}
+                                <span class="badge badge-zinc font-mono">ID: ${entryId}</span>
+                            </div>
+                        </div>
                     </div>
-                    <span class="badge-count">${grp.questions.length} Pertanyaan</span>
+                    <button type="button" class="btn-icon" title="Lihat Aturan">
+                        <i data-lucide="chevron-down"></i>
+                    </button>
                 </div>
-                <div class="page-questions"></div>
+                <div class="question-card-body">
+                    <div class="rule-selector-container">
+                        <div>
+                            <label class="form-label"><i data-lucide="zap"></i> Mode Jawaban:</label>
+                            <select class="form-control rule-select" data-entry="${entryId}">
+                                <option value="auto" ${currentRule.mode === 'auto' ? 'selected' : ''}>🤖 Otomatis Cerdas</option>
+                                <option value="csv_col" ${currentRule.mode === 'csv_col' ? 'selected' : ''}>📂 Kolom Database CSV</option>
+                                <option value="fixed_option" ${currentRule.mode === 'fixed_option' ? 'selected' : ''}>🎯 Opsi Pilihan Tetap</option>
+                                <option value="random_option" ${currentRule.mode === 'random_option' ? 'selected' : ''}>🎲 Opsi Acak Alami</option>
+                                <option value="scale" ${currentRule.mode === 'scale' ? 'selected' : ''}>📊 Skala Tertimbang</option>
+                                <option value="ai_review" ${currentRule.mode === 'ai_review' ? 'selected' : ''}>✍️ AI Komentar / Saran</option>
+                                <option value="fixed_text" ${currentRule.mode === 'fixed_text' ? 'selected' : ''}>✏️ Teks Kustom Tetap</option>
+                            </select>
+                        </div>
+                        <div class="rule-sub-control" id="sub-ctrl-${entryId}">
+                            <!-- Dynamic sub controls will be rendered here -->
+                        </div>
+                        <div class="rule-preview-pill" id="preview-${entryId}">
+                            <span>Simulasi Nilai:</span>
+                            <strong id="preview-val-${entryId}">[Auto-Detect]</strong>
+                        </div>
+                    </div>
+                </div>
             `;
 
-            const questionsContainer = groupEl.querySelector(".page-questions");
+            questionsList.appendChild(card);
+            renderSubControl(q, currentRule);
+        });
 
-            grp.questions.forEach(q => {
-                const currentRule = questionRules[q.entry_id] || q.suggested_rule || { mode: "auto" };
-                const isCustom = currentRule.mode !== "auto";
-                
-                // Determine type badge styling
-                let typeBadgeClass = "type-text";
-                if (q.type === 5) typeBadgeClass = "type-scale";
-                else if (q.type === 2 || q.type === 3) typeBadgeClass = "type-radio";
-                else if (q.type === 4) typeBadgeClass = "type-dropdown";
+        setupQuestionRuleEvents();
+        renderIcons();
+    }
 
-                const card = document.createElement("div");
-                card.className = `question-card ${isCustom ? 'customized' : ''}`;
-                card.id = `q-card-${q.entry_id}`;
+    function getQuestionTypeCategory(typeCode) {
+        if (typeCode === 2 || typeCode === 3) return "choice";
+        if (typeCode === 5) return "scale";
+        if (typeCode === 0 || typeCode === 1) return "text";
+        if (typeCode === 4) return "checkbox";
+        return "other";
+    }
 
-                let optionsPreviewHtml = "";
-                if (q.options && q.options.length > 0) {
-                    const displayOpts = q.options.slice(0, 7);
-                    const rem = q.options.length - displayOpts.length;
-                    optionsPreviewHtml = `
-                        <div class="question-options-preview">
-                            ${displayOpts.map(o => `<span class="option-pill">${o}</span>`).join('')}
-                            ${rem > 0 ? `<span class="option-pill" title="Dan ${rem} opsi lainnya...">+${rem} lainnya</span>` : ''}
-                        </div>
-                    `;
-                } else if (q.scale_bounds) {
-                    const sb = q.scale_bounds;
-                    optionsPreviewHtml = `
-                        <div class="scale-preview">
-                            <i class="fa-solid fa-sliders"></i>
-                            <span>Skala: ${sb.min} ${sb.min_label ? `(${sb.min_label})` : ''} s/d ${sb.max} ${sb.max_label ? `(${sb.max_label})` : ''}</span>
-                        </div>
-                    `;
-                }
+    function renderSubControl(question, rule) {
+        const entryId = String(question.entry_id);
+        const container = document.getElementById(`sub-ctrl-${entryId}`);
+        if (!container) return;
 
-                // Build rule select options
-                card.innerHTML = `
-                    <div class="question-header">
-                        <div class="question-title-area">
-                            <span class="q-num">#${globalIndex}</span>
-                            <span class="q-title">${q.label}${q.required ? '<span class="q-required" title="Wajib diisi">*</span>' : ''}</span>
-                        </div>
-                        <div class="q-badges">
-                            <span class="q-type-badge ${typeBadgeClass}">${q.type_name}</span>
-                        </div>
-                    </div>
-                    ${optionsPreviewHtml}
-                    <div class="question-controls">
-                        <span class="control-label"><i class="fa-solid fa-sliders"></i> Aturan:</span>
-                        <select class="rule-select" id="rule-mode-${q.entry_id}">
-                            <option value="auto">🧠 Otomatis (Rekomendasi Cerdas)</option>
-                            <option value="csv_col:nama">👤 Nama Mahasiswa (CSV)</option>
-                            <option value="csv_col:nim">🆔 NIM Mahasiswa (CSV)</option>
-                            <option value="csv_col:angkatan">🎓 Angkatan Mahasiswa (CSV)</option>
-                            <option value="email">📧 Email Mahasiswa</option>
-                            <option value="csv_col:program studi">🏛️ Program Studi (CSV)</option>
-                            <option value="csv_col:fakultas">🏛️ Fakultas (CSV)</option>
-                            <option value="scale:auto">⭐ Skala: Sesuai Profil Kepuasan</option>
-                            <option value="scale:sangat_puas">⭐ Skala: Cenderung 4 - 5 (Sangat Puas)</option>
-                            <option value="scale:puas_rata_rata">⭐ Skala: Cenderung 3 - 4 (Puas Rata-rata)</option>
-                            <option value="scale:kritis">⭐ Skala: Kritis (2 - 3)</option>
-                            <option value="scale:fixed_5">⭐ Skala: Selalu 5 (Maksimal)</option>
-                            <option value="scale:fixed_4">⭐ Skala: Selalu 4</option>
-                            <option value="scale:random_4_5">⭐ Skala: Acak 4 atau 5</option>
-                            <option value="fixed_option">🔘 Pilih Opsi Tertentu...</option>
-                            <option value="random_option">🎲 Acak dari Opsi Form</option>
-                            <option value="fixed_text">✍️ Teks Tetap (Input Manual)...</option>
-                            <option value="ai_review:pendapat">🤖 AI: Ulasan / Pendapat Positif</option>
-                            <option value="ai_review:saran">🤖 AI: Saran Perbaikan</option>
-                        </select>
-                        <div class="rule-sub-control" id="sub-ctrl-${q.entry_id}"></div>
-                    </div>
+        const options = question.options || [];
+        const mode = rule.mode;
+
+        if (mode === "csv_col") {
+            const selectedCol = rule.column || "nama";
+            container.innerHTML = `
+                <label class="form-label"><i data-lucide="table"></i> Pilih Kolom:</label>
+                <select class="form-control sub-input" data-entry="${entryId}" data-key="column">
+                    <option value="nama" ${selectedCol === 'nama' ? 'selected' : ''}>Nama Mahasiswa</option>
+                    <option value="nim" ${selectedCol === 'nim' ? 'selected' : ''}>NIM</option>
+                    <option value="angkatan" ${selectedCol === 'angkatan' ? 'selected' : ''}>Angkatan / Tahun</option>
+                    <option value="program studi" ${selectedCol === 'program studi' ? 'selected' : ''}>Program Studi</option>
+                    <option value="fakultas" ${selectedCol === 'fakultas' ? 'selected' : ''}>Fakultas</option>
+                    <option value="perguruan tinggi" ${selectedCol === 'perguruan tinggi' ? 'selected' : ''}>Perguruan Tinggi</option>
+                </select>
+            `;
+        } else if (mode === "fixed_option") {
+            if (options.length > 0) {
+                const selectedOpt = rule.value || options[0];
+                const optHtml = options.map(o => `<option value="${escapeHtml(o)}" ${o === selectedOpt ? 'selected' : ''}>${escapeHtml(o)}</option>`).join("");
+                container.innerHTML = `
+                    <label class="form-label"><i data-lucide="check"></i> Opsi Pilihan:</label>
+                    <select class="form-control sub-input" data-entry="${entryId}" data-key="value">
+                        ${optHtml}
+                    </select>
                 `;
+            } else {
+                container.innerHTML = `<span class="field-hint text-amber">Tidak ada pilihan opsi tersedia pada pertanyaan ini.</span>`;
+            }
+        } else if (mode === "scale") {
+            const currentProf = rule.profile || "auto";
+            container.innerHTML = `
+                <label class="form-label"><i data-lucide="bar-chart-2"></i> Bobot Skala:</label>
+                <select class="form-control sub-input" data-entry="${entryId}" data-key="profile">
+                    <option value="auto" ${currentProf === 'auto' ? 'selected' : ''}>Ikuti Sentimen Global</option>
+                    <option value="fixed_5" ${currentProf === 'fixed_5' ? 'selected' : ''}>Nilai Tertinggi / Sangat Sesuai</option>
+                    <option value="fixed_4" ${currentProf === 'fixed_4' ? 'selected' : ''}>Nilai 4 / Sesuai</option>
+                    <option value="random_4_5" ${currentProf === 'random_4_5' ? 'selected' : ''}>Variasi Positif (4 atau 5)</option>
+                    <option value="fixed_3" ${currentProf === 'fixed_3' ? 'selected' : ''}>Nilai Netral / Rata-rata (3)</option>
+                </select>
+            `;
+        } else if (mode === "ai_review") {
+            const currentCat = rule.category || "pendapat";
+            container.innerHTML = `
+                <label class="form-label"><i data-lucide="bot"></i> Kategori AI:</label>
+                <select class="form-control sub-input" data-entry="${entryId}" data-key="category">
+                    <option value="pendapat" ${currentCat === 'pendapat' ? 'selected' : ''}>Tanggapan Positif / Kesan Baik</option>
+                    <option value="saran" ${currentCat === 'saran' ? 'selected' : ''}>Saran & Masukan Konstruktif</option>
+                    <option value="context" ${currentCat === 'context' ? 'selected' : ''}>Jawaban Kontekstual Sesuai Pertanyaan</option>
+                </select>
+            `;
+        } else if (mode === "fixed_text") {
+            container.innerHTML = `
+                <label class="form-label"><i data-lucide="edit-3"></i> Teks Jawaban:</label>
+                <input type="text" class="form-control sub-input" data-entry="${entryId}" data-key="value" value="${escapeHtml(rule.value || '')}" placeholder="Masukkan jawaban tetap...">
+            `;
+        } else {
+            container.innerHTML = `<span class="field-hint text-emerald">Sistem otomatis mendeteksi demografi & sentimen alami.</span>`;
+        }
 
-                // Handle sub-controls and select synchronization
-                const ruleSelect = card.querySelector(`#rule-mode-${q.entry_id}`);
-                const subCtrl = card.querySelector(`#sub-ctrl-${q.entry_id}`);
+        renderIcons();
+    }
 
-                // Map currentRule to select value
-                let selectedVal = "auto";
-                if (currentRule.mode === "csv_col") {
-                    selectedVal = `csv_col:${currentRule.column || 'nama'}`;
-                } else if (currentRule.mode === "scale") {
-                    selectedVal = `scale:${currentRule.profile || 'auto'}`;
-                } else if (currentRule.mode === "ai_review") {
-                    selectedVal = `ai_review:${currentRule.category || 'pendapat'}`;
-                } else if (currentRule.mode === "email") {
-                    selectedVal = "email";
-                } else if (currentRule.mode === "fixed_option") {
-                    selectedVal = "fixed_option";
-                } else if (currentRule.mode === "fixed_text") {
-                    selectedVal = "fixed_text";
-                } else if (currentRule.mode === "random_option") {
-                    selectedVal = "random_option";
+    function setupQuestionRuleEvents() {
+        document.querySelectorAll(".rule-select").forEach(select => {
+            select.addEventListener("change", (e) => {
+                const entryId = e.target.getAttribute("data-entry");
+                const newMode = e.target.value;
+                const question = formQuestions.find(q => String(q.entry_id) === entryId);
+
+                questionRules[entryId] = { mode: newMode };
+                renderSubControl(question, questionRules[entryId]);
+            });
+        });
+
+        document.querySelectorAll(".sub-input").forEach(inp => {
+            inp.addEventListener("change", (e) => {
+                const entryId = e.target.getAttribute("data-entry");
+                const key = e.target.getAttribute("data-key");
+                if (questionRules[entryId]) {
+                    questionRules[entryId][key] = e.target.value;
                 }
+            });
+        });
+    }
 
-                if (ruleSelect.querySelector(`option[value="${selectedVal}"]`)) {
-                    ruleSelect.value = selectedVal;
-                } else {
-                    ruleSelect.value = "auto";
+    function filterQuestions(searchVal, typeFilter) {
+        document.querySelectorAll(".question-card").forEach(card => {
+            const cardText = card.innerText.toLowerCase();
+            const cardType = card.getAttribute("data-type");
+
+            const matchesSearch = !searchVal || cardText.includes(searchVal);
+            const matchesType = typeFilter === "all" || cardType === typeFilter;
+
+            card.style.display = matchesSearch && matchesType ? "block" : "none";
+        });
+    }
+
+    function toggleAllQuestions(expand) {
+        document.querySelectorAll(".question-card").forEach(card => {
+            card.classList.toggle("active", expand);
+        });
+    }
+
+    function resetAllRules() {
+        formQuestions.forEach(q => {
+            const entryId = String(q.entry_id);
+            questionRules[entryId] = { ...(q.suggested_rule || { mode: "auto" }) };
+        });
+        renderQuestionsList();
+        showToast("Seluruh aturan pertanyaan dikembalikan ke rekomendasi cerdas.", "info");
+    }
+
+    // --- Render Datasets (Tab 2) ---
+    function renderCohortsCards() {
+        if (!cohortsData || cohortsData.length === 0) {
+            cohortsGrid.innerHTML = `
+                <div class="empty-state">
+                    <i data-lucide="database" class="empty-icon"></i>
+                    <p>Tidak ada dataset ditemukan di folder <code>dataset/</code>.</p>
+                </div>
+            `;
+            renderIcons();
+            return;
+        }
+
+        cohortsGrid.innerHTML = "";
+        cohortsData.forEach(c => {
+            const card = document.createElement("div");
+            const isChecked = checkedCohorts.has(c.cohort);
+            card.className = `cohort-card ${isChecked ? 'selected' : ''}`;
+
+            const percentFilled = c.total > 0 ? Math.round((c.filled / c.total) * 100) : 0;
+            const badgeClass = c.remaining > 0 ? "has-data" : "empty";
+
+            // Tag dekoratif
+            let tagBadge = "";
+            if (c.cohort.includes("kesehatan")) tagBadge = `<span class="badge badge-emerald">🩺 Kesehatan</span>`;
+            else if (c.cohort.includes("gratispol")) tagBadge = `<span class="badge badge-indigo">🎓 Beasiswa Kaltim</span>`;
+            else if (c.cohort.includes("samba")) tagBadge = `<span class="badge badge-zinc">🏛️ UNMUL Lengkap</span>`;
+
+            card.innerHTML = `
+                <div class="cohort-card-top">
+                    <div class="cohort-name-group">
+                        <input type="checkbox" class="cohort-checkbox" data-cohort="${c.cohort}" ${isChecked ? 'checked' : ''}>
+                        <div>
+                            <span class="cohort-title">${escapeHtml(c.cohort)}</span>
+                            ${tagBadge}
+                        </div>
+                    </div>
+                    <span class="cohort-remaining-badge ${badgeClass}">${c.remaining} Sisa</span>
+                </div>
+                <div class="cohort-stats-row">
+                    <span>Terisi: ${c.filled} / ${c.total}</span>
+                    <span>${percentFilled}%</span>
+                </div>
+                <div class="cohort-progress-mini">
+                    <div class="cohort-progress-mini-fill" style="width: ${percentFilled}%;"></div>
+                </div>
+                <div class="cohort-weight-box hidden" id="weight-box-${c.cohort}">
+                    <span>Bobot Distribusi:</span>
+                    <input type="number" min="0" max="100" class="weight-input" data-cohort="${c.cohort}" value="${customWeights[c.cohort] || 0}"> %
+                </div>
+            `;
+
+            // Card click toggle
+            card.addEventListener("click", (e) => {
+                if (e.target.tagName !== "INPUT") {
+                    const cb = card.querySelector(".cohort-checkbox");
+                    cb.checked = !cb.checked;
+                    toggleCohort(c.cohort, cb.checked);
                 }
-
-                // Render sub-control if needed
-                function updateSubControl(val) {
-                    subCtrl.innerHTML = "";
-                    if (val === "fixed_option") {
-                        if (q.options && q.options.length > 0) {
-                            const optSelect = document.createElement("select");
-                            optSelect.className = "rule-select";
-                            q.options.forEach(opt => {
-                                const o = document.createElement("option");
-                                o.value = opt;
-                                o.textContent = opt;
-                                if (currentRule.value === opt) o.selected = true;
-                                optSelect.appendChild(o);
-                            });
-                            optSelect.addEventListener("change", (e) => {
-                                questionRules[q.entry_id] = { mode: "fixed_option", value: e.target.value };
-                                card.classList.add("customized");
-                            });
-                            subCtrl.appendChild(optSelect);
-                            questionRules[q.entry_id] = { mode: "fixed_option", value: optSelect.value };
-                        } else {
-                            subCtrl.innerHTML = '<span style="font-size:0.75rem; color:var(--color-warning);">Tidak ada opsi pada pertanyaan ini</span>';
-                        }
-                    } else if (val === "fixed_text") {
-                        const txtInput = document.createElement("input");
-                        txtInput.type = "text";
-                        txtInput.className = "rule-input";
-                        txtInput.placeholder = "Ketik jawaban teks...";
-                        txtInput.value = currentRule.value || "";
-                        txtInput.addEventListener("input", (e) => {
-                            questionRules[q.entry_id] = { mode: "fixed_text", value: e.target.value };
-                            card.classList.add("customized");
-                        });
-                        subCtrl.appendChild(txtInput);
-                    }
-                }
-
-                updateSubControl(ruleSelect.value);
-
-                ruleSelect.addEventListener("change", (e) => {
-                    const chosen = e.target.value;
-                    card.classList.toggle("customized", chosen !== "auto");
-                    
-                    if (chosen.startsWith("csv_col:")) {
-                        const col = chosen.split(":")[1];
-                        questionRules[q.entry_id] = { mode: "csv_col", column: col };
-                    } else if (chosen.startsWith("scale:")) {
-                        const prof = chosen.split(":")[1];
-                        questionRules[q.entry_id] = { mode: "scale", profile: prof };
-                    } else if (chosen.startsWith("ai_review:")) {
-                        const cat = chosen.split(":")[1];
-                        questionRules[q.entry_id] = { mode: "ai_review", category: cat };
-                    } else if (chosen === "email") {
-                        questionRules[q.entry_id] = { mode: "email" };
-                    } else if (chosen === "random_option") {
-                        questionRules[q.entry_id] = { mode: "random_option" };
-                    } else if (chosen === "auto") {
-                        questionRules[q.entry_id] = q.suggested_rule || { mode: "auto" };
-                    }
-                    
-                    updateSubControl(chosen);
-                });
-
-                questionsContainer.appendChild(card);
-                globalIndex++;
             });
 
-            questionsList.appendChild(groupEl);
+            const cb = card.querySelector(".cohort-checkbox");
+            cb.addEventListener("change", (e) => {
+                toggleCohort(c.cohort, e.target.checked);
+            });
+
+            cohortsGrid.appendChild(card);
         });
+
+        setupWeightInputs();
+        renderIcons();
+    }
+
+    function toggleCohort(cohort, isChecked) {
+        if (isChecked) {
+            checkedCohorts.add(cohort);
+        } else {
+            checkedCohorts.delete(cohort);
+        }
+        updateCohortsUI();
+    }
+
+    function updateCohortsUI() {
+        document.querySelectorAll(".cohort-card").forEach(card => {
+            const cb = card.querySelector(".cohort-checkbox");
+            const cohort = cb.getAttribute("data-cohort");
+            const isSelected = checkedCohorts.has(cohort);
+            cb.checked = isSelected;
+            card.classList.toggle("selected", isSelected);
+        });
+        validateWeights();
+    }
+
+    function toggleWeightControls(show) {
+        document.querySelectorAll(".cohort-weight-box").forEach(box => {
+            box.classList.toggle("hidden", !show);
+        });
+        customWeightAlert.classList.toggle("hidden", !show);
+    }
+
+    function setupWeightInputs() {
+        document.querySelectorAll(".weight-input").forEach(inp => {
+            inp.addEventListener("input", (e) => {
+                const c = e.target.getAttribute("data-cohort");
+                customWeights[c] = parseInt(e.target.value) || 0;
+                validateWeights();
+            });
+        });
+    }
+
+    function validateWeights() {
+        const mode = getSelectedDistributionMode();
+        if (mode !== "kustom") {
+            customWeightAlert.classList.add("hidden");
+            return;
+        }
+
+        customWeightAlert.classList.remove("hidden");
+        let total = 0;
+        checkedCohorts.forEach(c => {
+            total += customWeights[c] || 0;
+        });
+
+        weightTotalPercentage.textContent = `${total}%`;
+        const isValid = total === 100;
+        weightValidationMsg.classList.toggle("hidden", isValid);
+        weightTotalPercentage.style.color = isValid ? "var(--emerald)" : "var(--rose)";
+    }
+
+    function getSelectedDistributionMode() {
+        for (const radio of distributionRadios) {
+            if (radio.checked) return radio.value;
+        }
+        return "rata";
+    }
+
+    function getSelectedSentimentProfile() {
+        const radios = document.getElementsByName("sentiment-profile");
+        for (const r of radios) {
+            if (r.checked) return r.value;
+        }
+        return "puas_rata_rata";
+    }
+
+    // --- Execution Runner (Tab 3) ---
+    function startFilling() {
+        const url = formUrlInput.value.trim();
+        const target = parseInt(targetInput.value);
+        const delayMin = parseInt(delayMinInput.value);
+        const delayMax = parseInt(delayMaxInput.value);
+        const mode = getSelectedDistributionMode();
+        const profile = getSelectedSentimentProfile();
+
+        if (!url) {
+            showToast("Harap isi URL Google Form terlebih dahulu.", "error");
+            switchTab("tab-inspect");
+            formUrlInput.focus();
+            return;
+        }
+
+        if (checkedCohorts.size === 0) {
+            showToast("Pilih minimal satu dataset mahasiswa di Tab 2.", "error");
+            switchTab("tab-datasets");
+            return;
+        }
+
+        if (mode === "kustom") {
+            let totalW = 0;
+            checkedCohorts.forEach(c => totalW += (customWeights[c] || 0));
+            if (totalW !== 100) {
+                showToast("Total bobot kustom harus bernilai 100%.", "error");
+                switchTab("tab-datasets");
+                return;
+            }
+        }
+
+        // Siapkan payload ke backend
+        const payload = {
+            url: url,
+            target: target,
+            delay_min: delayMin,
+            delay_max: delayMax,
+            distribution_mode: mode,
+            cohorts: Array.from(checkedCohorts),
+            custom_weights: customWeights,
+            sentiment_profile: profile,
+            question_rules: questionRules
+        };
+
+        btnStart.disabled = true;
+        btnQuickStart.disabled = true;
+
+        fetch("/api/start", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+        })
+        .then(res => res.json())
+        .then(data => {
+            btnStart.disabled = false;
+            btnQuickStart.disabled = false;
+
+            if (data.success) {
+                setExecutionRunning(true);
+                switchTab("tab-runner");
+                startSSEStream();
+                showToast("Pengisian otomatis kuesioner berhasil dimulai!", "success");
+            } else {
+                showToast(data.message || "Gagal memulai pekerjaan.", "error");
+            }
+        })
+        .catch(err => {
+            btnStart.disabled = false;
+            btnQuickStart.disabled = false;
+            showToast("Gagal terhubung ke server backend.", "error");
+        });
+    }
+
+    function stopFilling() {
+        btnStop.disabled = true;
+        btnQuickStop.disabled = true;
+
+        fetch("/api/stop", { method: "POST" })
+            .then(res => res.json())
+            .then(data => {
+                btnStop.disabled = false;
+                btnQuickStop.disabled = false;
+                showToast("Perintah penghentian dikirim...", "info");
+            })
+            .catch(() => {
+                btnStop.disabled = false;
+                btnQuickStop.disabled = false;
+            });
+    }
+
+    function setExecutionRunning(running) {
+        isRunning = running;
+        btnStart.classList.toggle("hidden", running);
+        btnQuickStart.classList.toggle("hidden", running);
+        btnStop.classList.remove("hidden");
+        btnQuickStop.classList.remove("hidden");
+
+        if (!running) {
+            btnStop.classList.add("hidden");
+            btnQuickStop.classList.add("hidden");
+        }
+
+        statusDot.className = `status-dot ${running ? 'running' : 'online'}`;
+        statusText.textContent = running ? "Proses Pengisian Berjalan" : "Server Siap";
+
+        runnerLiveDot.classList.toggle("active", running);
+        const pulse = runnerBadgeStatus.querySelector(".pulse-dot");
+        if (pulse) pulse.classList.toggle("running", running);
+        runnerBadgeText.textContent = running ? "Sedang Mengirim Respon..." : "Siap Mengeksekusi";
+    }
+
+    function updateProgressUI(jobProgress) {
+        if (!jobProgress) return;
+        const comp = jobProgress.completed || 0;
+        const total = jobProgress.total || 0;
+        const succ = jobProgress.success || 0;
+        const fail = jobProgress.failed || 0;
+        const rem = Math.max(0, total - comp);
+
+        metricCompleted.textContent = comp;
+        metricTotal.textContent = total;
+        metricSuccess.textContent = succ;
+        metricFailed.textContent = fail;
+        metricRemaining.textContent = rem;
+
+        const pct = total > 0 ? Math.round((comp / total) * 100) : 0;
+        progressBarFill.style.width = `${pct}%`;
+        progressPercentText.textContent = `${pct}%`;
+        progressStatusDesc.textContent = isRunning ? `Sedang memproses ${comp} dari ${total} responden...` : `Selesai (${succ} sukses, ${fail} gagal).`;
+    }
+
+    // --- Server-Sent Events (SSE) Stream ---
+    function startSSEStream() {
+        if (eventSource) eventSource.close();
+        eventSource = new EventSource("/api/stream");
+
+        eventSource.onmessage = (e) => {
+            const data = JSON.parse(e.data);
+            if (data.text === "[FINISHED]") {
+                setExecutionRunning(false);
+                eventSource.close();
+                eventSource = null;
+                fetchStatus();
+                loadHistory();
+                showToast("Seluruh antrean pengisian selesai!", "success");
+                return;
+            }
+
+            appendTerminalLine(data.text, data.type, data.time);
+            fetchStatus(); // Update progress metrics
+        };
+
+        eventSource.onerror = () => {
+            if (eventSource) {
+                eventSource.close();
+                eventSource = null;
+            }
+        };
+    }
+
+    function appendTerminalLine(text, type = "info", timestamp = null) {
+        const timeStr = timestamp || getCurrentTime();
+        const line = document.createElement("div");
+        line.className = `terminal-line ${type}`;
+        line.setAttribute("data-type", type);
+
+        let tag = "[INFO]";
+        if (type === "success") tag = "[SUKSES]";
+        if (type === "warning") tag = "[WARN]";
+        if (type === "danger") tag = "[ERROR]";
+        if (type === "system") tag = "[SYSTEM]";
+
+        line.innerHTML = `
+            <span class="term-time">[${timeStr}]</span>
+            <span class="term-tag">${tag}</span>
+            <span class="term-text">${escapeHtml(text)}</span>
+        `;
+
+        terminalBody.appendChild(line);
+
+        if (isAutoscroll) {
+            terminalBody.scrollTop = terminalBody.scrollHeight;
+        }
+
+        // Apply active filter
+        if (activeTermFilter !== "all" && type !== activeTermFilter) {
+            line.style.display = "none";
+        }
+    }
+
+    function filterTerminalLogs() {
+        document.querySelectorAll(".terminal-line").forEach(line => {
+            const type = line.getAttribute("data-type");
+            if (activeTermFilter === "all" || type === activeTermFilter) {
+                line.style.display = "flex";
+            } else {
+                line.style.display = "none";
+            }
+        });
+    }
+
+    // --- Tab 4: History Management ---
+    function loadHistory() {
+        fetch("/api/history")
+            .then(res => res.json())
+            .then(data => {
+                historyData = data.items || [];
+                historyTotalCount.textContent = data.total || 0;
+                tabHistoryBadge.textContent = data.total || 0;
+                renderHistoryTable();
+            })
+            .catch(() => {
+                historyTableBody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-muted">Gagal memuat riwayat.</td></tr>`;
+            });
+    }
+
+    function renderHistoryTable(searchQuery = "") {
+        if (!historyData || historyData.length === 0) {
+            historyTableBody.innerHTML = `
+                <tr>
+                    <td colspan="6" class="text-center py-6 text-muted">
+                        <i data-lucide="inbox" class="empty-icon-sm"></i>
+                        <p>Belum ada riwayat pengisian.</p>
+                    </td>
+                </tr>
+            `;
+            renderIcons();
+            return;
+        }
+
+        const filtered = historyData.filter(item => {
+            if (!searchQuery) return true;
+            return (
+                item.nim.toLowerCase().includes(searchQuery) ||
+                item.nama.toLowerCase().includes(searchQuery) ||
+                item.prodi.toLowerCase().includes(searchQuery) ||
+                item.dataset.toLowerCase().includes(searchQuery)
+            );
+        });
+
+        if (filtered.length === 0) {
+            historyTableBody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-muted">Tidak ada data sesuai pencarian.</td></tr>`;
+            return;
+        }
+
+        historyTableBody.innerHTML = filtered.map((item, idx) => `
+            <tr>
+                <td class="font-mono text-muted">${idx + 1}</td>
+                <td class="font-mono font-semibold">${escapeHtml(item.nim)}</td>
+                <td class="font-medium">${escapeHtml(item.nama)}</td>
+                <td><span class="badge badge-zinc font-mono">${escapeHtml(item.angkatan)}</span></td>
+                <td>${escapeHtml(item.prodi)}</td>
+                <td><span class="badge badge-indigo">${escapeHtml(item.dataset)}</span></td>
+            </tr>
+        `).join("");
+
+        renderIcons();
+    }
+
+    function confirmResetHistory() {
+        btnConfirmReset.disabled = true;
+        fetch("/api/reset-history", { method: "POST" })
+            .then(res => res.json())
+            .then(data => {
+                btnConfirmReset.disabled = false;
+                modalConfirm.classList.add("hidden");
+                if (data.success) {
+                    showToast("Database riwayat pengisian berhasil direset!", "success");
+                    loadHistory();
+                    fetchStatus();
+                } else {
+                    showToast(data.message || "Gagal mereset riwayat.", "error");
+                }
+            })
+            .catch(() => {
+                btnConfirmReset.disabled = false;
+                modalConfirm.classList.add("hidden");
+                showToast("Terjadi kesalahan saat mereset riwayat.", "error");
+            });
+    }
+
+    function exportHistoryCSV() {
+        if (!historyData || historyData.length === 0) {
+            showToast("Tidak ada riwayat untuk diekspor.", "info");
+            return;
+        }
+
+        let csv = "NIM,Nama,Angkatan,Program Studi,Dataset\n";
+        historyData.forEach(item => {
+            csv += `"${item.nim}","${item.nama}","${item.angkatan}","${item.prodi}","${item.dataset}"\n`;
+        });
+
+        const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = `riwayat_kuesioner_${new Date().toISOString().slice(0, 10)}.csv`;
+        link.click();
+        showToast("File CSV riwayat berhasil diunduh.", "success");
+    }
+
+    // --- Helpers ---
+    function getCurrentTime() {
+        const now = new Date();
+        return now.toTimeString().split(" ")[0];
+    }
+
+    function escapeHtml(text) {
+        if (!text) return "";
+        return String(text)
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
     }
 });
