@@ -518,14 +518,15 @@
                                         <th>No.</th>
                                         <th>NIM</th>
                                         <th>Nama Mahasiswa</th>
-                                        <th>Angkatan</th>
-                                        <th>Program Studi</th>
-                                        <th>Dataset Asal</th>
+                                        <th>Program Studi & Kampus</th>
+                                        <th>Profil Sikap</th>
+                                        <th>Waktu</th>
+                                        <th>Rincian</th>
                                     </tr>
                                 </thead>
                                 <tbody id="history-table-body">
                                     <tr>
-                                        <td colspan="6" class="text-center py-6 text-muted">
+                                        <td colspan="7" class="text-center py-6 text-muted">
                                             <i data-lucide="inbox" class="empty-icon-sm"></i>
                                             <p>Belum ada riwayat pengisian.</p>
                                         </td>
@@ -537,6 +538,30 @@
                 </section>
             </div>
         </main>
+    </div>
+
+    <!-- Detail Submission Modal (Shadcn Dialog style) -->
+    <div id="modal-detail" class="modal-backdrop hidden">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-header">
+                <div class="modal-header-icon primary">
+                    <i data-lucide="file-check"></i>
+                </div>
+                <div>
+                    <h3 class="modal-title" id="modal-detail-title">Rincian Tanggapan Kuesioner</h3>
+                    <p class="modal-desc" id="modal-detail-subtitle">Data lengkap responden dan jawaban yang berhasil disubmit.</p>
+                </div>
+            </div>
+            <div class="modal-body" id="modal-detail-body">
+                <!-- Dynamically populated -->
+            </div>
+            <div class="modal-footer">
+                <button id="btn-copy-answers" class="btn btn-outline">
+                    <i data-lucide="copy"></i> Salin JSON
+                </button>
+                <button id="btn-close-detail" class="btn btn-secondary">Tutup</button>
+            </div>
+        </div>
     </div>
 
     <!-- Confirm Modal (Shadcn Dialog style) -->

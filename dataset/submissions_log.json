@@ -1,0 +1,153 @@
+[
+  {
+    "timestamp": "2026-09-24 04:59:11",
+    "nim": "P07226126025",
+    "nama": "Olivia Safara",
+    "angkatan": "kesehatan_samarinda",
+    "prodi": "S1 Kedokteran",
+    "universitas": "Universitas Muhammadiyah Kalimantan Timur",
+    "jenis_kelamin": "Perempuan",
+    "usia": "21",
+    "semester": "Semester 3",
+    "email": "olivia.safaraP0@yahoo.com",
+    "profile": "puas_rata_rata",
+    "profile_display": "Puas Alami (Realistis Sesuai/Setuju)",
+    "scale_distribution": {
+      "Sangat Sesuai": 2,
+      "Sesuai": 12,
+      "Tidak Sesuai": 1
+    },
+    "answers": [
+      {
+        "entry_id": "736635971",
+        "label": "Saya bersedia untuk berpartisipasi dalam penelitian ini dan menjawab seluruh pernyataan dengan jujur dan akurat",
+        "value": "Saya Bersedia"
+      },
+      {
+        "entry_id": "655883819",
+        "label": "Nama/Inisial",
+        "value": "olivia safara"
+      },
+      {
+        "entry_id": "1045439333",
+        "label": "Usia \n(Cukup tuliskan angkanya saja)",
+        "value": "21"
+      },
+      {
+        "entry_id": "1515219006",
+        "label": "Jenis Kelamin",
+        "value": "Perempuan"
+      },
+      {
+        "entry_id": "64261463",
+        "label": "Domisili",
+        "value": "Balikpapan"
+      },
+      {
+        "entry_id": "485249531",
+        "label": "Suku",
+        "value": "Jawa"
+      },
+      {
+        "entry_id": "1552121560",
+        "label": "Perguruan Tinggi",
+        "value": "Universitas Muhammadiyah Kalimantan Timur"
+      },
+      {
+        "entry_id": "1035865476",
+        "label": "Program Studi",
+        "value": "S1 Kedokteran"
+      },
+      {
+        "entry_id": "491646179",
+        "label": "Semester",
+        "value": "Semester 3"
+      },
+      {
+        "entry_id": "956946186",
+        "label": "No. Handphone",
+        "value": "085287422869"
+      },
+      {
+        "entry_id": "2144724082",
+        "label": "Ide dan proyek yang baru terkadang mengalihkan perhatian saya dari ide dan proyek sebelumnya",
+        "value": "Sesuai"
+      },
+      {
+        "entry_id": "1867909273",
+        "label": "Saya terobsesi dengan ide atau proyek tertentu  dalam waktu singkat, tetapi kemudian kehilangan minat untuk mencapainya.",
+        "value": "Sesuai"
+      },
+      {
+        "entry_id": "929548978",
+        "label": "Saya mengalami kesulitan dalam mempertahankan fokus pada proyek yang memerlukan waktu beberapa bulan untuk diselesaikan",
+        "value": "Sesuai"
+      },
+      {
+        "entry_id": "2030311498",
+        "label": "Saya menyelesaikan proyek yang telah saya mulai",
+        "value": "Sesuai"
+      },
+      {
+        "entry_id": "1920044645",
+        "label": "Kegagalan tidak akan membuat saya putus asa",
+        "value": "Sesuai"
+      },
+      {
+        "entry_id": "788446522",
+        "label": "Saya seorang pekerja keras",
+        "value": "Sesuai"
+      },
+      {
+        "entry_id": "1389812837",
+        "label": "Saya adalah orang yang ulet",
+        "value": "Sesuai"
+      },
+      {
+        "entry_id": "545485878",
+        "label": "Saya dapat memikirkan banyak cara untuk mendapatkan nilai yang baik.",
+        "value": "Sesuai"
+      },
+      {
+        "entry_id": "51586781",
+        "label": "Saya secara aktif mengejar target akademik yang ingin saya capai.",
+        "value": "Sangat Sesuai"
+      },
+      {
+        "entry_id": "1447304309",
+        "label": "Saya mempunyai banyak target akademik yang ingin dicapai.",
+        "value": "Tidak Sesuai"
+      },
+      {
+        "entry_id": "157045917",
+        "label": "Saya termotivasi untuk melakukan yang terbaik di kampus.",
+        "value": "Sesuai"
+      },
+      {
+        "entry_id": "117047229",
+        "label": "Saya dapat memikirkan cara khusus untuk melakukan hal yang baik di kelas.",
+        "value": "Sesuai"
+      },
+      {
+        "entry_id": "569686093",
+        "label": "Saya mengambil mata kuliah yang menantang buat diri saya.",
+        "value": "Sesuai"
+      },
+      {
+        "entry_id": "698093641",
+        "label": "Saya mengetahui banyak strategi yang dapat saya gunakan untuk sukses di kelas.",
+        "value": "Sesuai"
+      },
+      {
+        "entry_id": "2093537984",
+        "label": "Memikirkan pengejaran saya terhadap target yang ingin dicapai membuat energi saya kembali terisi",
+        "value": "Sesuai"
+      },
+      {
+        "entry_id": "1256533704",
+        "label": "Saya telah menentukan target pendidikan yang saya inginkan secara jelas.",
+        "value": "Sangat Sesuai"
+      }
+    ]
+  }
+]

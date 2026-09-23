@@ -14,14 +14,24 @@ from src.config import (
     SUBMISSION_DELAY_MAX
 )
 from src.csv_helper import load_students_from_csv
-from src.history_helper import load_history, save_to_history, clear_history
+from src.history_helper import (
+    load_history, 
+    save_to_history, 
+    clear_history,
+    save_submission_record,
+    load_submission_records
+)
 from src.form_handler import GoogleFormHandler
 from src.ai_handler import AITextGenerator
 from src.answer_resolver import AnswerResolver
 from src.generators import (
     format_natural_name,
     generate_varied_email,
-    generate_scale_answer
+    generate_scale_answer,
+    infer_gender,
+    get_natural_semester,
+    get_natural_age,
+    get_natural_university
 )
 
 app = Flask(__name__)
@@ -235,19 +245,76 @@ def run_web_fill(target: int, cohorts: List[str], mode: str, custom_weights: dic
             break
             
         nama = format_natural_name(student.get('nama', 'Mahasiswa'))
-        nim = student.get('nim', '')
+        nim = str(student.get('nim', '')).strip()
         
-        job_status.add_log(f"[{index+1}/{actual_target}] Mengisi: {nama} ({nim} - Angkatan {angkatan})...", "info")
+        # Demografi dasar dari dataset
+        raw_prodi = student.get('program studi') or student.get('prodi') or '-'
+        raw_campus = student.get('perguruan tinggi') or student.get('universitas') or student.get('kampus') or get_natural_university(angkatan)
+        raw_gender = student.get('jenis_kelamin') or student.get('gender') or infer_gender(nama)
+        raw_usia = student.get('usia') or student.get('umur') or get_natural_age(angkatan)
+        raw_semester = student.get('semester') or get_natural_semester(angkatan)
+        
+        job_status.add_log(f"[{index+1}/{actual_target}] Menyiapkan respon: {nama} ({nim} - Angkatan {angkatan})...", "info")
         
         profile = random.choices(
             ["sangat_puas", "puas_rata_rata", "kritis"],
             weights=[35, 55, 10]
         )[0]
         
+        profile_names = {
+            "sangat_puas": "Sangat Positif (Dominan Sangat Setuju/Sangat Sesuai)",
+            "puas_rata_rata": "Puas Alami (Realistis Sesuai/Setuju)",
+            "kritis": "Kritis & Variatif (Menyebar Realistis)"
+        }
+        profile_display = profile_names.get(profile, profile)
+        
         email = generate_varied_email(nama, nim)
         
         # Selesaikan seluruh nilai jawaban menggunakan AnswerResolver
         all_page_values = resolver.resolve_all_pages(pages, student, profile, active_rules)
+        
+        # Ekstrak data rata (flat items) dari seluruh halaman
+        flat_items = [it for p in all_page_values for it in p]
+        
+        # Sinkronkan data demografi dengan nilai aktual yang diisikan ke field form
+        actual_gender = raw_gender
+        actual_usia = raw_usia
+        actual_semester = raw_semester
+        actual_prodi = raw_prodi
+        actual_campus = raw_campus
+        
+        for it in flat_items:
+            lbl_lower = it['label'].lower().strip()
+            val = it['value']
+            val_str = ", ".join(val) if isinstance(val, list) else str(val)
+            
+            if any(k in lbl_lower for k in ["jenis kelamin", "gender"]) and not any(k in lbl_lower for k in ["apakah", "setuju", "sikap"]):
+                actual_gender = val_str
+            elif ("usia" in lbl_lower or "umur" in lbl_lower) and len(lbl_lower) < 40:
+                actual_usia = val_str
+            elif "semester" in lbl_lower and len(lbl_lower) < 25:
+                actual_semester = val_str
+            elif ("program studi" in lbl_lower or "prodi" in lbl_lower or "jurusan" in lbl_lower) and len(lbl_lower) < 35:
+                actual_prodi = val_str
+            elif ("perguruan tinggi" in lbl_lower or "asal perguruan" in lbl_lower or "asal universitas" in lbl_lower or "asal kampus" in lbl_lower or "nama kampus" in lbl_lower or lbl_lower in ["kampus", "universitas", "institusi"]):
+                actual_campus = val_str
+                
+        # Analisis distribusi respon skala / kuesioner
+        scale_counts = {}
+        for it in flat_items:
+            lbl_lower = it['label'].lower().strip()
+            val = it['value']
+            val_str = ", ".join(val) if isinstance(val, list) else str(val)
+            is_demo = any(k in lbl_lower for k in [
+                "nama", "nim", "jenis kelamin", "gender", "usia", "umur",
+                "program studi", "prodi", "jurusan", "perguruan tinggi",
+                "universitas", "kampus", "semester", "whatsapp", "no hp",
+                "nomor hp", "handphone", "telepon", "email", "domisili", "suku",
+                "bersedia", "partisipasi", "persetujuan", "consent"
+            ])
+            # Hanya hitung opsi skala yang valid (bukan angka/nomor hp atau teks panjang)
+            if not is_demo and len(val_str) < 30 and not val_str.isdigit():
+                scale_counts[val_str] = scale_counts.get(val_str, 0) + 1
         
         # Kirim form secara multi-halaman sempurna
         success, message = form_handler.submit_pages(
@@ -258,15 +325,69 @@ def run_web_fill(target: int, cohorts: List[str], mode: str, custom_weights: dic
         if success:
             save_to_history(nim)
             job_status.success_count += 1
-            job_status.add_log(f"  ✓ Sukses: {nama} ({nim})", "success")
-            # Tampilkan sample ulasan jika ada field ulasan/saran
-            for p in all_page_values:
-                for item in p:
-                    if any(k in item['label'].lower() for k in ["pendapat", "saran", "masukan", "ulasan"]):
-                        job_status.add_log(f"    > {item['label'][:25]}...: \"{item['value']}\"", "info")
+            
+            # Catat record lengkap ke submissions_log.json
+            sub_record = {
+                "timestamp": time.strftime("%Y-%m-%d %H:%M:%S"),
+                "nim": nim,
+                "nama": nama,
+                "angkatan": angkatan,
+                "prodi": actual_prodi,
+                "universitas": actual_campus,
+                "jenis_kelamin": actual_gender,
+                "usia": str(actual_usia),
+                "semester": str(actual_semester),
+                "email": email if has_email_page else "-",
+                "profile": profile,
+                "profile_display": profile_display,
+                "scale_distribution": scale_counts,
+                "answers": [
+                    {
+                        "entry_id": it["entry_id"],
+                        "label": it["label"],
+                        "value": it["value"]
+                    }
+                    for it in flat_items
+                ]
+            }
+            save_submission_record(sub_record)
+            
+            # --- Rich Live Terminal Logging ---
+            job_status.add_log(f"✓ SUBMISI BERHASIL [{index+1}/{actual_target}]: {nama} (NIM: {nim})", "success")
+            
+            # 1. Demografi Lengkap
+            job_status.add_log("  ┌─ [IDENTITAS & DEMOGRAFI RESPONDEN]", "info")
+            job_status.add_log(f"  │  • Mahasiswa   : {nama} ({nim})", "info")
+            job_status.add_log(f"  │  • Data Diri   : {actual_gender} | Usia {actual_usia} th | Semester {actual_semester}", "info")
+            job_status.add_log(f"  │  • Kampus      : {actual_campus}", "info")
+            job_status.add_log(f"  │  • Jurusan     : {actual_prodi} (Angkatan {angkatan})", "info")
+            if email and has_email_page:
+                job_status.add_log(f"  │  • Email Form  : {email}", "info")
+                
+            # 2. Analisis Sentimen & Distribusi Skala
+            job_status.add_log("  ├─ [POLA SIKAP & DISTRIBUSI PILIHAN]", "info")
+            job_status.add_log(f"  │  • Pola Sentimen  : {profile_display}", "info")
+            if scale_counts:
+                dist_str = " | ".join([f"{k}: {v}x" for k, v in scale_counts.items()])
+                job_status.add_log(f"  │  • Sebaran Pilihan: {dist_str}", "info")
+                
+            # 3. Rincian Seluruh Jawaban Form
+            job_status.add_log(f"  ├─ [RINCIAN NILAI JAWABAN FORM ({len(flat_items)} Pertanyaan)]:", "info")
+            for q_idx, it in enumerate(flat_items):
+                q_lbl = it['label'].strip().replace("\n", " ")
+                if len(q_lbl) > 52:
+                    q_lbl = q_lbl[:49] + "..."
+                q_val = it['value']
+                if isinstance(q_val, list):
+                    q_val = ", ".join(q_val)
+                prefix = "  │" if q_idx < len(flat_items) - 1 else "  └"
+                job_status.add_log(f"{prefix}  [{q_idx+1:02d}] {q_lbl} ➔ \"{q_val}\"", "info")
+                
+            job_status.add_log("  ✓ Respon terverifikasi Google Form (Status HTTP 200 OK — Tersimpan ke Database)", "success")
         else:
             job_status.failed_count += 1
-            job_status.add_log(f"  ✗ Gagal: {nama} ({nim}) - Detail: {message}", "error")
+            job_status.add_log(f"✗ GAGAL SUBMISI [{index+1}/{actual_target}]: {nama} ({nim})", "danger")
+            job_status.add_log(f"  └─ Detail Penyebab: {message}", "danger")
             
         job_status.completed_count += 1
         
@@ -392,11 +513,37 @@ def reset_history():
 
 @app.route("/api/history", methods=["GET"])
 def get_history_details():
-    """Mengembalikan daftar lengkap mahasiswa dan NIM yang telah mengisi form."""
+    """Mengembalikan daftar lengkap riwayat pengisian dan detail jawaban kuesioner."""
     history_nims = set(load_history())
-    cohorts = get_available_cohorts()
+    records = load_submission_records()
+    
     details = []
     seen = set()
+    
+    # 1. Dari records submisi terlebih dahulu (paling lengkap data input & jawabannya)
+    for r in reversed(records):
+        nim = r.get("nim")
+        if nim and nim not in seen:
+            seen.add(nim)
+            details.append({
+                "nim": nim,
+                "nama": r.get("nama", "Mahasiswa"),
+                "angkatan": r.get("angkatan", "-"),
+                "prodi": r.get("prodi", "-"),
+                "universitas": r.get("universitas", "-"),
+                "jenis_kelamin": r.get("jenis_kelamin", "-"),
+                "usia": r.get("usia", "-"),
+                "semester": r.get("semester", "-"),
+                "email": r.get("email", "-"),
+                "timestamp": r.get("timestamp", "-"),
+                "profile": r.get("profile_display", r.get("profile", "Puas Alami")),
+                "scale_distribution": r.get("scale_distribution", {}),
+                "answers": r.get("answers", []),
+                "dataset": r.get("angkatan", "Hasil Submisi")
+            })
+            
+    # 2. Sisanya jika ada NIM di history.json tapi belum tercatat di submissions_log.json
+    cohorts = get_available_cohorts()
     for c in cohorts:
         students = load_students_from_csv(f"dataset/{c}.csv")
         for s in students:
@@ -408,8 +555,18 @@ def get_history_details():
                     "nama": s.get("nama", "-"),
                     "angkatan": s.get("angkatan", "-"),
                     "prodi": s.get("program studi", "-"),
+                    "universitas": s.get("perguruan tinggi", "-"),
+                    "jenis_kelamin": s.get("jenis_kelamin", "-"),
+                    "usia": s.get("usia", "-"),
+                    "semester": s.get("semester", "-"),
+                    "email": "-",
+                    "timestamp": "-",
+                    "profile": "Tersimpan",
+                    "scale_distribution": {},
+                    "answers": [],
                     "dataset": c
                 })
+                
     for nim in history_nims:
         if nim not in seen:
             seen.add(nim)
@@ -418,8 +575,18 @@ def get_history_details():
                 "nama": "Mahasiswa",
                 "angkatan": f"20{nim[:2]}" if len(nim) >= 2 else "-",
                 "prodi": "-",
+                "universitas": "-",
+                "jenis_kelamin": "-",
+                "usia": "-",
+                "semester": "-",
+                "email": "-",
+                "timestamp": "-",
+                "profile": "Tersimpan",
+                "scale_distribution": {},
+                "answers": [],
                 "dataset": "Riwayat Tersimpan"
             })
+            
     return jsonify({
         "total": len(history_nims),
         "items": details
@@ -448,23 +615,23 @@ def stream_logs():
             
     return Response(generate(), mimetype='text/event-stream')
 
-def find_available_port(preferred_port: int = 5001) -> int:
+def find_available_port(preferred_port: int = 8080) -> int:
     """Mencari port yang benar-benar terbuka agar terhindar dari konflik port sistem Windows."""
     import socket
-    ports_to_try = [preferred_port, 5001, 5055, 8080, 8000]
+    ports_to_try = [preferred_port, 8080, 5055, 8000, 5001]
     for p in ports_to_try:
-        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-            try:
+        try:
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
                 s.bind(('127.0.0.1', p))
                 return p
-            except OSError:
-                continue
+        except OSError:
+            continue
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         s.bind(('127.0.0.1', 0))
         return s.getsockname()[1]
 
 if __name__ == "__main__":
-    requested_port = int(os.environ.get("PORT", 5001))
+    requested_port = int(os.environ.get("PORT", 8080))
     port = find_available_port(requested_port)
     print(f"\n=======================================================")
     print(f"  KUESIONER AUTO-FILLER WEB DASHBOARD")

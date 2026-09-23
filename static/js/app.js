@@ -92,7 +92,14 @@ document.addEventListener("DOMContentLoaded", () => {
     const modalConfirm = document.getElementById("modal-confirm");
     const btnConfirmCancel = document.getElementById("btn-confirm-cancel");
     const btnConfirmReset = document.getElementById("btn-confirm-reset");
+    const modalDetail = document.getElementById("modal-detail");
+    const modalDetailTitle = document.getElementById("modal-detail-title");
+    const modalDetailSubtitle = document.getElementById("modal-detail-subtitle");
+    const modalDetailBody = document.getElementById("modal-detail-body");
+    const btnCloseDetail = document.getElementById("btn-close-detail");
+    const btnCopyAnswers = document.getElementById("btn-copy-answers");
     const toastContainer = document.getElementById("toast-container");
+    let currentDetailItem = null;
 
     // Initialize Studio
     init();
@@ -263,6 +270,24 @@ document.addEventListener("DOMContentLoaded", () => {
         btnResetHistory.addEventListener("click", () => modalConfirm.classList.remove("hidden"));
         btnConfirmCancel.addEventListener("click", () => modalConfirm.classList.add("hidden"));
         btnConfirmReset.addEventListener("click", confirmResetHistory);
+
+        // Detail Modal
+        if (btnCloseDetail) {
+            btnCloseDetail.addEventListener("click", () => modalDetail.classList.add("hidden"));
+        }
+        if (modalDetail) {
+            modalDetail.addEventListener("click", (e) => {
+                if (e.target === modalDetail) modalDetail.classList.add("hidden");
+            });
+        }
+        if (btnCopyAnswers) {
+            btnCopyAnswers.addEventListener("click", () => {
+                if (!currentDetailItem) return;
+                navigator.clipboard.writeText(JSON.stringify(currentDetailItem, null, 2)).then(() => {
+                    showToast("Data submisi berhasil disalin dalam format JSON.", "success");
+                });
+            });
+        }
 
         historySearchInput.addEventListener("input", (e) => {
             renderHistoryTable(e.target.value.toLowerCase());
@@ -954,17 +979,120 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
-        historyTableBody.innerHTML = filtered.map((item, idx) => `
-            <tr>
-                <td class="font-mono text-muted">${idx + 1}</td>
-                <td class="font-mono font-semibold">${escapeHtml(item.nim)}</td>
-                <td class="font-medium">${escapeHtml(item.nama)}</td>
-                <td><span class="badge badge-zinc font-mono">${escapeHtml(item.angkatan)}</span></td>
-                <td>${escapeHtml(item.prodi)}</td>
-                <td><span class="badge badge-indigo">${escapeHtml(item.dataset)}</span></td>
-            </tr>
+        historyTableBody.innerHTML = filtered.map((item, idx) => {
+            const hasAnswers = item.answers && item.answers.length > 0;
+            const subTime = item.timestamp && item.timestamp !== "-" ? item.timestamp.split(" ")[1] || item.timestamp : "-";
+            return `
+                <tr>
+                    <td class="font-mono text-muted">${idx + 1}</td>
+                    <td class="font-mono font-semibold">${escapeHtml(item.nim)}</td>
+                    <td class="font-medium">
+                        <div style="font-weight:600; color:var(--fg);">${escapeHtml(item.nama)}</div>
+                        <div class="text-subtle" style="font-size:11px;">${escapeHtml(item.jenis_kelamin || "-")}, ${escapeHtml(item.usia || "-")} th</div>
+                    </td>
+                    <td>
+                        <div style="display:flex; flex-direction:column; gap:2px;">
+                            <span style="font-weight:500;">${escapeHtml(item.prodi)}</span>
+                            <span class="text-subtle" style="font-size:11px;">${escapeHtml(item.universitas || item.dataset)}</span>
+                        </div>
+                    </td>
+                    <td><span class="badge badge-emerald" style="font-size:11px;">${escapeHtml(item.profile || "Puas Alami")}</span></td>
+                    <td class="font-mono text-subtle" style="font-size:11.5px;">${escapeHtml(subTime)}</td>
+                    <td>
+                        ${hasAnswers ? `
+                            <button type="button" class="btn btn-outline btn-xs btn-open-detail" data-idx="${idx}">
+                                <i data-lucide="eye"></i> Detail
+                            </button>
+                        ` : `
+                            <span class="text-muted" style="font-size:11px;">Tersimpan</span>
+                        `}
+                    </td>
+                </tr>
+            `;
+        }).join("");
+
+        // Attach detail button events
+        document.querySelectorAll(".btn-open-detail").forEach(btn => {
+            btn.addEventListener("click", () => {
+                const idx = parseInt(btn.getAttribute("data-idx"));
+                showSubmissionDetail(filtered[idx]);
+            });
+        });
+
+        renderIcons();
+    }
+
+    function showSubmissionDetail(item) {
+        if (!item) return;
+        currentDetailItem = item;
+        modalDetailTitle.textContent = `Tanggapan: ${item.nama} (${item.nim})`;
+        modalDetailSubtitle.textContent = `Disubmit: ${item.timestamp || '-'} • Profil: ${item.profile || 'Puas Alami'}`;
+
+        let distBadges = "";
+        if (item.scale_distribution && Object.keys(item.scale_distribution).length > 0) {
+            distBadges = Object.entries(item.scale_distribution).map(([k, v]) => 
+                `<span class="badge badge-emerald" style="margin-right:6px; margin-bottom:4px;">${escapeHtml(k)}: <strong>${v}x</strong></span>`
+            ).join("");
+        } else {
+            distBadges = `<span class="text-muted" style="font-size:12px;">Tidak ada skala kuesioner khusus.</span>`;
+        }
+
+        const qaRows = (item.answers || []).map((ans, qIdx) => `
+            <div class="qa-item">
+                <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                    <span class="qa-item-num">#${String(qIdx + 1).padStart(2, '0')}</span>
+                </div>
+                <div class="qa-item-question">${escapeHtml(ans.label)}</div>
+                <div class="qa-item-answer">
+                    ➔ ${escapeHtml(Array.isArray(ans.value) ? ans.value.join(", ") : ans.value)}
+                </div>
+            </div>
         `).join("");
 
+        modalDetailBody.innerHTML = `
+            <div class="modal-detail-grid">
+                <div class="modal-detail-item">
+                    <span class="modal-detail-label">Nama Lengkap</span>
+                    <span class="modal-detail-val">${escapeHtml(item.nama)}</span>
+                </div>
+                <div class="modal-detail-item">
+                    <span class="modal-detail-label">NIM / Angkatan</span>
+                    <span class="modal-detail-val font-mono">${escapeHtml(item.nim)} (${escapeHtml(item.angkatan)})</span>
+                </div>
+                <div class="modal-detail-item">
+                    <span class="modal-detail-label">Data Personal</span>
+                    <span class="modal-detail-val">${escapeHtml(item.jenis_kelamin || "-")}, Usia ${escapeHtml(item.usia || "-")} th (Smt ${escapeHtml(item.semester || "-")})</span>
+                </div>
+                <div class="modal-detail-item">
+                    <span class="modal-detail-label">Email Form</span>
+                    <span class="modal-detail-val font-mono">${escapeHtml(item.email || "-")}</span>
+                </div>
+                <div class="modal-detail-item" style="grid-column: 1 / -1;">
+                    <span class="modal-detail-label">Perguruan Tinggi & Prodi</span>
+                    <span class="modal-detail-val">${escapeHtml(item.universitas || "-")} — ${escapeHtml(item.prodi || "-")}</span>
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <div class="qa-section-title">
+                    <span>Sebaran Pilihan Sikap / Skala</span>
+                </div>
+                <div style="display:flex; flex-wrap:wrap; gap:4px;">
+                    ${distBadges}
+                </div>
+            </div>
+
+            <div>
+                <div class="qa-section-title">
+                    <span>Daftar Input & Jawaban Lengkap (${(item.answers || []).length} Butir)</span>
+                </div>
+                <div class="qa-list">
+                    ${qaRows || '<div class="text-muted text-center py-4">Tidak ada data jawaban tersimpan.</div>'}
+                </div>
+            </div>
+        `;
+
+        modalDetail.classList.remove("hidden");
         renderIcons();
     }
 
