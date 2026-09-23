@@ -330,6 +330,7 @@ document.addEventListener("DOMContentLoaded", () => {
             renderIcons();
 
             if (data.success) {
+                questionRules = {};
                 formQuestions = data.questions || [];
                 tabQuestionsBadge.textContent = formQuestions.length;
                 tabQuestionsBadge.classList.remove("hidden");

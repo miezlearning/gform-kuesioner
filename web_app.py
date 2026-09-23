@@ -224,9 +224,10 @@ def run_web_fill(target: int, cohorts: List[str], mode: str, custom_weights: dic
     page_history = form_data["page_history"]
     form_title = form_data.get("form_title", "Google Form")
     
-    job_status.add_log(f"Form '{form_title}' terdeteksi ({len(pages)} halaman). Memulai pengisian...", "success")
-    if question_rules:
-        job_status.add_log(f"Menerapkan {len(question_rules)} aturan kustom pada pertanyaan.", "info")
+    valid_entry_ids = {str(field["entry_id"]) for page in pages for field in page}
+    active_rules = {str(k): v for k, v in (question_rules or {}).items() if str(k) in valid_entry_ids}
+    if active_rules:
+        job_status.add_log(f"Menerapkan {len(active_rules)} aturan kustom pada pertanyaan formulir.", "info")
     
     for index, (student, angkatan) in enumerate(selected_pool):
         if not job_status.is_running:
@@ -246,7 +247,7 @@ def run_web_fill(target: int, cohorts: List[str], mode: str, custom_weights: dic
         email = generate_varied_email(nama, nim)
         
         # Selesaikan seluruh nilai jawaban menggunakan AnswerResolver
-        all_page_values = resolver.resolve_all_pages(pages, student, profile, question_rules)
+        all_page_values = resolver.resolve_all_pages(pages, student, profile, active_rules)
         
         # Kirim form secara multi-halaman sempurna
         success, message = form_handler.submit_pages(

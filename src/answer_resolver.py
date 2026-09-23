@@ -20,7 +20,7 @@ class AnswerResolver:
     def __init__(self, ai_generator: Optional[AITextGenerator] = None):
         self.ai = ai_generator or AITextGenerator()
 
-    def resolve_field_value(
+    def _resolve_raw_field_value(
         self,
         field: Dict[str, Any],
         student: Dict[str, str],
@@ -304,6 +304,92 @@ class AnswerResolver:
         if options:
             return random.choice(options)
         return "1"
+
+    def resolve_field_value(
+        self,
+        field: Dict[str, Any],
+        student: Dict[str, str],
+        profile: str = "puas_rata_rata",
+        custom_rule: Optional[Dict[str, Any]] = None
+    ) -> Union[str, List[str]]:
+        """
+        Menentukan dan memvalidasi nilai jawaban dengan Universal Option Integrity Guard.
+        Menjamin bahwa untuk tipe pilihan ganda (2) dan dropdown (3), nilai yang dikirimkan
+        SELALU merupakan salah satu opsi valid yang diterima Google Forms.
+        """
+        raw_val = self._resolve_raw_field_value(field, student, profile, custom_rule)
+
+        type_code = field.get("type", 0)
+        options = field.get("options", []) or []
+
+        # 1. VALIDASI KOTAK CENTANG (CHECKBOX - TYPE 4)
+        if type_code == 4 and options:
+            if not isinstance(raw_val, list):
+                raw_val = [raw_val]
+            valid_vals = [v for v in raw_val if v in options]
+            return valid_vals if valid_vals else [options[0]]
+
+        # 2. VALIDASI PILIHAN GANDA (TYPE 2) & DROPDOWN (TYPE 3)
+        if type_code in (2, 3) and options:
+            if isinstance(raw_val, list):
+                raw_val = raw_val[0] if raw_val else options[0]
+            val_str = str(raw_val).strip()
+
+            # A. Kecocokan persis
+            if val_str in options:
+                return val_str
+
+            # B. Kecocokan case-insensitive
+            for opt in options:
+                if opt.strip().lower() == val_str.lower():
+                    return opt
+
+            # C. Pencocokan kata kunci pintar (Fuzzy / Token matching)
+            val_lower = val_str.lower()
+            if "dokter" in val_lower or "kedokteran" in val_lower:
+                matched = next((o for o in options if "dokter" in o.lower() or "kedokteran" in o.lower()), None)
+                if matched:
+                    return matched
+            elif "farmasi" in val_lower or "apoteker" in val_lower:
+                matched = next((o for o in options if "farmasi" in o.lower() or "apoteker" in o.lower()), None)
+                if matched:
+                    return matched
+            elif "keperawatan" in val_lower or "perawat" in val_lower or "ners" in val_lower:
+                matched = next((o for o in options if "keperawatan" in o.lower() or "perawat" in o.lower() or "ners" in o.lower()), None)
+                if matched:
+                    return matched
+            elif "kebidanan" in val_lower or "bidan" in val_lower:
+                matched = next((o for o in options if "kebidanan" in o.lower() or "bidan" in o.lower()), None)
+                if matched:
+                    return matched
+            elif "gizi" in val_lower:
+                matched = next((o for o in options if "gizi" in o.lower()), None)
+                if matched:
+                    return matched
+            elif "kesehatan masyarakat" in val_lower or "kesmas" in val_lower:
+                matched = next((o for o in options if "kesehatan masyarakat" in o.lower() or "kesmas" in o.lower()), None)
+                if matched:
+                    return matched
+            elif "mulawarman" in val_lower:
+                matched = next((o for o in options if "mulawarman" in o.lower()), None)
+                if matched:
+                    return matched
+            elif "semester" in val_lower:
+                sem_digits = re.findall(r'\d+', val_lower)
+                if sem_digits:
+                    matched = next((o for o in options if sem_digits[0] in o), None)
+                    if matched:
+                        return matched
+            else:
+                tokens = [t for t in re.split(r'\W+', val_lower) if len(t) > 2]
+                matched = next((o for o in options if any(t in o.lower() for t in tokens)), None)
+                if matched:
+                    return matched
+
+            # D. Fallback mutlak: pilih opsi pertama yang valid di Google Form
+            return options[0]
+
+        return raw_val
 
     def resolve_all_pages(
         self,
