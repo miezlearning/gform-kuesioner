@@ -45,6 +45,8 @@ class JobStatus:
         self.completed_count = 0
         self.success_count = 0
         self.failed_count = 0
+        self.waiting_remaining = 0
+        self.waiting_text = ""
         self.thread = None
         self.lock = threading.Lock()
 
@@ -68,8 +70,32 @@ class JobStatus:
             self.completed_count = 0
             self.success_count = 0
             self.failed_count = 0
+            self.waiting_remaining = 0
+            self.waiting_text = ""
 
 job_status = JobStatus()
+
+def format_duration(seconds: int) -> str:
+    """Format durasi detik ke bentuk manusiawi (jam, menit, detik)."""
+    seconds = int(max(0, seconds))
+    if seconds >= 3600:
+        h = seconds // 3600
+        m = (seconds % 3600) // 60
+        s = seconds % 60
+        parts = [f"{h} jam"]
+        if m > 0:
+            parts.append(f"{m} menit")
+        if s > 0:
+            parts.append(f"{s} detik")
+        return " ".join(parts)
+    elif seconds >= 60:
+        m = seconds // 60
+        s = seconds % 60
+        if s > 0:
+            return f"{m} menit {s} detik"
+        return f"{m} menit"
+    else:
+        return f"{seconds} detik"
 
 def get_available_cohorts() -> List[str]:
     """Membaca daftar angkatan berdasarkan file CSV di folder dataset."""
@@ -393,11 +419,28 @@ def run_web_fill(target: int, cohorts: List[str], mode: str, custom_weights: dic
         
         if index < actual_target - 1:
             delay = random.randint(min_delay, max_delay)
-            job_status.add_log(f"Menunggu {delay} detik sebelum pengisian berikutnya...", "info")
-            for _ in range(int(delay * 10)):
+            formatted_delay = format_duration(delay)
+            job_status.add_log(f"Jeda terencana: Menunggu {formatted_delay} sebelum pengisian responden #{index+2}...", "info")
+            
+            start_wait = time.time()
+            last_countdown_log = start_wait
+            while time.time() - start_wait < delay:
                 if not job_status.is_running:
                     break
-                time.sleep(0.1)
+                rem = int(delay - (time.time() - start_wait))
+                job_status.waiting_remaining = rem
+                job_status.waiting_text = format_duration(rem)
+                
+                # Untuk jeda panjang (>= 3 menit), berikan update countdown log secara berkala
+                now = time.time()
+                if delay >= 180 and (now - last_countdown_log >= 60) and rem > 30:
+                    job_status.add_log(f"  • Sisa waktu istirahat: {format_duration(rem)} menuju responden #{index+2}...", "info")
+                    last_countdown_log = now
+                    
+                time.sleep(0.25)
+                
+            job_status.waiting_remaining = 0
+            job_status.waiting_text = ""
                 
     job_status.add_log(f"=== Pekerjaan Selesai! Sukses: {job_status.success_count}, Gagal: {job_status.failed_count} ===", "success")
     job_status.is_running = False
@@ -454,11 +497,15 @@ def get_status():
         "default_delay_min": SUBMISSION_DELAY_MIN,
         "default_delay_max": SUBMISSION_DELAY_MAX,
         "is_running": job_status.is_running,
+        "waiting_remaining": job_status.waiting_remaining,
+        "waiting_text": job_status.waiting_text,
         "job_progress": {
             "completed": job_status.completed_count,
             "target": job_status.total_target,
             "success": job_status.success_count,
-            "failed": job_status.failed_count
+            "failed": job_status.failed_count,
+            "waiting_remaining": job_status.waiting_remaining,
+            "waiting_text": job_status.waiting_text
         }
     })
 
@@ -471,10 +518,23 @@ def start_job():
     data = request.json or {}
     target = int(data.get("target", TARGET_SUBMISSIONS))
     cohorts = data.get("cohorts", [])
-    mode = data.get("mode", "rata")
-    custom_weights = data.get("weights", {})
-    min_delay = int(data.get("min_delay", SUBMISSION_DELAY_MIN))
-    max_delay = int(data.get("max_delay", SUBMISSION_DELAY_MAX))
+    mode = data.get("distribution_mode", data.get("mode", "rata"))
+    custom_weights = data.get("custom_weights", data.get("weights", {}))
+    
+    # Konversi satuan jeda (detik, menit, jam)
+    delay_unit = str(data.get("delay_unit", "detik")).lower()
+    raw_min = float(data.get("delay_min", data.get("min_delay", SUBMISSION_DELAY_MIN)))
+    raw_max = float(data.get("delay_max", data.get("max_delay", SUBMISSION_DELAY_MAX)))
+    
+    multiplier = 1
+    if delay_unit in ["menit", "minute", "m"]:
+        multiplier = 60
+    elif delay_unit in ["jam", "hour", "h"]:
+        multiplier = 3600
+        
+    min_delay = max(1, int(raw_min * multiplier))
+    max_delay = max(min_delay, int(raw_max * multiplier))
+    
     url = data.get("url", FORM_URL)
     question_rules = data.get("question_rules", {})
     

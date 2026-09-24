@@ -55,6 +55,10 @@ document.addEventListener("DOMContentLoaded", () => {
     const presetBtns = document.querySelectorAll(".preset-btn");
     const delayMinInput = document.getElementById("delay-min");
     const delayMaxInput = document.getElementById("delay-max");
+    const delayUnitSelect = document.getElementById("delay-unit");
+    const delayEquivalentBadge = document.getElementById("delay-equivalent-badge");
+    const delayEstimationHint = document.getElementById("delay-estimation-hint");
+    const delayPresetBtns = document.querySelectorAll(".delay-preset-btn");
     const distributionRadios = document.getElementsByName("distribution-mode");
     const customWeightAlert = document.getElementById("custom-weight-alert");
     const weightTotalPercentage = document.getElementById("weight-total-percentage");
@@ -65,6 +69,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const btnStop = document.getElementById("btn-stop");
     const runnerBadgeStatus = document.getElementById("runner-badge-status");
     const runnerBadgeText = document.getElementById("runner-badge-text");
+    const runnerStatusBullet = document.getElementById("runner-status-bullet");
     const runnerActiveInfo = document.getElementById("runner-active-info");
     const metricCompleted = document.getElementById("metric-completed");
     const metricTotal = document.getElementById("metric-total");
@@ -75,6 +80,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const progressPercentText = document.getElementById("progress-percent-text");
     const progressStatusDesc = document.getElementById("progress-status-desc");
     const terminalBody = document.getElementById("terminal-body");
+    const consoleIndicator = document.getElementById("console-indicator");
+    const terminalLineCount = document.getElementById("terminal-line-count");
     const btnClearTerminal = document.getElementById("btn-clear-terminal");
     const btnCopyTerminal = document.getElementById("btn-copy-terminal");
     const btnToggleAutoscroll = document.getElementById("btn-toggle-autoscroll");
@@ -208,6 +215,63 @@ document.addEventListener("DOMContentLoaded", () => {
             });
         });
 
+        // Delay Timing & Rate Limit (Detik, Menit, Jam)
+        function updateDelayDisplay() {
+            if (!delayMinInput || !delayMaxInput || !delayUnitSelect) return;
+            const minVal = parseFloat(delayMinInput.value) || 1;
+            const maxVal = parseFloat(delayMaxInput.value) || minVal;
+            const unit = delayUnitSelect.value;
+
+            let unitLabel = "detik";
+            let multiplier = 1;
+            if (unit === "menit") {
+                unitLabel = "menit";
+                multiplier = 60;
+            } else if (unit === "jam") {
+                unitLabel = "jam";
+                multiplier = 3600;
+            }
+
+            if (delayEquivalentBadge) {
+                if (unit === "detik") {
+                    delayEquivalentBadge.textContent = `${minVal} — ${maxVal} detik per responden`;
+                } else {
+                    const secMin = Math.round(minVal * multiplier);
+                    const secMax = Math.round(maxVal * multiplier);
+                    delayEquivalentBadge.textContent = `${minVal} — ${maxVal} ${unitLabel} (≈ ${secMin}s - ${secMax}s)`;
+                }
+            }
+
+            if (delayEstimationHint) {
+                if (unit === "jam") {
+                    delayEstimationHint.textContent = `Pola pengisian berkala panjang: jeda ${minVal} s/d ${maxVal} jam antar responden cocok untuk menyebar kuesioner sepanjang hari/minggu.`;
+                } else if (unit === "menit") {
+                    delayEstimationHint.textContent = `Pola pengisian santai alami: jeda ${minVal} s/d ${maxVal} menit antar responden menyerupai pengisian kuesioner asli oleh mahasiswa.`;
+                } else {
+                    delayEstimationHint.textContent = `Durasi jeda diacak di antara ${minVal} dan ${maxVal} detik untuk meniru jeda pengetikan responden.`;
+                }
+            }
+        }
+
+        if (delayMinInput) delayMinInput.addEventListener("input", updateDelayDisplay);
+        if (delayMaxInput) delayMaxInput.addEventListener("input", updateDelayDisplay);
+        if (delayUnitSelect) delayUnitSelect.addEventListener("change", updateDelayDisplay);
+
+        delayPresetBtns.forEach(btn => {
+            btn.addEventListener("click", () => {
+                delayPresetBtns.forEach(b => b.classList.remove("active"));
+                btn.classList.add("active");
+                const min = btn.getAttribute("data-min");
+                const max = btn.getAttribute("data-max");
+                const unit = btn.getAttribute("data-unit");
+                if (delayMinInput) delayMinInput.value = min;
+                if (delayMaxInput) delayMaxInput.value = max;
+                if (delayUnitSelect) delayUnitSelect.value = unit;
+                updateDelayDisplay();
+            });
+        });
+        updateDelayDisplay();
+
         // Cohort Selection Controls
         btnSelectAll.addEventListener("click", () => {
             checkedCohorts = new Set(cohortsData.map(c => c.cohort));
@@ -240,6 +304,7 @@ document.addEventListener("DOMContentLoaded", () => {
         // Terminal Tools
         btnClearTerminal.addEventListener("click", () => {
             terminalBody.innerHTML = `<div class="terminal-line system"><span class="term-time">[${getCurrentTime()}]</span><span class="term-tag">[SYSTEM]</span><span class="term-text">Terminal dibersihkan.</span></div>`;
+            if (terminalLineCount) terminalLineCount.textContent = "1 baris";
         });
 
         btnCopyTerminal.addEventListener("click", () => {
@@ -611,11 +676,11 @@ document.addEventListener("DOMContentLoaded", () => {
             const percentFilled = c.total > 0 ? Math.round((c.filled / c.total) * 100) : 0;
             const badgeClass = c.remaining > 0 ? "has-data" : "empty";
 
-            // Tag dekoratif
+            // Tag kategori data
             let tagBadge = "";
-            if (c.cohort.includes("kesehatan")) tagBadge = `<span class="badge badge-emerald">🩺 Kesehatan</span>`;
-            else if (c.cohort.includes("gratispol")) tagBadge = `<span class="badge badge-indigo">🎓 Beasiswa Kaltim</span>`;
-            else if (c.cohort.includes("samba")) tagBadge = `<span class="badge badge-zinc">🏛️ UNMUL Lengkap</span>`;
+            if (c.cohort.includes("kesehatan")) tagBadge = `<span class="badge badge-emerald">Kesehatan</span>`;
+            else if (c.cohort.includes("gratispol")) tagBadge = `<span class="badge badge-indigo">Beasiswa Kaltim</span>`;
+            else if (c.cohort.includes("samba")) tagBadge = `<span class="badge badge-zinc">UNMUL Lengkap</span>`;
 
             card.innerHTML = `
                 <div class="cohort-card-top">
@@ -737,8 +802,9 @@ document.addEventListener("DOMContentLoaded", () => {
     function startFilling() {
         const url = formUrlInput.value.trim();
         const target = parseInt(targetInput.value);
-        const delayMin = parseInt(delayMinInput.value);
-        const delayMax = parseInt(delayMaxInput.value);
+        const delayMin = parseFloat(delayMinInput.value) || 2;
+        const delayMax = parseFloat(delayMaxInput.value) || 5;
+        const delayUnit = delayUnitSelect ? delayUnitSelect.value : "detik";
         const mode = getSelectedDistributionMode();
         const profile = getSelectedSentimentProfile();
 
@@ -771,6 +837,7 @@ document.addEventListener("DOMContentLoaded", () => {
             target: target,
             delay_min: delayMin,
             delay_max: delayMax,
+            delay_unit: delayUnit,
             distribution_mode: mode,
             cohorts: Array.from(checkedCohorts),
             custom_weights: customWeights,
@@ -839,9 +906,9 @@ document.addEventListener("DOMContentLoaded", () => {
         statusDot.className = `status-dot ${running ? 'running' : 'online'}`;
         statusText.textContent = running ? "Proses Pengisian Berjalan" : "Server Siap";
 
-        runnerLiveDot.classList.toggle("active", running);
-        const pulse = runnerBadgeStatus.querySelector(".pulse-dot");
-        if (pulse) pulse.classList.toggle("running", running);
+        if (runnerLiveDot) runnerLiveDot.classList.toggle("active", running);
+        if (runnerStatusBullet) runnerStatusBullet.classList.toggle("running", running);
+        if (consoleIndicator) consoleIndicator.className = `console-indicator ${running ? 'running' : 'idle'}`;
         runnerBadgeText.textContent = running ? "Sedang Mengirim Respon..." : "Siap Mengeksekusi";
     }
 
@@ -862,7 +929,16 @@ document.addEventListener("DOMContentLoaded", () => {
         const pct = total > 0 ? Math.round((comp / total) * 100) : 0;
         progressBarFill.style.width = `${pct}%`;
         progressPercentText.textContent = `${pct}%`;
-        progressStatusDesc.textContent = isRunning ? `Sedang memproses ${comp} dari ${total} responden...` : `Selesai (${succ} sukses, ${fail} gagal).`;
+
+        if (jobProgress.waiting_text) {
+            progressStatusDesc.textContent = `Sedang jeda antar respon: ${jobProgress.waiting_text}...`;
+            if (consoleIndicator) consoleIndicator.className = "console-indicator paused";
+            runnerBadgeText.textContent = `Menunggu Jeda (${jobProgress.waiting_text})`;
+        } else {
+            progressStatusDesc.textContent = isRunning ? `Sedang memproses ${comp} dari ${total} responden...` : `Selesai (${succ} sukses, ${fail} gagal).`;
+            if (consoleIndicator && isRunning) consoleIndicator.className = "console-indicator running";
+            if (isRunning) runnerBadgeText.textContent = "Sedang Mengirim Respon...";
+        }
     }
 
     // --- Server-Sent Events (SSE) Stream ---
@@ -913,6 +989,11 @@ document.addEventListener("DOMContentLoaded", () => {
         `;
 
         terminalBody.appendChild(line);
+
+        if (terminalLineCount) {
+            const count = terminalBody.querySelectorAll(".terminal-line").length;
+            terminalLineCount.textContent = `${count} baris`;
+        }
 
         if (isAutoscroll) {
             terminalBody.scrollTop = terminalBody.scrollHeight;

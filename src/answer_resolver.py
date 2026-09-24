@@ -99,7 +99,7 @@ class AnswerResolver:
             elif rule_mode == "ai_review":
                 cat = custom_rule.get("category", "pendapat")
                 if cat in ("pendapat", "saran"):
-                    return self.ai.generate_text(cat)
+                    return self.ai.generate_text(cat, context=label)
                 return self.ai.generate_context_text(label)
 
         # 2. MODE OTOMATIS CERDAS (SMART AUTO-DETECT)
@@ -294,9 +294,9 @@ class AnswerResolver:
 
             # G. Ulasan & Pendapat
             if any(k in lbl_lower for k in ["pendapat", "ulasan", "review", "kesan", "pandangan", "tanggapan"]):
-                return self.ai.generate_text("pendapat")
+                return self.ai.generate_text("pendapat", context=label)
             if any(k in lbl_lower for k in ["saran", "masukan", "kritik", "rekomendasi", "harapan"]):
-                return self.ai.generate_text("saran")
+                return self.ai.generate_text("saran", context=label)
                 
             return self.ai.generate_context_text(label)
 

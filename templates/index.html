@@ -20,11 +20,11 @@
             <div class="navbar-left">
                 <div class="brand">
                     <div class="brand-logo">
-                        <i data-lucide="sparkles"></i>
+                        <i data-lucide="clipboard-check"></i>
                     </div>
                     <div class="brand-text">
-                        <span class="brand-title">FormPilot <span class="brand-badge">Studio</span></span>
-                        <span class="brand-desc">Universal Google Form Intelligence & Responding Engine</span>
+                        <span class="brand-title">FormPilot <span class="brand-badge">Automation</span></span>
+                        <span class="brand-desc">Google Forms Responding & Telemetry Engine</span>
                     </div>
                 </div>
             </div>
@@ -257,23 +257,59 @@
                                     <span class="field-hint">Jumlah entri tanggapan yang akan disubmit ke Google Forms.</span>
                                 </div>
 
-                                <!-- Delay Timing -->
+                                <!-- Delay Timing & Rate Limit -->
                                 <div class="form-group mb-4">
-                                    <label class="form-label">
-                                        <i data-lucide="clock"></i> Jeda Pengiriman Acak (Detik)
-                                    </label>
-                                    <div class="delay-row">
+                                    <div class="flex-between mb-2">
+                                        <label class="form-label mb-0">
+                                            <i data-lucide="clock"></i> Rentang Jeda Pengiriman Antar Respon
+                                        </label>
+                                        <span class="delay-equivalent-badge" id="delay-equivalent-badge">
+                                            2 — 5 detik per responden
+                                        </span>
+                                    </div>
+
+                                    <!-- Quick Presets -->
+                                    <div class="delay-presets-bar mb-2">
+                                        <button type="button" class="delay-preset-btn active" data-min="2" data-max="5" data-unit="detik">
+                                            2 - 5 Detik (Kilat)
+                                        </button>
+                                        <button type="button" class="delay-preset-btn" data-min="30" data-max="60" data-unit="detik">
+                                            30 - 60 Detik (Cepat)
+                                        </button>
+                                        <button type="button" class="delay-preset-btn" data-min="2" data-max="5" data-unit="menit">
+                                            2 - 5 Menit (Santai)
+                                        </button>
+                                        <button type="button" class="delay-preset-btn" data-min="10" data-max="20" data-unit="menit">
+                                            10 - 20 Menit (Alami)
+                                        </button>
+                                        <button type="button" class="delay-preset-btn" data-min="1" data-max="2" data-unit="jam">
+                                            1 - 2 Jam (Berkala)
+                                        </button>
+                                    </div>
+
+                                    <!-- Input Row -->
+                                    <div class="delay-input-row">
                                         <div class="delay-col">
-                                            <span class="sub-label">Min Delay:</span>
-                                            <input type="number" id="delay-min" class="form-control" min="0" value="2" required>
+                                            <span class="sub-label">Jeda Min:</span>
+                                            <input type="number" id="delay-min" class="form-control" min="1" value="2" step="any" required>
                                         </div>
-                                        <div class="delay-separator">—</div>
+                                        <div class="delay-separator">s/d</div>
                                         <div class="delay-col">
-                                            <span class="sub-label">Max Delay:</span>
-                                            <input type="number" id="delay-max" class="form-control" min="0" value="5" required>
+                                            <span class="sub-label">Jeda Max:</span>
+                                            <input type="number" id="delay-max" class="form-control" min="1" value="5" step="any" required>
+                                        </div>
+                                        <div class="delay-col delay-col-unit">
+                                            <span class="sub-label">Satuan Waktu:</span>
+                                            <select id="delay-unit" class="form-control select-control">
+                                                <option value="detik" selected>Detik (Seconds)</option>
+                                                <option value="menit">Menit (Minutes)</option>
+                                                <option value="jam">Jam (Hours)</option>
+                                            </select>
                                         </div>
                                     </div>
-                                    <span class="field-hint">Memberikan jeda acak antar submisi agar pola pengiriman tampak alami.</span>
+                                    <span class="field-hint" id="delay-estimation-hint">
+                                        Durasi jeda diacak di antara batas min dan max untuk meniru pola pengisian manusiawi.
+                                    </span>
                                 </div>
 
                                 <!-- Distribution Strategy -->
@@ -303,34 +339,41 @@
                                     </div>
                                 </div>
 
-                                <!-- Sentimen Kepuasan Default -->
+                                <!-- Sentimen Kepuasan Responden (Clean Anti-Slop) -->
                                 <div class="form-group">
                                     <label class="form-label">
-                                        <i data-lucide="smile"></i> Pola Sentimen Kepuasan Responden
+                                        <i data-lucide="sliders-horizontal"></i> Profil Sikap / Pola Jawaban Skala
                                     </label>
                                     <div class="sentiment-cards">
                                         <label class="sentiment-card">
                                             <input type="radio" name="sentiment-profile" value="puas_rata_rata" checked>
                                             <div class="sentiment-box">
-                                                <span class="sentiment-icon">😊</span>
-                                                <span class="sentiment-title">Puas Alami</span>
-                                                <span class="sentiment-desc">Dominan Setuju/Puas dengan variasi realistis</span>
+                                                <div class="sentiment-tag-row">
+                                                    <span class="badge badge-emerald">Skala 4 - 5</span>
+                                                    <span class="badge badge-zinc">Direkomendasikan</span>
+                                                </div>
+                                                <span class="sentiment-title">Puas Realistis (Alami)</span>
+                                                <span class="sentiment-desc">Dominan Sesuai/Setuju dengan sebaran variatif alami seperti mahasiswa sungguhan.</span>
                                             </div>
                                         </label>
                                         <label class="sentiment-card">
                                             <input type="radio" name="sentiment-profile" value="sangat_puas">
                                             <div class="sentiment-box">
-                                                <span class="sentiment-icon">🌟</span>
+                                                <div class="sentiment-tag-row">
+                                                    <span class="badge badge-indigo">Skala 5 Maksimal</span>
+                                                </div>
                                                 <span class="sentiment-title">Sangat Positif</span>
-                                                <span class="sentiment-desc">Dominan Sangat Setuju / Nilai Tertinggi</span>
+                                                <span class="sentiment-desc">Dominan memilih opsi tertinggi (Sangat Sesuai / Sangat Setuju / Skor Penuh).</span>
                                             </div>
                                         </label>
                                         <label class="sentiment-card">
                                             <input type="radio" name="sentiment-profile" value="kritis">
                                             <div class="sentiment-box">
-                                                <span class="sentiment-icon">🤔</span>
-                                                <span class="sentiment-title">Kritis / Beragam</span>
-                                                <span class="sentiment-desc">Distribusi jawaban menyebar rata & kritis</span>
+                                                <div class="sentiment-tag-row">
+                                                    <span class="badge badge-amber">Skala 1 - 5 Variatif</span>
+                                                </div>
+                                                <span class="sentiment-title">Kritis & Berimbang</span>
+                                                <span class="sentiment-desc">Sebaran respon heterogen, kritis, dan tersebar merata di semua tingkatan skala.</span>
                                             </div>
                                         </label>
                                     </div>
@@ -349,7 +392,7 @@
                 <div class="runner-controls-bar">
                     <div class="runner-status-group">
                         <div class="runner-badge" id="runner-badge-status">
-                            <span class="pulse-dot"></span>
+                            <span class="status-bullet" id="runner-status-bullet"></span>
                             <span id="runner-badge-text">Siap Mengeksekusi</span>
                         </div>
                         <div class="runner-active-info" id="runner-active-info">
@@ -427,17 +470,15 @@
                     </div>
                 </div>
 
-                <!-- Obsidian / VS Code Live Terminal Logs -->
+                <!-- Live Telemetry Console (Anti-Slop Clean Engineering) -->
                 <section class="card terminal-card">
                     <div class="terminal-topbar">
-                        <div class="terminal-traffic-lights">
-                            <span class="traffic-dot red"></span>
-                            <span class="traffic-dot yellow"></span>
-                            <span class="traffic-dot green"></span>
-                        </div>
-                        <div class="terminal-title">
-                            <i data-lucide="terminal"></i>
-                            <span>LIVE STREAM TERMINAL</span>
+                        <div class="terminal-left-group">
+                            <div class="terminal-console-tag">
+                                <span class="console-indicator" id="console-indicator"></span>
+                                <span>LOG TELEMETRI PENGIRIMAN</span>
+                            </div>
+                            <span class="terminal-line-count" id="terminal-line-count">1 baris</span>
                         </div>
                         <div class="terminal-filter-tabs">
                             <button class="term-tab active" data-filter="all">Semua</button>

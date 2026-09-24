@@ -1075,7 +1075,66 @@ body {
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
 }
 
-/* Sentiment Cards */
+/* Delay Timing Controls */
+.delay-equivalent-badge {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    padding: 3px 8px;
+    border-radius: var(--radius-sm);
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border);
+    color: var(--emerald);
+    font-weight: 500;
+}
+
+.delay-presets-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.delay-preset-btn {
+    padding: 4px 10px;
+    font-size: 11.5px;
+    font-weight: 500;
+    border-radius: var(--radius-sm);
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border);
+    color: var(--fg-muted);
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.delay-preset-btn:hover {
+    border-color: var(--border-hover);
+    color: var(--fg);
+}
+
+.delay-preset-btn.active {
+    background-color: var(--primary-light);
+    border-color: var(--primary);
+    color: #ffffff;
+    font-weight: 600;
+}
+
+.delay-input-row {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr 140px;
+    gap: 12px;
+    align-items: center;
+}
+
+@media (max-width: 768px) {
+    .delay-input-row {
+        grid-template-columns: 1fr;
+    }
+}
+
+.delay-col-unit select {
+    cursor: pointer;
+}
+
+/* Sentiment Cards (Clean Anti-Slop) */
 .sentiment-cards {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -1099,7 +1158,7 @@ body {
 .sentiment-box {
     display: flex;
     flex-direction: column;
-    padding: 12px;
+    padding: 14px;
     border-radius: var(--radius-md);
     background-color: var(--bg-surface);
     border: 1px solid var(--border);
@@ -1113,24 +1172,27 @@ body {
 
 .sentiment-card input:checked + .sentiment-box {
     border-color: var(--primary);
-    background-color: rgba(99, 102, 241, 0.06);
+    background-color: rgba(59, 130, 246, 0.04);
 }
 
-.sentiment-icon {
-    font-size: 20px;
-    margin-bottom: 6px;
+.sentiment-tag-row {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 8px;
+    flex-wrap: wrap;
 }
 
 .sentiment-title {
-    font-size: 13px;
+    font-size: 13.5px;
     font-weight: 600;
     color: var(--fg);
 }
 
 .sentiment-desc {
-    font-size: 11px;
+    font-size: 11.5px;
     color: var(--fg-muted);
-    margin-top: 2px;
+    margin-top: 4px;
+    line-height: 1.45;
 }
 
 /* ==========================================================================
@@ -1166,18 +1228,21 @@ body {
     color: var(--fg);
 }
 
-.pulse-dot {
+.status-bullet {
     width: 8px;
     height: 8px;
     border-radius: 50%;
-    background-color: var(--emerald);
-    box-shadow: 0 0 8px var(--emerald);
+    background-color: var(--fg-subtle);
+    display: inline-block;
+    transition: background-color 0.2s ease;
 }
 
-.pulse-dot.running {
+.status-bullet.running {
     background-color: var(--amber);
-    box-shadow: 0 0 8px var(--amber);
-    animation: pulse 1s infinite;
+}
+
+.status-bullet.online {
+    background-color: var(--emerald);
 }
 
 .runner-active-info {
@@ -1291,16 +1356,15 @@ body {
 
 .progress-bar-fill {
     height: 100%;
-    background: linear-gradient(90deg, #6366f1, #10b981);
+    background-color: var(--primary);
     border-radius: var(--radius-full);
     transition: width 0.3s ease;
 }
 
-/* VS Code / Obsidian Live Terminal */
+/* Obsidian Live Telemetry Terminal */
 .terminal-card {
     border-color: #27272a;
     background-color: #0c0c0e;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
 }
 
 .terminal-topbar {
@@ -1308,39 +1372,57 @@ body {
     align-items: center;
     justify-content: space-between;
     background-color: #151518;
-    padding: 10px 18px;
+    padding: 9px 16px;
     border-bottom: 1px solid #27272a;
+    gap: 12px;
 }
 
-.terminal-traffic-lights {
-    display: flex;
-    gap: 7px;
-}
-
-.traffic-dot {
-    width: 11px;
-    height: 11px;
-    border-radius: 50%;
-}
-
-.traffic-dot.red { background-color: #ef4444; }
-.traffic-dot.yellow { background-color: #f59e0b; }
-.traffic-dot.green { background-color: #10b981; }
-
-.terminal-title {
+.terminal-left-group {
     display: flex;
     align-items: center;
-    gap: 8px;
-    font-family: var(--font-mono);
-    font-size: 11px;
-    color: var(--fg-muted);
-    font-weight: 600;
-    letter-spacing: 0.05em;
+    gap: 10px;
 }
 
-.terminal-title i {
-    width: 14px;
-    height: 14px;
+.terminal-console-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    color: var(--fg-muted);
+}
+
+.console-indicator {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background-color: var(--fg-subtle);
+    display: inline-block;
+    transition: background-color 0.2s ease;
+}
+
+.console-indicator.running {
+    background-color: var(--emerald);
+}
+
+.console-indicator.paused {
+    background-color: var(--amber);
+}
+
+.console-indicator.idle {
+    background-color: var(--fg-subtle);
+}
+
+.terminal-line-count {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--fg-subtle);
+    background: rgba(255, 255, 255, 0.04);
+    padding: 1px 7px;
+    border-radius: var(--radius-xs);
+    border: 1px solid var(--border-dim);
 }
 
 .terminal-filter-tabs {

@@ -257,48 +257,186 @@ def is_too_similar(text: str, target_set: Set[str], word_threshold: int = 3, ove
     return False
 
 
-def get_fallback_text(prompt_type: str) -> str:
+# =========================================================================
+# Bank Tanggapan Mahasiswa / Gaya Santai Sosmed (Natural, Tidak Baku, Anti-Alay)
+# =========================================================================
+
+STUDENT_PHRASES = {
+    "pendapat": [
+        "Overall udah bagus banget sih, ga ribet pas dipake.",
+        "Tampilannya simpel dan bersih, enak dilihat di hp.",
+        "Udah oke kok, alurnya jelas dari awal sampai akhir.",
+        "Cukup ngebantu banget buat mahasiswa, prosesnya jadi lebih cepet.",
+        "Bagus, loadingnya juga lumayan cepet ga bikin nunggu lama.",
+        "Sejauh ini puas sih, ga nemu kendala yang berarti.",
+        "Navigasinya gampang dipahami, tampilannya juga responsif.",
+        "Alurnya sat set dan to the point, ga bertele-tele.",
+        "Udah cukup memuaskan dan fiturnya sesuai kebutuhan.",
+        "Keren sih, desainnya modern dan gampang diakses.",
+        "Udah mantap banget, ga ada keluhan sejauh ini.",
+        "Bagus kok, sistemnya lancar pas dicoba tadi.",
+        "Simpel dan praktis banget buat dipake sehari-hari.",
+        "Menurutku udah sangat baik dan mudah dipahami instruksinya.",
+        "Pengalaman penggunaannya nyaman, informasinya lengkap.",
+        "Tampilannya minimalis, ga bikin pusing pas nyari menu.",
+        "Semuanya berjalan lancar, ga ada error sama sekali."
+    ],
+    "saran": [
+        "Semoga ke depannya servernya makin stabil pas jam-jam sibuk.",
+        "Bisa ditambahin panduan singkat atau petunjuk biar ga bingung.",
+        "Mungkin tampilannya bisa dibikin makin responsif lagi pas dibuka di hp.",
+        "Tolong dipertahanin aja performanya yang sekarang, udah mantap kok.",
+        "Kalau bisa tombol aksinya dibuat lebih keliatan atau kontras dikit.",
+        "Loadingnya semoga bisa dipercepat lagi dikit biar makin sat set.",
+        "Bisa diperbanyak sosialisasi infonya di medsos biar ga ketinggalan info.",
+        "Udah bagus banget, semoga bisa terus dipertahanin dan diupdate rutin.",
+        "Mungkin bisa ditambahin fitur notifikasi biar infonya langsung masuk.",
+        "Sejauh ini udah oke, tinggal pertahanin aja kualitas layanannya.",
+        "Desainnya kalau bisa dibuat makin modern dan minimalis lagi.",
+        "Petunjuk pengisian di beberapa bagian bisa diperjelas dikit lagi yaa.",
+        "Semoga ke depannya makin banyak pilihan fitur yang mempermudah mahasiswa."
+    ],
+    "akademik": [
+        "Kuncinya konsisten bagi waktu antara kuliah sama istirahat aja sih.",
+        "Motivasi terbesarku pengen cepat lulus tepat waktu dan banggain ortu.",
+        "Tantangannya lebih ke manajemen waktu kalau pas tugas lagi numpuk barengan.",
+        "Sempat ngerasa jenuh, tapi ya tetap dijalanin pelan-pelan sampai kelar.",
+        "Sering diskusi bareng temen sekelas biar lebih paham materi yang susah.",
+        "Fokus ke target jangka panjang biar ga gampang down pas nilai kurang memuaskan.",
+        "Selalu usahain ngerjain tugas dari jauh-jauh hari biar ga panik pas deadline.",
+        "Belajar adaptasi sama ritme kuliah aja sih, lama-lama juga terbiasa.",
+        "Tetap semangat jalanin perkuliahan walaupun kadang materinya lumayan berat.",
+        "Usahain aktif di kelas dan jangan malu buat nanya kalau belum ngerti.",
+        "Manfaatin waktu luang buat istirahat biar ga gampang burnout pas masa ujian.",
+        "Saling support sama temen-temen satu angkatan ngebantu banget jaga motivasi.",
+        "Mencoba eksplor banyak hal baru di kampus biar nambah wawasan dan pengalaman.",
+        "Penting banget punya lingkungan temen yang suportif pas lagi ngerjain tugas kuliah."
+    ],
+    "kendala": [
+        "Sejauh ini belum ada kendala yang berarti sih, semuanya masih aman.",
+        "Paling kendalanya di koneksi internet aja pas lagi di kosan.",
+        "Tantangannya cuma bagi waktu pas tugas kuliah lagi numpuk barengan.",
+        "Aman aja sih, kalau ada kesulitan biasanya langsung tanya temen atau dosen.",
+        "Awalnya sempat kaget sama beban tugasnya, tapi sekarang udah mulai terbiasa.",
+        "Belum nemu masalah yang serius, alhamdulillah masih lancar-lancar aja.",
+        "Kendala kecil paling di jadwal kelas yang kadang bentrok, tapi masih aman."
+    ],
+    "umum": [
+        "Sejauh ini semuanya udah berjalan dengan baik dan lancar.",
+        "Menurutku udah sesuai sama kebutuhan mahasiswa saat ini.",
+        "Aman aja sih, ga ada catatan khusus.",
+        "Udah cukup jelas dan mudah diikuti petunjuknya.",
+        "Semoga bisa terus konsisten dan berkembang lebih baik lagi.",
+        "Secara keseluruhan pengalamannya positif dan sangat membantu."
+    ]
+}
+
+def apply_natural_youth_style(text: str) -> str:
     """
-    Mendapatkan teks ulasan (pendapat) atau saran acak dari template lokal
-    sebagai fallback jika pemanggilan AI API gagal.
+    Menyesuaikan gaya penulisan agar bervariasi secara natural seperti mahasiswa:
+    - 75% huruf besar di awal kalimat standar
+    - 25% huruf kecil santai khas medsos/chat
+    - 20% tanpa titik di akhir kalimat
     """
-    if prompt_type == "pendapat":
-        direct = [
-            "Aksesnya cukup lancar.",
-            "Lumayan fast respond.",
-            "Tampilan webnya sudah oke.",
-            "Menu surat gampang dicari.",
-            "Proses upload berkas lancar.",
-            "Dashboard responsif di HP.",
-            "Alurnya sangat praktis.",
-            "Cek status surat mudah.",
-            "Tampilannya bersih dan rapi.",
-            "Menu pengajuan tertata baik.",
-            "Instruksi form cukup jelas.",
-            "Sistemnya sangat membantu.",
-            "Pengajuan surat tidak ribet.",
-            "Desain web lumayan modern.",
-            "Loading website cukup cepat.",
-            "Prosesnya sat set banget.",
-            "Tracking surat sangat membantu."
+    text = text.strip()
+    if not text:
+        return text
+        
+    # Kadang tanpa tanda titik di akhir (khas gaya ketik chat/form cepat)
+    if random.random() < 0.20 and text.endswith(('.', '!', '?')):
+        text = text[:-1]
+        
+    # Kadang lowercase santai
+    if random.random() < 0.25:
+        text = text[0].lower() + text[1:]
+        
+    return text
+
+def assemble_dynamic_student_response(category: str = "pendapat") -> str:
+    """
+    Membangun kalimat secara modular dengan tata bahasa santai anak muda
+    untuk memastikan variasi yang tak terbatas dan tidak kaku.
+    """
+    if category == "saran":
+        openings = ["Kalau bisa ", "Mungkin ke depannya ", "Semoga ", "Bisa tolong ", "Saran dari aku, ", "", ""]
+        cores = [
+            "tampilannya dibikin makin responsif lagi pas dibuka di hp",
+            "servernya dijaga biar tetap stabil pas jam-jam sibuk",
+            "ditambahin panduan singkat atau FAQ biar mahasiswa ga bingung",
+            "loadingnya bisa dipercepat dikit lagi biar makin sat set",
+            "dipertahanin aja kualitasnya yang sekarang, udah mantap kok",
+            "tombol aksinya dibikin lebih kontras dikit biar lebih keliatan",
+            "infonya lebih sering di-share di medsos biar ga ketinggalan info",
+            "desainnya dibuat makin minimalis dan modern",
+            "proses verifikasinya bisa lebih dipersingkat lagi"
         ]
-    else:  # saran
-        direct = [
-            "Loading submit PDF dipercepat.",
-            "Tombol kirim ganti warna.",
-            "Tambahkan notifikasi WhatsApp.",
-            "Infokan max file size upload.",
-            "Menu KHS segera diaktifkan.",
-            "Tampilan mobile diperbaiki lagi.",
-            "Loading web tolong dioptimalkan.",
-            "Desain halaman dibuat modern.",
-            "Navigasi form dibuat ringkas.",
-            "Tracking status dipercepat responnya.",
-            "Catatan revisi diperjelas infonya.",
-            "Tampilan menu dirapikan sedikit.",
-            "Notif status dibuat real-time.",
-            "Perjelas kolom deskripsi opsional.",
-            "WhatsApp notif segera diadakan.",
-            "Upload slip UKT dipermudah lagi."
+        closings = [" yaa.", " ke depannya.", ", terima kasih.", ".", "", " biar makin oke."]
+    elif category == "akademik":
+        openings = ["Menurutku ", "Kuncinya ", "Kalau aku pribadi ", "Sejauh ini ", "", ""]
+        cores = [
+            "fokus bagi waktu antara kuliah sama istirahat biar ga burnout",
+            "tetap konsisten ngerjain tugas dari jauh-jauh hari",
+            "banyakin diskusi bareng temen sekelas kalau ada materi yang susah",
+            "ingat tujuan awal kuliah biar tetap termotivasi sampai lulus",
+            "selalu berusaha kasih yang terbaik di setiap semester",
+            "belajar adaptasi sama ritme tugas dan praktikum yang padat"
         ]
-    return random.choice(direct)
+        closings = [" sih.", " aja.", ", itu ngebantu banget.", ".", ""]
+    elif category == "kendala":
+        openings = ["Sejauh ini ", "Kalau kendala ", "Paling tantangannya ", "Aman aja sih, ", "", ""]
+        cores = [
+            "belum ada kendala yang berarti, semuanya lancar",
+            "cuma di sinyal internet aja kalau pas lagi di kosan",
+            "bagi waktu pas tugas kuliah lagi barengan",
+            "tugasnya lumayan banyak tapi masih bisa dihandle",
+            "sempat kaget sama materi awal tapi sekarang udah terbiasa",
+            "kalau ada kesulitan langsung diskusi bareng temen"
+        ]
+        closings = [" sih.", " aja.", ", selebihnya aman.", ".", ""]
+    else: # pendapat / umum
+        openings = ["Overall ", "Menurutku ", "Sejauh ini ", "Jujur ", "Secara umum ", "", "", ""]
+        cores = [
+            "udah bagus banget dan ga ribet pas dipake",
+            "udah oke dan gampang dipahami alurnya",
+            "tampilannya bersih dan enak dilihat di layar hp",
+            "ngebantu banget buat kebutuhan mahasiswa",
+            "prosesnya sat set dan lancar tanpa kendala",
+            "desainnya simpel dan to the point",
+            "semua fiturnya berfungsi dengan sangat baik",
+            "aksesnya lumayan cepet ga bikin nunggu lama",
+            "gampang diakses kapan aja dan ga bikin bingung"
+        ]
+        closings = [" sih.", " kok.", ", tinggal dipertahanin aja.", ", mantap.", ".", "", " banget."]
+
+    sent = random.choice(openings) + random.choice(cores) + random.choice(closings)
+    sent = sent.strip()
+    return apply_natural_youth_style(sent)
+
+def get_fallback_text(prompt_type: str = "pendapat", context: str = "") -> str:
+    """
+    Mendapatkan tanggapan natural mahasiswa / anak muda masa kini yang santai,
+    tidak kaku/baku birokratis, dan tidak alay berlebihan.
+    """
+    ctx_lower = context.lower() if context else ""
+    pt_lower = prompt_type.lower()
+    
+    # Deteksi kategori yang paling relevan
+    if any(k in ctx_lower for k in ["motivasi", "belajar", "akademik", "grit", "cita", "kuliah", "tujuan", "upaya", "prestasi", "alasan"]):
+        category = "akademik"
+    elif any(k in ctx_lower for k in ["kendala", "hambatan", "kesulitan", "masalah", "keluhan"]):
+        category = "kendala"
+    elif any(k in ctx_lower for k in ["saran", "masukan", "harapan", "rekomendasi", "kritik", "perbaikan"]) or pt_lower == "saran":
+        category = "saran"
+    elif any(k in ctx_lower for k in ["pendapat", "ulasan", "review", "kesan", "tanggapan", "pandangan"]) or pt_lower == "pendapat":
+        category = "pendapat"
+    elif pt_lower in STUDENT_PHRASES:
+        category = pt_lower
+    else:
+        category = "umum"
+
+    # 50% pilih dari pool kurasi berkualitas, 50% generate secara dinamis modular
+    if random.random() < 0.5 and category in STUDENT_PHRASES:
+        raw_text = random.choice(STUDENT_PHRASES[category])
+        return apply_natural_youth_style(raw_text)
+    else:
+        return assemble_dynamic_student_response(category)
