@@ -149,5 +149,665 @@
         "value": "Sangat Sesuai"
       }
     ]
+  },
+  {
+    "timestamp": "2026-09-24 12:30:20",
+    "nim": "P07224326134",
+    "nama": "putri aulia sari",
+    "angkatan": "kaltim_gratispol_2026",
+    "prodi": "Kebidanan",
+    "universitas": "Poltekkes Kemenkes Kalimantan Timur",
+    "jenis_kelamin": "Perempuan",
+    "usia": "20",
+    "semester": "Semester 4",
+    "email": "silent_putri_123@gmail.com",
+    "profile": "puas_rata_rata",
+    "profile_display": "Puas Alami (Realistis Sesuai/Setuju)",
+    "scale_distribution": {},
+    "answers": [
+      {
+        "entry_id": "1263102269",
+        "label": "Nama Lengkap",
+        "value": "Putri Aulia Sari"
+      },
+      {
+        "entry_id": "1052711449",
+        "label": "NIM",
+        "value": "P07224326134"
+      },
+      {
+        "entry_id": "909243868",
+        "label": "Angkatan",
+        "value": "2021"
+      },
+      {
+        "entry_id": "644587868",
+        "label": "Website E-Surat 2 mudah digunakan",
+        "value": "4"
+      },
+      {
+        "entry_id": "1204149345",
+        "label": "Navigasi antar halaman di website 2 E-Surat mudah dipahami",
+        "value": "4"
+      },
+      {
+        "entry_id": "1160960572",
+        "label": "Tampilan antarmuka website menarik dan nyaman",
+        "value": "4"
+      },
+      {
+        "entry_id": "1679488464",
+        "label": "Informasi penting di website mudah ditemukan",
+        "value": "3"
+      },
+      {
+        "entry_id": "1997403812",
+        "label": "Website mudah diakses melalui berbagai perangkat (laptop/HP/tablet)",
+        "value": "4"
+      },
+      {
+        "entry_id": "81088305",
+        "label": "Informasi pada website E-Surat 2 akurat",
+        "value": "3"
+      },
+      {
+        "entry_id": "1516128006",
+        "label": "Informasi yang ditampilkan relevan dengan kebutuhan mahasiswa",
+        "value": "4"
+      },
+      {
+        "entry_id": "210452527",
+        "label": "Informasi disajikan dengan jelas dan mudah dipahami",
+        "value": "4"
+      },
+      {
+        "entry_id": "1304503573",
+        "label": "Informasi selalu diperbarui sesuai kebutuhan",
+        "value": "2"
+      },
+      {
+        "entry_id": "1693152674",
+        "label": "Informasi pada website tidak menyesatkan atau ambigu",
+        "value": "4"
+      },
+      {
+        "entry_id": "2110136957",
+        "label": "Website merespons masukan atau tindakan pengguna dengan cepat",
+        "value": "4"
+      },
+      {
+        "entry_id": "1601385990",
+        "label": "Interaksi sistem berjalan lancar tanpa banyak kendala",
+        "value": "4"
+      },
+      {
+        "entry_id": "1657901429",
+        "label": "Sistem dapat mendeteksi kesalahan input dengan baik",
+        "value": "4"
+      },
+      {
+        "entry_id": "439233770",
+        "label": "Proses pengajuan surat dapat diselesaikan dengan mudah melalui website",
+        "value": "2"
+      },
+      {
+        "entry_id": "2146671926",
+        "label": "Sistem memberikan konfirmasi saat proses telah berhasil dilakukan",
+        "value": "3"
+      },
+      {
+        "entry_id": "1531373470",
+        "label": "Saya merasa puas menggunakan website E-Surat 2",
+        "value": "5"
+      },
+      {
+        "entry_id": "1019296480",
+        "label": "Website E-Surat 2 membantu saya menyelesaikan urusan administrasi lebih efisien",
+        "value": "3"
+      },
+      {
+        "entry_id": "2050442328",
+        "label": "Website E-Surat 2 sesuai dengan harapan saya sebagai mahasiswa",
+        "value": "3"
+      },
+      {
+        "entry_id": "1831604431",
+        "label": "Secara Umum Bagaimana Pendapat Anda mengenai Penggunaan E-Surat 2 FT Unmul",
+        "value": "Sejauh ini desainnya simpel dan to the point sih."
+      },
+      {
+        "entry_id": "1844992149",
+        "label": "Apa Saran Anda untuk pengembangan E-Surat 2 FT Unmul Selanjutnya",
+        "value": "servernya dijaga biar tetap stabil pas jam-jam sibuk."
+      }
+    ]
+  },
+  {
+    "timestamp": "2026-09-24 12:30:29",
+    "nim": "20261073",
+    "nama": "AYDESTHI DIVA PRATIWI",
+    "angkatan": "kaltim_gratispol_2026",
+    "prodi": "Bisnis Digital",
+    "universitas": "Institut Teknologi Kalimantan",
+    "jenis_kelamin": "Perempuan",
+    "usia": "20",
+    "semester": "Semester 4",
+    "email": "aydesthi.diva.pratiwi20@hotmail.com",
+    "profile": "puas_rata_rata",
+    "profile_display": "Puas Alami (Realistis Sesuai/Setuju)",
+    "scale_distribution": {},
+    "answers": [
+      {
+        "entry_id": "1263102269",
+        "label": "Nama Lengkap",
+        "value": "AYDESTHI DIVA PRATIWI"
+      },
+      {
+        "entry_id": "1052711449",
+        "label": "NIM",
+        "value": "20261073"
+      },
+      {
+        "entry_id": "909243868",
+        "label": "Angkatan",
+        "value": "2021"
+      },
+      {
+        "entry_id": "644587868",
+        "label": "Website E-Surat 2 mudah digunakan",
+        "value": "4"
+      },
+      {
+        "entry_id": "1204149345",
+        "label": "Navigasi antar halaman di website 2 E-Surat mudah dipahami",
+        "value": "3"
+      },
+      {
+        "entry_id": "1160960572",
+        "label": "Tampilan antarmuka website menarik dan nyaman",
+        "value": "4"
+      },
+      {
+        "entry_id": "1679488464",
+        "label": "Informasi penting di website mudah ditemukan",
+        "value": "3"
+      },
+      {
+        "entry_id": "1997403812",
+        "label": "Website mudah diakses melalui berbagai perangkat (laptop/HP/tablet)",
+        "value": "5"
+      },
+      {
+        "entry_id": "81088305",
+        "label": "Informasi pada website E-Surat 2 akurat",
+        "value": "4"
+      },
+      {
+        "entry_id": "1516128006",
+        "label": "Informasi yang ditampilkan relevan dengan kebutuhan mahasiswa",
+        "value": "3"
+      },
+      {
+        "entry_id": "210452527",
+        "label": "Informasi disajikan dengan jelas dan mudah dipahami",
+        "value": "4"
+      },
+      {
+        "entry_id": "1304503573",
+        "label": "Informasi selalu diperbarui sesuai kebutuhan",
+        "value": "4"
+      },
+      {
+        "entry_id": "1693152674",
+        "label": "Informasi pada website tidak menyesatkan atau ambigu",
+        "value": "3"
+      },
+      {
+        "entry_id": "2110136957",
+        "label": "Website merespons masukan atau tindakan pengguna dengan cepat",
+        "value": "3"
+      },
+      {
+        "entry_id": "1601385990",
+        "label": "Interaksi sistem berjalan lancar tanpa banyak kendala",
+        "value": "3"
+      },
+      {
+        "entry_id": "1657901429",
+        "label": "Sistem dapat mendeteksi kesalahan input dengan baik",
+        "value": "3"
+      },
+      {
+        "entry_id": "439233770",
+        "label": "Proses pengajuan surat dapat diselesaikan dengan mudah melalui website",
+        "value": "4"
+      },
+      {
+        "entry_id": "2146671926",
+        "label": "Sistem memberikan konfirmasi saat proses telah berhasil dilakukan",
+        "value": "4"
+      },
+      {
+        "entry_id": "1531373470",
+        "label": "Saya merasa puas menggunakan website E-Surat 2",
+        "value": "3"
+      },
+      {
+        "entry_id": "1019296480",
+        "label": "Website E-Surat 2 membantu saya menyelesaikan urusan administrasi lebih efisien",
+        "value": "3"
+      },
+      {
+        "entry_id": "2050442328",
+        "label": "Website E-Surat 2 sesuai dengan harapan saya sebagai mahasiswa",
+        "value": "4"
+      },
+      {
+        "entry_id": "1831604431",
+        "label": "Secara Umum Bagaimana Pendapat Anda mengenai Penggunaan E-Surat 2 FT Unmul",
+        "value": "Menurutku prosesnya sat set dan lancar tanpa kendala kok"
+      },
+      {
+        "entry_id": "1844992149",
+        "label": "Apa Saran Anda untuk pengembangan E-Surat 2 FT Unmul Selanjutnya",
+        "value": "Loadingnya semoga bisa dipercepat lagi dikit biar makin sat set."
+      }
+    ]
+  },
+  {
+    "timestamp": "2026-09-24 12:30:37",
+    "nim": "2605148023",
+    "nama": "Alpina",
+    "angkatan": "kaltim_gratispol_2026",
+    "prodi": "Manajemen Pendidikan",
+    "universitas": "Universitas Mulawarman",
+    "jenis_kelamin": "Perempuan",
+    "usia": "20",
+    "semester": "Semester 3",
+    "email": "alpina26@outlook.com",
+    "profile": "sangat_puas",
+    "profile_display": "Sangat Positif (Dominan Sangat Setuju/Sangat Sesuai)",
+    "scale_distribution": {},
+    "answers": [
+      {
+        "entry_id": "1263102269",
+        "label": "Nama Lengkap",
+        "value": "alpina"
+      },
+      {
+        "entry_id": "1052711449",
+        "label": "NIM",
+        "value": "2605148023"
+      },
+      {
+        "entry_id": "909243868",
+        "label": "Angkatan",
+        "value": "2021"
+      },
+      {
+        "entry_id": "644587868",
+        "label": "Website E-Surat 2 mudah digunakan",
+        "value": "5"
+      },
+      {
+        "entry_id": "1204149345",
+        "label": "Navigasi antar halaman di website 2 E-Surat mudah dipahami",
+        "value": "4"
+      },
+      {
+        "entry_id": "1160960572",
+        "label": "Tampilan antarmuka website menarik dan nyaman",
+        "value": "5"
+      },
+      {
+        "entry_id": "1679488464",
+        "label": "Informasi penting di website mudah ditemukan",
+        "value": "5"
+      },
+      {
+        "entry_id": "1997403812",
+        "label": "Website mudah diakses melalui berbagai perangkat (laptop/HP/tablet)",
+        "value": "5"
+      },
+      {
+        "entry_id": "81088305",
+        "label": "Informasi pada website E-Surat 2 akurat",
+        "value": "5"
+      },
+      {
+        "entry_id": "1516128006",
+        "label": "Informasi yang ditampilkan relevan dengan kebutuhan mahasiswa",
+        "value": "5"
+      },
+      {
+        "entry_id": "210452527",
+        "label": "Informasi disajikan dengan jelas dan mudah dipahami",
+        "value": "5"
+      },
+      {
+        "entry_id": "1304503573",
+        "label": "Informasi selalu diperbarui sesuai kebutuhan",
+        "value": "4"
+      },
+      {
+        "entry_id": "1693152674",
+        "label": "Informasi pada website tidak menyesatkan atau ambigu",
+        "value": "4"
+      },
+      {
+        "entry_id": "2110136957",
+        "label": "Website merespons masukan atau tindakan pengguna dengan cepat",
+        "value": "5"
+      },
+      {
+        "entry_id": "1601385990",
+        "label": "Interaksi sistem berjalan lancar tanpa banyak kendala",
+        "value": "5"
+      },
+      {
+        "entry_id": "1657901429",
+        "label": "Sistem dapat mendeteksi kesalahan input dengan baik",
+        "value": "4"
+      },
+      {
+        "entry_id": "439233770",
+        "label": "Proses pengajuan surat dapat diselesaikan dengan mudah melalui website",
+        "value": "4"
+      },
+      {
+        "entry_id": "2146671926",
+        "label": "Sistem memberikan konfirmasi saat proses telah berhasil dilakukan",
+        "value": "5"
+      },
+      {
+        "entry_id": "1531373470",
+        "label": "Saya merasa puas menggunakan website E-Surat 2",
+        "value": "4"
+      },
+      {
+        "entry_id": "1019296480",
+        "label": "Website E-Surat 2 membantu saya menyelesaikan urusan administrasi lebih efisien",
+        "value": "5"
+      },
+      {
+        "entry_id": "2050442328",
+        "label": "Website E-Surat 2 sesuai dengan harapan saya sebagai mahasiswa",
+        "value": "5"
+      },
+      {
+        "entry_id": "1831604431",
+        "label": "Secara Umum Bagaimana Pendapat Anda mengenai Penggunaan E-Surat 2 FT Unmul",
+        "value": "simpel dan praktis banget buat dipake sehari-hari."
+      },
+      {
+        "entry_id": "1844992149",
+        "label": "Apa Saran Anda untuk pengembangan E-Surat 2 FT Unmul Selanjutnya",
+        "value": "Bisa tolong dipertahanin aja kualitasnya yang sekarang, udah mantap kok ke depannya."
+      }
+    ]
+  },
+  {
+    "timestamp": "2026-09-24 12:30:44",
+    "nim": "2604016174",
+    "nama": "Bayu Jaya",
+    "angkatan": "kaltim_gratispol_2026",
+    "prodi": "Kehutanan",
+    "universitas": "Universitas Mulawarman",
+    "jenis_kelamin": "Laki-Laki",
+    "usia": "19",
+    "semester": "Semester 3",
+    "email": "el_bayu_xz@outlook.com",
+    "profile": "puas_rata_rata",
+    "profile_display": "Puas Alami (Realistis Sesuai/Setuju)",
+    "scale_distribution": {},
+    "answers": [
+      {
+        "entry_id": "1263102269",
+        "label": "Nama Lengkap",
+        "value": "BAYU JAYA"
+      },
+      {
+        "entry_id": "1052711449",
+        "label": "NIM",
+        "value": "2604016174"
+      },
+      {
+        "entry_id": "909243868",
+        "label": "Angkatan",
+        "value": "2021"
+      },
+      {
+        "entry_id": "644587868",
+        "label": "Website E-Surat 2 mudah digunakan",
+        "value": "3"
+      },
+      {
+        "entry_id": "1204149345",
+        "label": "Navigasi antar halaman di website 2 E-Surat mudah dipahami",
+        "value": "5"
+      },
+      {
+        "entry_id": "1160960572",
+        "label": "Tampilan antarmuka website menarik dan nyaman",
+        "value": "3"
+      },
+      {
+        "entry_id": "1679488464",
+        "label": "Informasi penting di website mudah ditemukan",
+        "value": "2"
+      },
+      {
+        "entry_id": "1997403812",
+        "label": "Website mudah diakses melalui berbagai perangkat (laptop/HP/tablet)",
+        "value": "2"
+      },
+      {
+        "entry_id": "81088305",
+        "label": "Informasi pada website E-Surat 2 akurat",
+        "value": "4"
+      },
+      {
+        "entry_id": "1516128006",
+        "label": "Informasi yang ditampilkan relevan dengan kebutuhan mahasiswa",
+        "value": "4"
+      },
+      {
+        "entry_id": "210452527",
+        "label": "Informasi disajikan dengan jelas dan mudah dipahami",
+        "value": "4"
+      },
+      {
+        "entry_id": "1304503573",
+        "label": "Informasi selalu diperbarui sesuai kebutuhan",
+        "value": "4"
+      },
+      {
+        "entry_id": "1693152674",
+        "label": "Informasi pada website tidak menyesatkan atau ambigu",
+        "value": "5"
+      },
+      {
+        "entry_id": "2110136957",
+        "label": "Website merespons masukan atau tindakan pengguna dengan cepat",
+        "value": "4"
+      },
+      {
+        "entry_id": "1601385990",
+        "label": "Interaksi sistem berjalan lancar tanpa banyak kendala",
+        "value": "4"
+      },
+      {
+        "entry_id": "1657901429",
+        "label": "Sistem dapat mendeteksi kesalahan input dengan baik",
+        "value": "4"
+      },
+      {
+        "entry_id": "439233770",
+        "label": "Proses pengajuan surat dapat diselesaikan dengan mudah melalui website",
+        "value": "4"
+      },
+      {
+        "entry_id": "2146671926",
+        "label": "Sistem memberikan konfirmasi saat proses telah berhasil dilakukan",
+        "value": "5"
+      },
+      {
+        "entry_id": "1531373470",
+        "label": "Saya merasa puas menggunakan website E-Surat 2",
+        "value": "4"
+      },
+      {
+        "entry_id": "1019296480",
+        "label": "Website E-Surat 2 membantu saya menyelesaikan urusan administrasi lebih efisien",
+        "value": "3"
+      },
+      {
+        "entry_id": "2050442328",
+        "label": "Website E-Surat 2 sesuai dengan harapan saya sebagai mahasiswa",
+        "value": "5"
+      },
+      {
+        "entry_id": "1831604431",
+        "label": "Secara Umum Bagaimana Pendapat Anda mengenai Penggunaan E-Surat 2 FT Unmul",
+        "value": "tampilannya simpel dan bersih, enak dilihat di hp."
+      },
+      {
+        "entry_id": "1844992149",
+        "label": "Apa Saran Anda untuk pengembangan E-Surat 2 FT Unmul Selanjutnya",
+        "value": "Semoga tombol aksinya dibikin lebih kontras dikit biar lebih keliatan yaa"
+      }
+    ]
+  },
+  {
+    "timestamp": "2026-09-24 12:30:52",
+    "nim": "932026042",
+    "nama": "Daffa Firos Naufal",
+    "angkatan": "kaltim_gratispol_2026",
+    "prodi": "Teknik Elektronika",
+    "universitas": "Politeknik Negeri Balikpapan",
+    "jenis_kelamin": "Laki-Laki",
+    "usia": "19",
+    "semester": "Semester 4",
+    "email": "dfn93_88@yahoo.com",
+    "profile": "puas_rata_rata",
+    "profile_display": "Puas Alami (Realistis Sesuai/Setuju)",
+    "scale_distribution": {},
+    "answers": [
+      {
+        "entry_id": "1263102269",
+        "label": "Nama Lengkap",
+        "value": "daffa firos naufal"
+      },
+      {
+        "entry_id": "1052711449",
+        "label": "NIM",
+        "value": "932026042"
+      },
+      {
+        "entry_id": "909243868",
+        "label": "Angkatan",
+        "value": "2021"
+      },
+      {
+        "entry_id": "644587868",
+        "label": "Website E-Surat 2 mudah digunakan",
+        "value": "2"
+      },
+      {
+        "entry_id": "1204149345",
+        "label": "Navigasi antar halaman di website 2 E-Surat mudah dipahami",
+        "value": "4"
+      },
+      {
+        "entry_id": "1160960572",
+        "label": "Tampilan antarmuka website menarik dan nyaman",
+        "value": "5"
+      },
+      {
+        "entry_id": "1679488464",
+        "label": "Informasi penting di website mudah ditemukan",
+        "value": "3"
+      },
+      {
+        "entry_id": "1997403812",
+        "label": "Website mudah diakses melalui berbagai perangkat (laptop/HP/tablet)",
+        "value": "4"
+      },
+      {
+        "entry_id": "81088305",
+        "label": "Informasi pada website E-Surat 2 akurat",
+        "value": "5"
+      },
+      {
+        "entry_id": "1516128006",
+        "label": "Informasi yang ditampilkan relevan dengan kebutuhan mahasiswa",
+        "value": "3"
+      },
+      {
+        "entry_id": "210452527",
+        "label": "Informasi disajikan dengan jelas dan mudah dipahami",
+        "value": "4"
+      },
+      {
+        "entry_id": "1304503573",
+        "label": "Informasi selalu diperbarui sesuai kebutuhan",
+        "value": "4"
+      },
+      {
+        "entry_id": "1693152674",
+        "label": "Informasi pada website tidak menyesatkan atau ambigu",
+        "value": "4"
+      },
+      {
+        "entry_id": "2110136957",
+        "label": "Website merespons masukan atau tindakan pengguna dengan cepat",
+        "value": "5"
+      },
+      {
+        "entry_id": "1601385990",
+        "label": "Interaksi sistem berjalan lancar tanpa banyak kendala",
+        "value": "4"
+      },
+      {
+        "entry_id": "1657901429",
+        "label": "Sistem dapat mendeteksi kesalahan input dengan baik",
+        "value": "4"
+      },
+      {
+        "entry_id": "439233770",
+        "label": "Proses pengajuan surat dapat diselesaikan dengan mudah melalui website",
+        "value": "4"
+      },
+      {
+        "entry_id": "2146671926",
+        "label": "Sistem memberikan konfirmasi saat proses telah berhasil dilakukan",
+        "value": "3"
+      },
+      {
+        "entry_id": "1531373470",
+        "label": "Saya merasa puas menggunakan website E-Surat 2",
+        "value": "4"
+      },
+      {
+        "entry_id": "1019296480",
+        "label": "Website E-Surat 2 membantu saya menyelesaikan urusan administrasi lebih efisien",
+        "value": "4"
+      },
+      {
+        "entry_id": "2050442328",
+        "label": "Website E-Surat 2 sesuai dengan harapan saya sebagai mahasiswa",
+        "value": "3"
+      },
+      {
+        "entry_id": "1831604431",
+        "label": "Secara Umum Bagaimana Pendapat Anda mengenai Penggunaan E-Surat 2 FT Unmul",
+        "value": "overall udah oke dan gampang dipahami alurnya, tinggal dipertahanin aja"
+      },
+      {
+        "entry_id": "1844992149",
+        "label": "Apa Saran Anda untuk pengembangan E-Surat 2 FT Unmul Selanjutnya",
+        "value": "Desainnya kalau bisa dibuat makin modern dan minimalis lagi."
+      }
+    ]
   }
 ]
