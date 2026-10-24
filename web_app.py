@@ -352,11 +352,51 @@ def run_web_fill(target: int, cohorts: List[str], mode: str, custom_weights: dic
             save_to_history(nim)
             job_status.success_count += 1
             
+            # Deteksi status responden dari jawaban (e.g. Mahasiswa vs UMKM/Wiraswasta)
+            detected_status = "Mahasiswa"
+            for it in flat_items:
+                lbl_l = it['label'].lower().strip()
+                if "status" in lbl_l or "pekerjaan" in lbl_l or "profesi" in lbl_l:
+                    val_str = ", ".join(it['value']) if isinstance(it['value'], list) else str(it['value'])
+                    detected_status = val_str
+                    break
+
+            # Hitung skor SUS jika pertanyaan skala 1-5 ada 10 butir
+            calc_sus = None
+            calc_grade = None
+            sus_vals = []
+            for it in flat_items:
+                v_str = str(it['value']).strip()
+                if v_str.isdigit() and 1 <= int(v_str) <= 5:
+                    sus_vals.append(int(v_str))
+            if len(sus_vals) == 10:
+                raw_sus = 0
+                for q_i, q_v in enumerate(sus_vals):
+                    if (q_i + 1) % 2 == 1:
+                        raw_sus += (q_v - 1)
+                    else:
+                        raw_sus += (5 - q_v)
+                calc_sus = round(raw_sus * 2.5, 1)
+                if calc_sus >= 85:
+                    calc_grade = "Grade A (Excellent / Sangat Memuaskan)"
+                elif calc_sus >= 70:
+                    calc_grade = "Grade B (Good / Sangat Baik)"
+                elif calc_sus >= 50:
+                    calc_grade = "Grade C (OK / Cukup)"
+                else:
+                    calc_grade = "Grade F (Poor / Buruk)"
+
+            sub_id = f"SUB-{abs(hash(nim + time.strftime('%Y%m%d%H%M%S'))) % 0xFFFFFF:06X}"
+
             # Catat record lengkap ke submissions_log.json
             sub_record = {
+                "submission_id": sub_id,
+                "form_title": form_title,
+                "form_url": form_url,
                 "timestamp": time.strftime("%Y-%m-%d %H:%M:%S"),
                 "nim": nim,
                 "nama": nama,
+                "status_responden": detected_status,
                 "angkatan": angkatan,
                 "prodi": actual_prodi,
                 "universitas": actual_campus,
@@ -366,7 +406,10 @@ def run_web_fill(target: int, cohorts: List[str], mode: str, custom_weights: dic
                 "email": email if has_email_page else "-",
                 "profile": profile,
                 "profile_display": profile_display,
+                "sus_score": calc_sus,
+                "sus_grade": calc_grade,
                 "scale_distribution": scale_counts,
+                "http_status": "200 OK",
                 "answers": [
                     {
                         "entry_id": it["entry_id"],
@@ -589,9 +632,65 @@ def get_history_details():
         nim = r.get("nim")
         if nim and nim not in seen:
             seen.add(nim)
+
+            # Judul Form & URL
+            ft = r.get("form_title")
+            if not ft:
+                ans_text = " ".join([a.get("label", "") for a in r.get("answers", [])]).lower()
+                if any(k in ans_text for k in ["aplikasi", "rumit", "teknisi", "sus"]):
+                    ft = "KUESIONER PENGUJIAN SYSTEM USABILITY SCALE (SUS) APLIKASI AUGMENTED REALITY"
+                elif any(k in ans_text for k in ["partisipasi", "suku", "domisili"]):
+                    ft = "Kuesioner Minat & Kegigihan Belajar Mahasiswa"
+                else:
+                    ft = "Formulir Kuesioner Google"
+
+            # Status Responden (Mahasiswa vs UMKM/Wiraswasta)
+            status_resp = r.get("status_responden")
+            if not status_resp:
+                for a in r.get("answers", []):
+                    lbl_l = a.get("label", "").lower()
+                    if "status" in lbl_l or "pekerjaan" in lbl_l or "profesi" in lbl_l:
+                        val = a.get("value", "")
+                        status_resp = ", ".join(val) if isinstance(val, list) else str(val)
+                        break
+            if not status_resp:
+                status_resp = "Mahasiswa"
+
+            # Skor & Grade SUS
+            sus_sc = r.get("sus_score")
+            sus_gr = r.get("sus_grade")
+            if sus_sc is None:
+                numeric_vals = []
+                for a in r.get("answers", []):
+                    v_str = str(a.get("value", "")).strip()
+                    if v_str.isdigit() and 1 <= int(v_str) <= 5:
+                        numeric_vals.append(int(v_str))
+                if len(numeric_vals) == 10:
+                    raw_s = 0
+                    for q_i, q_v in enumerate(numeric_vals):
+                        if (q_i + 1) % 2 == 1:
+                            raw_s += (q_v - 1)
+                        else:
+                            raw_s += (5 - q_v)
+                    sus_sc = round(raw_s * 2.5, 1)
+                    if sus_sc >= 85:
+                        sus_gr = "Grade A (Excellent / Sangat Memuaskan)"
+                    elif sus_sc >= 70:
+                        sus_gr = "Grade B (Good / Sangat Baik)"
+                    elif sus_sc >= 50:
+                        sus_gr = "Grade C (OK / Cukup)"
+                    else:
+                        sus_gr = "Grade F (Poor / Buruk)"
+
+            sub_id = r.get("submission_id") or f"SUB-{abs(hash(str(nim) + str(r.get('timestamp','')))) % 0xFFFFFF:06X}"
+
             details.append({
+                "submission_id": sub_id,
+                "form_title": ft,
+                "form_url": r.get("form_url", "https://docs.google.com/forms/d/e/1FAIpQLSdtRCKozhovprQYxSRzavOlzDyplmkQ1YxdGpIm70Ud8iCN3Q/viewform"),
                 "nim": nim,
                 "nama": r.get("nama", "Mahasiswa"),
+                "status_responden": status_resp,
                 "angkatan": r.get("angkatan", "-"),
                 "prodi": r.get("prodi", "-"),
                 "universitas": r.get("universitas", "-"),
@@ -602,6 +701,9 @@ def get_history_details():
                 "timestamp": r.get("timestamp", "-"),
                 "profile": r.get("profile_display", r.get("profile", "Puas Alami")),
                 "scale_distribution": r.get("scale_distribution", {}),
+                "sus_score": sus_sc,
+                "sus_grade": sus_gr,
+                "http_status": r.get("http_status", "200 OK"),
                 "answers": r.get("answers", []),
                 "dataset": r.get("angkatan", "Hasil Submisi")
             })

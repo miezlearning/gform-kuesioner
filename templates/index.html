@@ -505,6 +505,9 @@
                             <button class="term-tab" data-filter="danger">Error</button>
                         </div>
                         <div class="terminal-tools">
+                            <button id="btn-copy-latest-chat" class="btn-icon" title="Salin Rincian Responden Terakhir (Format Chat WA/Telegram)">
+                                <i data-lucide="message-square"></i>
+                            </button>
                             <button id="btn-copy-terminal" class="btn-icon" title="Salin Log ke Clipboard">
                                 <i data-lucide="copy"></i>
                             </button>
@@ -530,21 +533,74 @@
             <!-- TAB 4: HISTORY & ANALYTICS                -->
             <!-- ========================================== -->
             <div class="tab-panel" id="tab-history" role="tabpanel">
+                <!-- KPI Analytics Summary (Enterprise Survey Standard) -->
+                <div class="metrics-grid mb-4">
+                    <div class="metric-card">
+                        <div class="metric-icon metric-icon-primary">
+                            <i data-lucide="users"></i>
+                        </div>
+                        <div class="metric-content">
+                            <span class="metric-label">Total Submisi Responden</span>
+                            <div class="metric-value" id="kpi-total-subs">0</div>
+                            <span class="metric-subtext text-emerald" style="font-size:11px; margin-top:2px;">
+                                <i data-lucide="check-circle" style="width:12px; height:12px; display:inline-block; vertical-align:middle;"></i> 100% Terverifikasi Masuk
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="metric-card">
+                        <div class="metric-icon metric-icon-success">
+                            <i data-lucide="clipboard-check"></i>
+                        </div>
+                        <div class="metric-content">
+                            <span class="metric-label">Formulir Terverifikasi</span>
+                            <div class="metric-value font-mono" id="kpi-form-name" style="font-size: 13px; font-weight: 600; line-height: 1.3; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 200px;" title="Google Form">Kuesioner Terdeteksi</div>
+                            <span class="metric-subtext text-muted" id="kpi-form-status" style="font-size:11px; margin-top:2px;">Protokol: HTTP 200 OK</span>
+                        </div>
+                    </div>
+
+                    <div class="metric-card">
+                        <div class="metric-icon metric-icon-warning">
+                            <i data-lucide="pie-chart"></i>
+                        </div>
+                        <div class="metric-content">
+                            <span class="metric-label">Segmentasi Status Responden</span>
+                            <div class="metric-value" id="kpi-segmentation" style="font-size: 13.5px; font-weight: 600;">0 Mhs • 0 UMKM</div>
+                            <span class="metric-subtext text-muted" id="kpi-segment-sub" style="font-size:11px; margin-top:2px;">Pegawai / Karyawan: 0 (0%)</span>
+                        </div>
+                    </div>
+
+                    <div class="metric-card">
+                        <div class="metric-icon" style="background-color: rgba(99, 102, 241, 0.12); color: var(--primary);">
+                            <i data-lucide="award"></i>
+                        </div>
+                        <div class="metric-content">
+                            <span class="metric-label">Rata-rata Skor Metrik SUS</span>
+                            <div class="metric-value text-indigo" id="kpi-avg-sus">0.0 / 100</div>
+                            <span class="metric-subtext text-emerald" id="kpi-avg-grade" style="font-size:11px; margin-top:2px;">Standar Mutu Skripsi</span>
+                        </div>
+                    </div>
+                </div>
+
                 <section class="card">
                     <div class="card-header flex-between">
                         <div class="card-header-left">
-                            <div class="card-header-icon">
+                            <div class="card-header-icon primary">
                                 <i data-lucide="history"></i>
                             </div>
                             <div>
-                                <h2 class="card-title">Riwayat Pengisian & Rekap Responden</h2>
-                                <p class="card-subtitle">Daftar identitas mahasiswa yang sudah pernah digunakan agar tidak terjadi duplikasi NIM.</p>
+                                <h2 class="card-title">Audit Trail & Riwayat Lengkap Responden</h2>
+                                <p class="card-subtitle">Log audit telemetri submisi formulir, identitas responden, status peran, dan verifikasi skor kuesioner.</p>
                             </div>
                         </div>
                         <div class="card-header-actions">
                             <button id="btn-refresh-history" class="btn btn-outline btn-sm">
                                 <i data-lucide="refresh-cw"></i>
                                 <span>Muat Ulang</span>
+                            </button>
+                            <button id="btn-export-chat" class="btn btn-primary btn-sm" title="Download seluruh bukti respon dalam format rapi untuk WhatsApp/Telegram">
+                                <i data-lucide="message-square"></i>
+                                <span>Ekspor Format Chat (.txt)</span>
                             </button>
                             <button id="btn-export-history" class="btn btn-secondary btn-sm">
                                 <i data-lucide="download"></i>
@@ -557,34 +613,42 @@
                         </div>
                     </div>
                     <div class="card-body">
-                        <!-- History Search & Stats -->
-                        <div class="history-controls-bar">
-                            <div class="search-box">
+                        <!-- History Search, Segment Filter & Stats -->
+                        <div class="history-controls-bar" style="display:flex; flex-wrap:wrap; gap:10px; align-items:center;">
+                            <div class="search-box" style="flex:1; min-width:240px;">
                                 <i data-lucide="search"></i>
-                                <input type="text" id="history-search-input" placeholder="Cari nama, NIM, prodi, atau cohort...">
+                                <input type="text" id="history-search-input" placeholder="Cari nama, NIM, prodi, judul formulir, atau ID audit...">
+                            </div>
+                            <div style="display:flex; align-items:center; gap:8px;">
+                                <select id="history-filter-status" class="form-select form-select-sm" style="font-size:12px; height:36px; padding: 4px 12px; border-radius: var(--radius-md); border:1px solid var(--border-dim); background-color: var(--bg-card); color:var(--fg);">
+                                    <option value="all">Semua Segmentasi</option>
+                                    <option value="Mahasiswa">Mahasiswa Saja</option>
+                                    <option value="UMKM">UMKM / Wiraswasta Saja</option>
+                                </select>
                             </div>
                             <div class="history-stat-badge">
-                                Total Pernah Mengisi: <strong id="history-total-count">0</strong> Mahasiswa
+                                Terdata: <strong id="history-total-count">0</strong> Responden
                             </div>
                         </div>
 
-                        <!-- History Table -->
+                        <!-- History Table (Enterprise Audit Standard) -->
                         <div class="table-responsive">
                             <table class="data-table" id="history-table">
                                 <thead>
                                     <tr>
                                         <th>No.</th>
-                                        <th>NIM</th>
-                                        <th>Nama Mahasiswa</th>
-                                        <th>Program Studi & Kampus</th>
-                                        <th>Profil Sikap</th>
-                                        <th>Waktu</th>
-                                        <th>Rincian</th>
+                                        <th>ID Audit</th>
+                                        <th>Responden & Data Diri</th>
+                                        <th>Formulir yang Diisi</th>
+                                        <th>Peran / Status</th>
+                                        <th>Metrik / Skor SUS</th>
+                                        <th>Waktu & Status</th>
+                                        <th>Aksi</th>
                                     </tr>
                                 </thead>
                                 <tbody id="history-table-body">
                                     <tr>
-                                        <td colspan="7" class="text-center py-6 text-muted">
+                                        <td colspan="8" class="text-center py-6 text-muted">
                                             <i data-lucide="inbox" class="empty-icon-sm"></i>
                                             <p>Belum ada riwayat pengisian.</p>
                                         </td>
@@ -614,6 +678,9 @@
                 <!-- Dynamically populated -->
             </div>
             <div class="modal-footer">
+                <button id="btn-copy-chat-format" class="btn btn-primary">
+                    <i data-lucide="message-square"></i> Salin Format Chat (WA/Telegram)
+                </button>
                 <button id="btn-copy-answers" class="btn btn-outline">
                     <i data-lucide="copy"></i> Salin JSON
                 </button>

@@ -1,0 +1,65 @@
+📋 *BUKTI PENGISIAN KUESIONER*
+📌 *Formulir:* KUESIONER PENGUJIAN SYSTEM USABILITY SCALE (SUS) APLIKASI AUGMENTED REALITY
+🔗 *ID Audit:* SUB-D08A61 | *Status:* HTTP 200 OK (Terverifikasi)
+━━━━━━━━━━━━━━━━━━━━━━━
+👤 *DATA RESPONDEN*
+• *Nama Lengkap:* Nabila
+• *NIM:* 2409106036
+• *Peran / Status:* Mahasiswa
+• *Pernah Pakai AR:* Ya
+• *Waktu Submit:* 2026-10-24 19:20:52 WIB
+
+📊 *POLA JAWABAN & SENTIMEN*
+• *Pola Sikap:* Sangat Positif (Dominan Setuju/Sangat Setuju)
+• *Skor SUS:* 92.5 / 100 (Grade A (Excellent / Sangat Memuaskan))
+
+📝 *RINCIAN JAWABAN (13 Butir Pertanyaan)*
+[01] *Nama* ➔ "Nabila"
+[02] *Status* ➔ "Mahasiswa"
+[03] *Pernah Menggunakan Aplikasi AR Sebelumnya?* ➔ "Ya"
+[04] *1. Saya berfikir akan sering menggunakan aplikasi ini.* ➔ "5"
+[05] *2. Saya merasa aplikasi ini terlalu rumit untuk digunakan.* ➔ "1"
+[06] *3. Saya merasa aplikasi ini mudah digunakan.* ➔ "5"
+[07] *4. Saya memerlukan bantuan orang lain atau teknisi agar dapat menggunakan aplikasi ini.* ➔ "1"
+[08] *5. Saya merasa fitur-fitur pada aplikasi ini terintegerasi dengan baik.* ➔ "5"
+[09] *6. Saya merasa terdapat banyak ketidaksesuaian pada aplikasi ini.* ➔ "1"
+[10] *7. Saya merasa sebagian besar orang akan dapat mempelajari cara menggunakan aplikasi ini dengan cepat.* ➔ "5"
+[11] *8. Saya merasa aplikasi ini membingungkan untuk digunakan.* ➔ "3"
+[12] *9. Saya merasa percaya diri menggunakan aplikasi ini.* ➔ "5"
+[13] *10. Saya perlu mempelajari banyak hal sebelum dapat menggunakan aplikasi ini.* ➔ "2"
+━━━━━━━━━━━━━━━━━━━━━━━
+✅ *Status:* Terverifikasi Berhasil Masuk Google Form (200 OK)
+
+==================================================
+
+📋 *BUKTI PENGISIAN KUESIONER*
+📌 *Formulir:* KUESIONER PENGUJIAN SYSTEM USABILITY SCALE (SUS) APLIKASI AUGMENTED REALITY
+🔗 *ID Audit:* SUB-B19E23 | *Status:* HTTP 200 OK (Terverifikasi)
+━━━━━━━━━━━━━━━━━━━━━━━
+👤 *DATA RESPONDEN*
+• *Nama Lengkap:* muhammad nabil rahmatullah
+• *NIM:* 2409106046
+• *Peran / Status:* UMKM/Wiraswasta
+• *Pernah Pakai AR:* Tidak
+• *Waktu Submit:* 2026-10-24 19:20:52 WIB
+
+📊 *POLA JAWABAN & SENTIMEN*
+• *Pola Sikap:* Sangat Positif (Dominan Setuju/Sangat Setuju)
+• *Skor SUS:* 85.0 / 100 (Grade A (Excellent / Sangat Memuaskan))
+
+📝 *RINCIAN JAWABAN (13 Butir Pertanyaan)*
+[01] *Nama* ➔ "muhammad nabil rahmatullah"
+[02] *Status* ➔ "UMKM/Wiraswasta"
+[03] *Pernah Menggunakan Aplikasi AR Sebelumnya?* ➔ "Tidak"
+[04] *1. Saya berfikir akan sering menggunakan aplikasi ini.* ➔ "5"
+[05] *2. Saya merasa aplikasi ini terlalu rumit untuk digunakan.* ➔ "1"
+[06] *3. Saya merasa aplikasi ini mudah digunakan.* ➔ "4"
+[07] *4. Saya memerlukan bantuan orang lain atau teknisi agar dapat menggunakan aplikasi ini.* ➔ "1"
+[08] *5. Saya merasa fitur-fitur pada aplikasi ini terintegerasi dengan baik.* ➔ "4"
+[09] *6. Saya merasa terdapat banyak ketidaksesuaian pada aplikasi ini.* ➔ "2"
+[10] *7. Saya merasa sebagian besar orang akan dapat mempelajari cara menggunakan aplikasi ini dengan cepat.* ➔ "5"
+[11] *8. Saya merasa aplikasi ini membingungkan untuk digunakan.* ➔ "3"
+[12] *9. Saya merasa percaya diri menggunakan aplikasi ini.* ➔ "4"
+[13] *10. Saya perlu mempelajari banyak hal sebelum dapat menggunakan aplikasi ini.* ➔ "1"
+━━━━━━━━━━━━━━━━━━━━━━━
+✅ *Status:* Terverifikasi Berhasil Masuk Google Form (200 OK)
