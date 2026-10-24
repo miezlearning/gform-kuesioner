@@ -33,12 +33,19 @@ def suggest_rule(label: str, type_code: int, options: List[str]) -> Dict[str, An
         return {"mode": "csv_col", "column": "fakultas"}
     if any(k in lbl for k in ["jenis kelamin", "gender", "kelamin"]):
         return {"mode": "random_option"}
-    if type_code == 5:
+    
+    # Deteksi SUS (System Usability Scale)
+    sus_neg_keywords = ["rumit", "bantuan orang lain", "teknisi", "ketidaksesuaian", "membingungkan", "banyak hal sebelum"]
+    sus_pos_keywords = ["sering menggunakan", "mudah digunakan", "terintegrasi", "terintegerasi", "dengan cepat", "percaya diri"]
+    
+    if type_code == 5 or (type_code in (2, 3) and options and all(opt.isdigit() for opt in options)):
+        if any(k in lbl for k in sus_neg_keywords):
+            return {"mode": "scale", "profile": "sus_negative"}
+        if any(k in lbl for k in sus_pos_keywords):
+            return {"mode": "scale", "profile": "sus_positive"}
         return {"mode": "scale", "profile": "auto"}
+
     if type_code in (2, 3):
-        # Cek jika opsi adalah angka skala (1, 2, 3, 4, 5)
-        if options and all(opt.isdigit() for opt in options):
-            return {"mode": "scale", "profile": "auto"}
         # Cek jika opsi adalah tahun angkatan (2021, 2022, ...)
         if options and any(re.match(r'^20\d{2}$', opt) for opt in options):
             return {"mode": "csv_col", "column": "angkatan"}

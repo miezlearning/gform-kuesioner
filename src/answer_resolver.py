@@ -88,9 +88,22 @@ class AnswerResolver:
                     return "1"
                 elif sub_profile == "random_4_5":
                     return str(random.choice([4, 5]))
+                elif sub_profile == "random_1_2":
+                    return str(random.choice([1, 2]))
+                elif sub_profile == "sus_positive":
+                    return str(random.choices([3, 4, 5], weights=[8, 52, 40])[0])
+                elif sub_profile == "sus_negative":
+                    return str(random.choices([1, 2, 3], weights=[45, 47, 8])[0])
                 elif sub_profile in ["sangat_puas", "puas_rata_rata", "kritis"]:
                     return generate_scale_answer(sub_profile)
                 else: # auto
+                    # Cek SUS otomatis jika diset auto
+                    sus_neg_keywords = ["rumit", "bantuan orang lain", "teknisi", "ketidaksesuaian", "membingungkan", "banyak hal sebelum"]
+                    sus_pos_keywords = ["sering menggunakan", "mudah digunakan", "terintegrasi", "terintegerasi", "dengan cepat", "percaya diri"]
+                    if any(k in lbl_lower for k in sus_neg_keywords):
+                        return str(random.choices([1, 2, 3], weights=[45, 47, 8])[0])
+                    elif any(k in lbl_lower for k in sus_pos_keywords):
+                        return str(random.choices([3, 4, 5], weights=[8, 52, 40])[0])
                     return generate_scale_answer(profile)
                     
             elif rule_mode == "email":
@@ -174,7 +187,15 @@ class AnswerResolver:
 
         # Deteksi Skala Linier (Type 5)
         if type_code == 5:
-            ans = generate_scale_answer(profile)
+            sus_neg_keywords = ["rumit", "bantuan orang lain", "teknisi", "ketidaksesuaian", "membingungkan", "banyak hal sebelum"]
+            sus_pos_keywords = ["sering menggunakan", "mudah digunakan", "terintegrasi", "terintegerasi", "dengan cepat", "percaya diri"]
+            if any(k in lbl_lower for k in sus_neg_keywords):
+                ans = str(random.choices([1, 2, 3], weights=[45, 47, 8])[0])
+            elif any(k in lbl_lower for k in sus_pos_keywords):
+                ans = str(random.choices([3, 4, 5], weights=[8, 52, 40])[0])
+            else:
+                ans = generate_scale_answer(profile)
+
             if options and ans not in options:
                 return options[-1] if profile == "sangat_puas" else options[0]
             return ans
@@ -183,7 +204,14 @@ class AnswerResolver:
         if type_code in (2, 3):
             # A. Jika opsi adalah angka rating (1, 2, 3, 4, 5)
             if options and all(opt.isdigit() for opt in options):
-                ans = generate_scale_answer(profile)
+                sus_neg_keywords = ["rumit", "bantuan orang lain", "teknisi", "ketidaksesuaian", "membingungkan", "banyak hal sebelum"]
+                sus_pos_keywords = ["sering menggunakan", "mudah digunakan", "terintegrasi", "terintegerasi", "dengan cepat", "percaya diri"]
+                if any(k in lbl_lower for k in sus_neg_keywords):
+                    ans = str(random.choices([1, 2, 3], weights=[45, 47, 8])[0])
+                elif any(k in lbl_lower for k in sus_pos_keywords):
+                    ans = str(random.choices([3, 4, 5], weights=[8, 52, 40])[0])
+                else:
+                    ans = generate_scale_answer(profile)
                 return ans if ans in options else random.choice(options)
                 
             # B. Jika opsi adalah tahun angkatan (2021, 2022, 2023, ...)

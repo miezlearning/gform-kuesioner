@@ -575,11 +575,16 @@ document.addEventListener("DOMContentLoaded", () => {
             container.innerHTML = `
                 <label class="form-label"><i data-lucide="bar-chart-2"></i> Bobot Skala:</label>
                 <select class="form-control sub-input" data-entry="${entryId}" data-key="profile">
-                    <option value="auto" ${currentProf === 'auto' ? 'selected' : ''}>Ikuti Sentimen Global</option>
-                    <option value="fixed_5" ${currentProf === 'fixed_5' ? 'selected' : ''}>Nilai Tertinggi / Sangat Sesuai</option>
+                    <option value="auto" ${currentProf === 'auto' ? 'selected' : ''}>Ikuti Sentimen Global (Auto SUS)</option>
+                    <option value="sus_positive" ${currentProf === 'sus_positive' ? 'selected' : ''}>SUS Positif (4 atau 5)</option>
+                    <option value="sus_negative" ${currentProf === 'sus_negative' ? 'selected' : ''}>SUS Negatif (1 atau 2)</option>
+                    <option value="random_4_5" ${currentProf === 'random_4_5' ? 'selected' : ''}>Variasi Tinggi (4 atau 5)</option>
+                    <option value="random_1_2" ${currentProf === 'random_1_2' ? 'selected' : ''}>Variasi Rendah (1 atau 2)</option>
+                    <option value="fixed_5" ${currentProf === 'fixed_5' ? 'selected' : ''}>Nilai Tertinggi (5)</option>
                     <option value="fixed_4" ${currentProf === 'fixed_4' ? 'selected' : ''}>Nilai 4 / Sesuai</option>
-                    <option value="random_4_5" ${currentProf === 'random_4_5' ? 'selected' : ''}>Variasi Positif (4 atau 5)</option>
-                    <option value="fixed_3" ${currentProf === 'fixed_3' ? 'selected' : ''}>Nilai Netral / Rata-rata (3)</option>
+                    <option value="fixed_3" ${currentProf === 'fixed_3' ? 'selected' : ''}>Nilai Netral (3)</option>
+                    <option value="fixed_2" ${currentProf === 'fixed_2' ? 'selected' : ''}>Nilai 2 / Kurang</option>
+                    <option value="fixed_1" ${currentProf === 'fixed_1' ? 'selected' : ''}>Nilai Terendah (1)</option>
                 </select>
             `;
         } else if (mode === "ai_review") {
