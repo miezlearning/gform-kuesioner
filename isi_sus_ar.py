@@ -13,7 +13,7 @@ from src.csv_helper import load_students_from_csv
 from src.form_handler import GoogleFormHandler
 from src.generators import format_natural_name
 
-DEFAULT_FORM_URL = "https://forms.gle/Jrk8fysRGdGf69Pq9"
+DEFAULT_FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSdtRCKozhovprQYxSRzavOlzDyplmkQ1YxdGpIm70Ud8iCN3Q/viewform"
 DEFAULT_CSV_PATH = "dataset/2024.csv"
 
 def calculate_sus_score(answers: List[int]) -> float:

@@ -91,6 +91,16 @@ class GoogleFormHandler:
                 print(f"Gagal memuat form. Kode Status: {response.status_code}")
                 return None
                 
+            # Normalisasi URL setelah redirect (sangat penting jika input berupa shortlink forms.gle)
+            resolved_url = response.url.split("?")[0]
+            if "/formResponse" in resolved_url:
+                self.form_url = resolved_url.replace("/formResponse", "/viewform")
+            elif "/viewform" in resolved_url:
+                self.form_url = resolved_url
+            else:
+                self.form_url = resolved_url.rstrip("/") + "/viewform"
+            self.submit_url = self.form_url.replace("/viewform", "/formResponse")
+
             html = response.text
             match = re.search(r'FB_PUBLIC_LOAD_DATA_ = (.*?);', html, flags=re.S)
             if not match:
@@ -289,11 +299,25 @@ class GoogleFormHandler:
         Mengirim payload data respon ke Google Forms via HTTP POST (single page).
         Mengembalikan status keberhasilan (True/False) dan pesan detail.
         """
+        if "forms.gle" in self.submit_url or "/formResponse" not in self.submit_url:
+            try:
+                r_check = requests.get(self.form_url, timeout=15)
+                resolved_url = r_check.url.split("?")[0]
+                if "/formResponse" in resolved_url:
+                    self.form_url = resolved_url.replace("/formResponse", "/viewform")
+                elif "/viewform" in resolved_url:
+                    self.form_url = resolved_url
+                else:
+                    self.form_url = resolved_url.rstrip("/") + "/viewform"
+                self.submit_url = self.form_url.replace("/viewform", "/formResponse")
+            except Exception:
+                pass
+
         headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
             "Content-Type": "application/x-www-form-urlencoded",
             "Origin": "https://docs.google.com",
-            "Referer": referer_url or self.submit_url,
+            "Referer": referer_url or self.form_url,
         }
         
         try:
@@ -335,6 +359,18 @@ class GoogleFormHandler:
         try:
             # 1. Ambil token session awal dari form
             r_init = session.get(self.form_url, headers=headers, timeout=20)
+            
+            # Update self.form_url dan self.submit_url jika input awal adalah shortlink (forms.gle)
+            resolved_url = r_init.url.split("?")[0]
+            if "/formResponse" in resolved_url:
+                self.form_url = resolved_url.replace("/formResponse", "/viewform")
+            elif "/viewform" in resolved_url:
+                self.form_url = resolved_url
+            else:
+                self.form_url = resolved_url.rstrip("/") + "/viewform"
+            self.submit_url = self.form_url.replace("/viewform", "/formResponse")
+            headers["Referer"] = self.form_url
+
             soup = BeautifulSoup(r_init.text, "html.parser")
             fbzx_input = soup.find("input", {"name": "fbzx"})
             fbzx = fbzx_input.get("value") if fbzx_input else ""

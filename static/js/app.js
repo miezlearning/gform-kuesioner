@@ -208,6 +208,14 @@ document.addEventListener("DOMContentLoaded", () => {
         btnCollapseAll.addEventListener("click", () => toggleAllQuestions(false));
         btnResetRules.addEventListener("click", resetAllRules);
 
+        // Quick Preset Template Buttons
+        document.querySelectorAll(".btn-preset").forEach(btn => {
+            btn.addEventListener("click", () => {
+                const preset = btn.getAttribute("data-preset");
+                applyPreset(preset);
+            });
+        });
+
         // Target Preset Buttons
         presetBtns.forEach(btn => {
             btn.addEventListener("click", () => {
@@ -420,6 +428,9 @@ document.addEventListener("DOMContentLoaded", () => {
             renderIcons();
 
             if (data.success) {
+                if (data.canonical_url) {
+                    formUrlInput.value = data.canonical_url;
+                }
                 questionRules = {};
                 formQuestions = data.questions || [];
                 tabQuestionsBadge.textContent = formQuestions.length;
@@ -503,6 +514,8 @@ document.addEventListener("DOMContentLoaded", () => {
                                 <option value="auto" ${currentRule.mode === 'auto' ? 'selected' : ''}>🤖 Otomatis Cerdas</option>
                                 <option value="csv_col" ${currentRule.mode === 'csv_col' ? 'selected' : ''}>📂 Kolom Database CSV</option>
                                 <option value="fixed_option" ${currentRule.mode === 'fixed_option' ? 'selected' : ''}>🎯 Opsi Pilihan Tetap</option>
+                                <option value="filter_options" ${currentRule.mode === 'filter_options' ? 'selected' : ''}>✅ Filter Opsi Terpilih (Whitelist)</option>
+                                <option value="weighted_options" ${currentRule.mode === 'weighted_options' ? 'selected' : ''}>⚖️ Atur Rasio / Bobot Opsi (%)</option>
                                 <option value="random_option" ${currentRule.mode === 'random_option' ? 'selected' : ''}>🎲 Opsi Acak Alami</option>
                                 <option value="scale" ${currentRule.mode === 'scale' ? 'selected' : ''}>📊 Skala Tertimbang</option>
                                 <option value="ai_review" ${currentRule.mode === 'ai_review' ? 'selected' : ''}>✍️ AI Komentar / Saran</option>
@@ -570,6 +583,56 @@ document.addEventListener("DOMContentLoaded", () => {
             } else {
                 container.innerHTML = `<span class="field-hint text-amber">Tidak ada pilihan opsi tersedia pada pertanyaan ini.</span>`;
             }
+        } else if (mode === "filter_options") {
+            if (options.length > 0) {
+                const allowed = Array.isArray(rule.allowed_options) ? rule.allowed_options : [...options];
+                rule.allowed_options = allowed;
+                const checkHtml = options.map((opt) => {
+                    const isChecked = allowed.includes(opt);
+                    return `
+                        <label class="checkbox-option-item">
+                            <input type="checkbox" class="sub-checkbox" data-entry="${entryId}" value="${escapeHtml(opt)}" ${isChecked ? 'checked' : ''}>
+                            <span>${escapeHtml(opt)}</span>
+                        </label>
+                    `;
+                }).join('');
+                container.innerHTML = `
+                    <label class="form-label"><i data-lucide="check-square"></i> Pilih Opsi yang Diperbolehkan:</label>
+                    <div class="checkbox-options-list">
+                        ${checkHtml}
+                    </div>
+                    <span class="field-hint">Sistem HANYA akan memilih di antara opsi yang dicentang di atas.</span>
+                `;
+            } else {
+                container.innerHTML = `<span class="field-hint text-amber">Tidak ada pilihan opsi tersedia pada pertanyaan ini.</span>`;
+            }
+        } else if (mode === "weighted_options") {
+            if (options.length > 0) {
+                const weights = rule.weights || {};
+                rule.weights = weights;
+                const rowsHtml = options.map(opt => {
+                    const curW = weights[opt] !== undefined ? weights[opt] : Math.round(100 / options.length);
+                    weights[opt] = curW;
+                    return `
+                        <div class="weighted-option-row">
+                            <span class="weighted-opt-name" title="${escapeHtml(opt)}">${escapeHtml(opt)}</span>
+                            <div class="weighted-opt-input-wrap">
+                                <input type="number" min="0" max="100" class="sub-weight-input form-control" data-entry="${entryId}" data-opt="${escapeHtml(opt)}" value="${curW}">
+                                <span class="pct-sign">%</span>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+                container.innerHTML = `
+                    <label class="form-label"><i data-lucide="percent"></i> Atur Rasio / Bobot Pilihan:</label>
+                    <div class="weighted-options-container">
+                        ${rowsHtml}
+                    </div>
+                    <span class="field-hint">Ketik 0% jika opsi tidak ingin dipilih sama sekali (misal Pegawai: 0%, Mahasiswa: 80%, UMKM: 20%).</span>
+                `;
+            } else {
+                container.innerHTML = `<span class="field-hint text-amber">Tidak ada pilihan opsi tersedia pada pertanyaan ini.</span>`;
+            }
         } else if (mode === "scale") {
             const currentProf = rule.profile || "auto";
             container.innerHTML = `
@@ -630,6 +693,29 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
             });
         });
+
+        document.querySelectorAll(".sub-checkbox").forEach(cb => {
+            cb.addEventListener("change", (e) => {
+                const entryId = e.target.getAttribute("data-entry");
+                const container = document.getElementById(`sub-ctrl-${entryId}`);
+                if (container && questionRules[entryId]) {
+                    const checkedValues = Array.from(container.querySelectorAll(".sub-checkbox:checked")).map(c => c.value);
+                    questionRules[entryId].allowed_options = checkedValues;
+                }
+            });
+        });
+
+        document.querySelectorAll(".sub-weight-input").forEach(inp => {
+            inp.addEventListener("input", (e) => {
+                const entryId = e.target.getAttribute("data-entry");
+                const opt = e.target.getAttribute("data-opt");
+                const val = parseFloat(e.target.value) || 0;
+                if (questionRules[entryId]) {
+                    if (!questionRules[entryId].weights) questionRules[entryId].weights = {};
+                    questionRules[entryId].weights[opt] = val;
+                }
+            });
+        });
     }
 
     function filterQuestions(searchVal, typeFilter) {
@@ -657,6 +743,52 @@ document.addEventListener("DOMContentLoaded", () => {
         });
         renderQuestionsList();
         showToast("Seluruh aturan pertanyaan dikembalikan ke rekomendasi cerdas.", "info");
+    }
+
+    function applyPreset(presetType) {
+        if (!formQuestions || formQuestions.length === 0) {
+            showToast("Buka form terlebih dahulu sebelum menerapkan preset.", "warning");
+            return;
+        }
+
+        const susNegKeywords = ["rumit", "bantuan orang lain", "teknisi", "ketidaksesuaian", "membingungkan", "banyak hal sebelum"];
+        const susPosKeywords = ["sering menggunakan", "mudah digunakan", "terintegrasi", "terintegerasi", "dengan cepat", "percaya diri"];
+
+        let countModified = 0;
+        formQuestions.forEach(q => {
+            const entryId = String(q.entry_id);
+            const isScale = (q.type === 5) || (q.type in [2, 3] && q.options && q.options.every(o => /^\d+$/.test(o)));
+            const lblLower = (q.label || '').toLowerCase();
+
+            if (presetType === "sus" && isScale) {
+                if (susNegKeywords.some(k => lblLower.includes(k))) {
+                    questionRules[entryId] = { mode: "scale", profile: "sus_negative" };
+                    countModified++;
+                } else {
+                    questionRules[entryId] = { mode: "scale", profile: "sus_positive" };
+                    countModified++;
+                }
+            } else if (presetType === "csat" && isScale) {
+                questionRules[entryId] = { mode: "scale", profile: "random_4_5" };
+                countModified++;
+            } else if (presetType === "realistic" && isScale) {
+                questionRules[entryId] = { mode: "scale", profile: "auto" };
+                countModified++;
+            } else if (presetType === "kritis" && isScale) {
+                questionRules[entryId] = { mode: "scale", profile: "kritis" };
+                countModified++;
+            }
+        });
+
+        renderQuestionsList();
+
+        const presetNames = {
+            "sus": "SUS (System Usability Scale)",
+            "csat": "Sangat Puas (CSAT 4-5)",
+            "realistic": "Puas Alami / Realistis",
+            "kritis": "Kritis & Berimbang (1-5)"
+        };
+        showToast(`Preset ${presetNames[presetType] || presetType} diterapkan pada ${countModified} pertanyaan!`, "success");
     }
 
     // --- Render Datasets (Tab 2) ---

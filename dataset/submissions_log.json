@@ -809,5 +809,345 @@
         "value": "Desainnya kalau bisa dibuat makin modern dan minimalis lagi."
       }
     ]
+  },
+  {
+    "timestamp": "2026-10-24 11:05:30",
+    "nim": "2407076002",
+    "nama": "Maya",
+    "angkatan": "unmul_samba_2024",
+    "prodi": "Geofisika",
+    "universitas": "Universitas Mulawarman",
+    "jenis_kelamin": "Perempuan",
+    "usia": "19",
+    "semester": "Semester 4",
+    "email": "maya24@yahoo.com",
+    "profile": "sangat_puas",
+    "profile_display": "Sangat Positif (Dominan Sangat Setuju/Sangat Sesuai)",
+    "scale_distribution": {
+      "UMKM/Wiraswasta": 1,
+      "Ya": 1
+    },
+    "answers": [
+      {
+        "entry_id": "826441435",
+        "label": "Nama",
+        "value": "Maya"
+      },
+      {
+        "entry_id": "1717646849",
+        "label": "Status",
+        "value": "UMKM/Wiraswasta"
+      },
+      {
+        "entry_id": "128699741",
+        "label": "Pernah Menggunakan Aplikasi AR Sebelumnya?",
+        "value": "Ya"
+      },
+      {
+        "entry_id": "1657635524",
+        "label": "1. Saya berfikir akan sering menggunakan aplikasi ini.",
+        "value": "4"
+      },
+      {
+        "entry_id": "349545481",
+        "label": "2. Saya merasa aplikasi ini terlalu rumit untuk digunakan.",
+        "value": "2"
+      },
+      {
+        "entry_id": "770681467",
+        "label": "3. Saya merasa aplikasi ini mudah digunakan.",
+        "value": "5"
+      },
+      {
+        "entry_id": "169828731",
+        "label": "4. Saya  memerlukan bantuan orang lain atau teknisi agar dapat menggunakan aplikasi ini.",
+        "value": "1"
+      },
+      {
+        "entry_id": "76071633",
+        "label": "5.  Saya merasa fitur-fitur pada aplikasi ini terintegerasi dengan baik.",
+        "value": "4"
+      },
+      {
+        "entry_id": "1058638238",
+        "label": "6. Saya  merasa terdapat banyak ketidaksesuaian pada aplikasi ini.",
+        "value": "2"
+      },
+      {
+        "entry_id": "1605634817",
+        "label": "7. Saya merasa sebagian besar orang akan dapat mempelajari cara menggunakan aplikasi ini dengan cepat    .",
+        "value": "4"
+      },
+      {
+        "entry_id": "1823052476",
+        "label": "8.  Saya merasa aplikasi ini membingungkan untuk digunakan.",
+        "value": "1"
+      },
+      {
+        "entry_id": "821405342",
+        "label": "9. Saya merasa percaya diri menggunakan aplikasi ini.",
+        "value": "3"
+      },
+      {
+        "entry_id": "2090561978",
+        "label": "10. Saya perlu mempelajari banyak hal sebelum dapat menggunakan aplikasi ini.",
+        "value": "1"
+      }
+    ]
+  },
+  {
+    "timestamp": "2026-10-24 12:12:08",
+    "nim": "2409106084",
+    "nama": "AULIA NATASYA",
+    "angkatan": "2024",
+    "prodi": "INFORMATIKA",
+    "universitas": "2",
+    "jenis_kelamin": "Perempuan",
+    "usia": "20",
+    "semester": "Semester 3",
+    "email": "aulia.natasya24@outlook.com",
+    "profile": "puas_rata_rata",
+    "profile_display": "Puas Alami (Realistis Sesuai/Setuju)",
+    "scale_distribution": {
+      "Pegawai/Karyawan": 1,
+      "Ya": 1
+    },
+    "answers": [
+      {
+        "entry_id": "826441435",
+        "label": "Nama",
+        "value": "Aulia Natasya"
+      },
+      {
+        "entry_id": "1717646849",
+        "label": "Status",
+        "value": "Pegawai/Karyawan"
+      },
+      {
+        "entry_id": "128699741",
+        "label": "Pernah Menggunakan Aplikasi AR Sebelumnya?",
+        "value": "Ya"
+      },
+      {
+        "entry_id": "1657635524",
+        "label": "1. Saya berfikir akan sering menggunakan aplikasi ini.",
+        "value": "5"
+      },
+      {
+        "entry_id": "349545481",
+        "label": "2. Saya merasa aplikasi ini terlalu rumit untuk digunakan.",
+        "value": "2"
+      },
+      {
+        "entry_id": "770681467",
+        "label": "3. Saya merasa aplikasi ini mudah digunakan.",
+        "value": "4"
+      },
+      {
+        "entry_id": "169828731",
+        "label": "4. Saya  memerlukan bantuan orang lain atau teknisi agar dapat menggunakan aplikasi ini.",
+        "value": "1"
+      },
+      {
+        "entry_id": "76071633",
+        "label": "5.  Saya merasa fitur-fitur pada aplikasi ini terintegerasi dengan baik.",
+        "value": "5"
+      },
+      {
+        "entry_id": "1058638238",
+        "label": "6. Saya  merasa terdapat banyak ketidaksesuaian pada aplikasi ini.",
+        "value": "2"
+      },
+      {
+        "entry_id": "1605634817",
+        "label": "7. Saya merasa sebagian besar orang akan dapat mempelajari cara menggunakan aplikasi ini dengan cepat    .",
+        "value": "5"
+      },
+      {
+        "entry_id": "1823052476",
+        "label": "8.  Saya merasa aplikasi ini membingungkan untuk digunakan.",
+        "value": "1"
+      },
+      {
+        "entry_id": "821405342",
+        "label": "9. Saya merasa percaya diri menggunakan aplikasi ini.",
+        "value": "4"
+      },
+      {
+        "entry_id": "2090561978",
+        "label": "10. Saya perlu mempelajari banyak hal sebelum dapat menggunakan aplikasi ini.",
+        "value": "2"
+      }
+    ]
+  },
+  {
+    "timestamp": "2026-10-24 13:49:10",
+    "nim": "2620400019",
+    "nama": "Syifa Nabilah Ardhaneswari Nasution",
+    "angkatan": "kaltim_gratispol_2026",
+    "prodi": "Hukum Keluarga (Ahwal Al-syakhshiyyah)",
+    "universitas": "Universitas Islam Negeri Sultan Aji Muhammad Idris Samarinda",
+    "jenis_kelamin": "Perempuan",
+    "usia": "19",
+    "semester": "Semester 4",
+    "email": "syifa_sky@yahoo.com",
+    "profile": "puas_rata_rata",
+    "profile_display": "Puas Alami (Realistis Sesuai/Setuju)",
+    "scale_distribution": {
+      "Mahasiswa": 1,
+      "Ya": 1
+    },
+    "answers": [
+      {
+        "entry_id": "826441435",
+        "label": "Nama",
+        "value": "SYIFA NABILAH ARDHANESWARI NASUTION"
+      },
+      {
+        "entry_id": "1717646849",
+        "label": "Status",
+        "value": "Mahasiswa"
+      },
+      {
+        "entry_id": "128699741",
+        "label": "Pernah Menggunakan Aplikasi AR Sebelumnya?",
+        "value": "Ya"
+      },
+      {
+        "entry_id": "1657635524",
+        "label": "1. Saya berfikir akan sering menggunakan aplikasi ini.",
+        "value": "5"
+      },
+      {
+        "entry_id": "349545481",
+        "label": "2. Saya merasa aplikasi ini terlalu rumit untuk digunakan.",
+        "value": "2"
+      },
+      {
+        "entry_id": "770681467",
+        "label": "3. Saya merasa aplikasi ini mudah digunakan.",
+        "value": "5"
+      },
+      {
+        "entry_id": "169828731",
+        "label": "4. Saya  memerlukan bantuan orang lain atau teknisi agar dapat menggunakan aplikasi ini.",
+        "value": "1"
+      },
+      {
+        "entry_id": "76071633",
+        "label": "5.  Saya merasa fitur-fitur pada aplikasi ini terintegerasi dengan baik.",
+        "value": "4"
+      },
+      {
+        "entry_id": "1058638238",
+        "label": "6. Saya  merasa terdapat banyak ketidaksesuaian pada aplikasi ini.",
+        "value": "2"
+      },
+      {
+        "entry_id": "1605634817",
+        "label": "7. Saya merasa sebagian besar orang akan dapat mempelajari cara menggunakan aplikasi ini dengan cepat    .",
+        "value": "5"
+      },
+      {
+        "entry_id": "1823052476",
+        "label": "8.  Saya merasa aplikasi ini membingungkan untuk digunakan.",
+        "value": "1"
+      },
+      {
+        "entry_id": "821405342",
+        "label": "9. Saya merasa percaya diri menggunakan aplikasi ini.",
+        "value": "3"
+      },
+      {
+        "entry_id": "2090561978",
+        "label": "10. Saya perlu mempelajari banyak hal sebelum dapat menggunakan aplikasi ini.",
+        "value": "2"
+      }
+    ]
+  },
+  {
+    "timestamp": "2026-10-24 15:42:32",
+    "nim": "2509106109",
+    "nama": "Navtaly Juman",
+    "angkatan": "2025",
+    "prodi": "INFORMATIKA",
+    "universitas": "2",
+    "jenis_kelamin": "Laki-Laki",
+    "usia": "19",
+    "semester": "Semester 1",
+    "email": "navtaly.ff@ymail.com",
+    "profile": "puas_rata_rata",
+    "profile_display": "Puas Alami (Realistis Sesuai/Setuju)",
+    "scale_distribution": {
+      "Pegawai/Karyawan": 1,
+      "Ya": 1
+    },
+    "answers": [
+      {
+        "entry_id": "826441435",
+        "label": "Nama",
+        "value": "Navtaly Juman"
+      },
+      {
+        "entry_id": "1717646849",
+        "label": "Status",
+        "value": "Pegawai/Karyawan"
+      },
+      {
+        "entry_id": "128699741",
+        "label": "Pernah Menggunakan Aplikasi AR Sebelumnya?",
+        "value": "Ya"
+      },
+      {
+        "entry_id": "1657635524",
+        "label": "1. Saya berfikir akan sering menggunakan aplikasi ini.",
+        "value": "4"
+      },
+      {
+        "entry_id": "349545481",
+        "label": "2. Saya merasa aplikasi ini terlalu rumit untuk digunakan.",
+        "value": "2"
+      },
+      {
+        "entry_id": "770681467",
+        "label": "3. Saya merasa aplikasi ini mudah digunakan.",
+        "value": "5"
+      },
+      {
+        "entry_id": "169828731",
+        "label": "4. Saya  memerlukan bantuan orang lain atau teknisi agar dapat menggunakan aplikasi ini.",
+        "value": "2"
+      },
+      {
+        "entry_id": "76071633",
+        "label": "5.  Saya merasa fitur-fitur pada aplikasi ini terintegerasi dengan baik.",
+        "value": "4"
+      },
+      {
+        "entry_id": "1058638238",
+        "label": "6. Saya  merasa terdapat banyak ketidaksesuaian pada aplikasi ini.",
+        "value": "1"
+      },
+      {
+        "entry_id": "1605634817",
+        "label": "7. Saya merasa sebagian besar orang akan dapat mempelajari cara menggunakan aplikasi ini dengan cepat    .",
+        "value": "4"
+      },
+      {
+        "entry_id": "1823052476",
+        "label": "8.  Saya merasa aplikasi ini membingungkan untuk digunakan.",
+        "value": "2"
+      },
+      {
+        "entry_id": "821405342",
+        "label": "9. Saya merasa percaya diri menggunakan aplikasi ini.",
+        "value": "4"
+      },
+      {
+        "entry_id": "2090561978",
+        "label": "10. Saya perlu mempelajari banyak hal sebelum dapat menggunakan aplikasi ini.",
+        "value": "1"
+      }
+    ]
   }
 ]

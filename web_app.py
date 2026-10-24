@@ -419,6 +419,9 @@ def run_web_fill(target: int, cohorts: List[str], mode: str, custom_weights: dic
         
         if index < actual_target - 1:
             delay = random.randint(min_delay, max_delay)
+            if not success and index == 0:
+                delay = min(5, delay)
+                job_status.add_log("Pemberitahuan: Karena submisi pertama gagal, jeda dipersingkat untuk evaluasi cepat.", "warning")
             formatted_delay = format_duration(delay)
             job_status.add_log(f"Jeda terencana: Menunggu {formatted_delay} sebelum pengisian responden #{index+2}...", "info")
             
@@ -471,7 +474,8 @@ def parse_form():
         "form_description": structure.get("form_description", ""),
         "num_pages": structure.get("num_pages", len(structure.get("pages", []))),
         "questions": structure.get("questions", []),
-        "has_email_page": structure.get("has_email_page", False)
+        "has_email_page": structure.get("has_email_page", False),
+        "canonical_url": handler.form_url
     })
 
 @app.route("/api/status", methods=["GET"])

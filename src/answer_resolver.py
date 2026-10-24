@@ -60,6 +60,34 @@ class AnswerResolver:
                         return random.sample(options, sample_k)
                     return random.choice(options)
                 return "1"
+
+            elif rule_mode == "filter_options":
+                allowed = custom_rule.get("allowed_options", [])
+                if allowed:
+                    valid_choices = [opt for opt in options if opt in allowed]
+                    if valid_choices:
+                        if type_code == 4:
+                            sample_k = min(random.randint(1, len(valid_choices)), len(valid_choices))
+                            return random.sample(valid_choices, sample_k)
+                        return random.choice(valid_choices)
+                if options:
+                    return random.choice(options)
+                return "1"
+
+            elif rule_mode == "weighted_options":
+                weights_dict = custom_rule.get("weights", {})
+                if weights_dict and options:
+                    valid_pairs = []
+                    for o in options:
+                        w = float(weights_dict.get(o, 0))
+                        if w > 0:
+                            valid_pairs.append((o, w))
+                    if valid_pairs:
+                        opts, wgts = zip(*valid_pairs)
+                        return random.choices(opts, weights=wgts)[0]
+                if options:
+                    return random.choice(options)
+                return "1"
                 
             elif rule_mode == "csv_col":
                 col = custom_rule.get("column", "").strip().lower()
