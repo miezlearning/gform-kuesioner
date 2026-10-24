@@ -78,21 +78,57 @@
             <div class="tab-panel active" id="tab-inspect" role="tabpanel">
                 <!-- Hero Form URL Input Card -->
                 <section class="card hero-input-card">
-                    <div class="card-header">
-                        <div class="card-header-icon">
-                            <i data-lucide="link"></i>
+                    <div class="card-header" style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:10px;">
+                        <div style="display:flex; gap:12px; align-items:flex-start;">
+                            <div class="card-header-icon">
+                                <i data-lucide="link"></i>
+                            </div>
+                            <div>
+                                <h2 class="card-title">Target Google Form</h2>
+                                <p class="card-subtitle">Masukkan tautan formulir Google Forms publik apa saja (kuesioner, evaluasi, survei, pendaftaran).</p>
+                            </div>
                         </div>
-                        <div>
-                            <h2 class="card-title">Target Google Form</h2>
-                            <p class="card-subtitle">Masukkan tautan formulir Google Forms publik apa saja (kuesioner, evaluasi, survei, pendaftaran).</p>
+                        <div class="saved-forms-header-badge" id="form-autosave-badge" style="display:flex; align-items:center; gap:6px; font-size:11.5px; color:var(--emerald); background:rgba(16,185,129,0.08); border:1px solid rgba(16,185,129,0.2); padding:4px 10px; border-radius:var(--radius-sm);">
+                            <i data-lucide="check" style="width:13px; height:13px;"></i>
+                            <span>Tersimpan Otomatis ke Sistem</span>
                         </div>
                     </div>
                     <div class="card-body">
-                        <div class="url-input-wrapper">
+                        <!-- Saved Forms & Recent History Bar -->
+                        <div class="saved-forms-bar">
+                            <div class="saved-forms-top-row">
+                                <div class="saved-forms-label">
+                                    <i data-lucide="bookmark"></i>
+                                    <span>Pilih dari Riwayat Formulir Tersimpan:</span>
+                                    <span class="badge badge-zinc" id="saved-forms-count">0 tersimpan</span>
+                                </div>
+                                <div class="saved-forms-actions">
+                                    <button type="button" id="btn-save-current-form" class="btn btn-outline btn-xs" title="Simpan formulir dan konfigurasi aturan saat ini">
+                                        <i data-lucide="save"></i> Simpan Preset
+                                    </button>
+                                    <button type="button" id="btn-delete-saved-form" class="btn btn-outline btn-xs text-danger hidden" title="Hapus formulir ini dari daftar tersimpan">
+                                        <i data-lucide="trash-2"></i> Hapus
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="saved-forms-select-row">
+                                <select id="saved-forms-select" class="form-control form-select-saved">
+                                    <option value="">-- Pilih dari Riwayat Formulir (Klik untuk langsung ganti) --</option>
+                                </select>
+                            </div>
+                            <div class="saved-forms-chips" id="saved-forms-chips">
+                                <!-- Chips dynamically injected -->
+                            </div>
+                        </div>
+
+                        <div class="url-input-wrapper" style="margin-top: 14px;">
                             <div class="input-icon-prefix">
                                 <i data-lucide="globe"></i>
                             </div>
                             <input type="url" id="form-url" class="form-control url-input" placeholder="https://docs.google.com/forms/d/e/.../viewform" required autocomplete="off">
+                            <button type="button" id="btn-copy-form-url" class="btn btn-outline btn-sm" title="Salin URL Formulir ke Clipboard">
+                                <i data-lucide="copy"></i>
+                            </button>
                             <button type="button" id="btn-scan-form" class="btn btn-primary btn-scan">
                                 <i data-lucide="scan"></i>
                                 <span>Baca & Analisis Form</span>
@@ -606,7 +642,8 @@
                                 <i data-lucide="download"></i>
                                 <span>Ekspor CSV</span>
                             </button>
-                            <button id="btn-reset-history" class="btn btn-destructive btn-sm">
+                            <span style="display:inline-block; width:1px; height:22px; background-color:var(--border-dim); margin:0 4px; vertical-align:middle;"></span>
+                            <button id="btn-reset-history" class="btn btn-outline btn-destructive btn-sm" title="Hapus riwayat pengisian">
                                 <i data-lucide="trash"></i>
                                 <span>Reset Riwayat</span>
                             </button>
@@ -663,7 +700,7 @@
     </div>
 
     <!-- Detail Submission Modal (Shadcn Dialog style) -->
-    <div id="modal-detail" class="modal-backdrop hidden">
+    <div id="modal-detail" class="modal-backdrop hidden" onclick="if(event.target===this){this.classList.add('hidden'); this.style.display='none';}">
         <div class="modal-dialog modal-lg">
             <div class="modal-header">
                 <div class="modal-header-icon primary">
@@ -684,29 +721,34 @@
                 <button id="btn-copy-answers" class="btn btn-outline">
                     <i data-lucide="copy"></i> Salin JSON
                 </button>
-                <button id="btn-close-detail" class="btn btn-secondary">Tutup</button>
+                <button type="button" id="btn-close-detail" class="btn btn-secondary" onclick="document.getElementById('modal-detail').classList.add('hidden'); document.getElementById('modal-detail').style.display='none';">Tutup</button>
             </div>
         </div>
     </div>
 
     <!-- Confirm Modal (Shadcn Dialog style) -->
-    <div id="modal-confirm" class="modal-backdrop hidden">
+    <div id="modal-confirm" class="modal-backdrop hidden" onclick="if(event.target===this){this.classList.add('hidden'); this.style.display='none';}">
         <div class="modal-dialog">
-            <div class="modal-header">
-                <div class="modal-header-icon danger">
-                    <i data-lucide="alert-triangle"></i>
+            <div class="modal-header" style="display:flex; justify-content:space-between; align-items:flex-start;">
+                <div style="display:flex; gap:14px; align-items:flex-start;">
+                    <div class="modal-header-icon danger">
+                        <i data-lucide="alert-triangle"></i>
+                    </div>
+                    <div>
+                        <h3 class="modal-title">Konfirmasi Reset Riwayat</h3>
+                        <p class="modal-desc">Tindakan ini akan mengosongkan seluruh riwayat identitas mahasiswa yang telah digunakan.</p>
+                    </div>
                 </div>
-                <div>
-                    <h3 class="modal-title">Konfirmasi Reset Riwayat</h3>
-                    <p class="modal-desc">Tindakan ini akan mengosongkan seluruh riwayat identitas mahasiswa yang telah digunakan.</p>
-                </div>
+                <button type="button" id="btn-confirm-close" class="btn-icon" style="color:var(--fg-muted);" title="Tutup / Batal" onclick="document.getElementById('modal-confirm').classList.add('hidden'); document.getElementById('modal-confirm').style.display='none';">
+                    <i data-lucide="x"></i>
+                </button>
             </div>
             <div class="modal-body">
                 <p>Setelah direset, seluruh NIM mahasiswa akan kembali berstatus <strong>Tersedia</strong> sehingga dapat dipilih ulang pada proses pengisian berikutnya.</p>
             </div>
             <div class="modal-footer">
-                <button id="btn-confirm-cancel" class="btn btn-secondary">Batal</button>
-                <button id="btn-confirm-reset" class="btn btn-destructive">Ya, Reset Riwayat</button>
+                <button type="button" id="btn-confirm-cancel" class="btn btn-secondary" onclick="document.getElementById('modal-confirm').classList.add('hidden'); document.getElementById('modal-confirm').style.display='none';">Batal (Jangan Reset)</button>
+                <button type="button" id="btn-confirm-reset" class="btn btn-destructive">Ya, Reset Riwayat</button>
             </div>
         </div>
     </div>

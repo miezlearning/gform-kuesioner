@@ -21,6 +21,13 @@ from src.history_helper import (
     save_submission_record,
     load_submission_records
 )
+from src.saved_forms_helper import (
+    load_saved_forms,
+    save_form_entry,
+    get_last_active_form,
+    delete_saved_form,
+    set_last_active_url
+)
 from src.form_handler import GoogleFormHandler
 from src.ai_handler import AITextGenerator
 from src.answer_resolver import AnswerResolver
@@ -259,6 +266,7 @@ def run_web_fill(target: int, cohorts: List[str], mode: str, custom_weights: dic
     has_email_page = form_data["has_email_page"]
     page_history = form_data["page_history"]
     form_title = form_data.get("form_title", "Google Form")
+    form_url = form_handler.form_url or url
     
     valid_entry_ids = {str(field["entry_id"]) for page in pages for field in page}
     active_rules = {str(k): v for k, v in (question_rules or {}).items() if str(k) in valid_entry_ids}
@@ -497,7 +505,7 @@ def home():
 
 @app.route("/api/parse-form", methods=["POST"])
 def parse_form():
-    """Membaca dan mengekstrak seluruh pertanyaan & opsi dari Google Form URL."""
+    """Membaca dan mengekstrak seluruh pertanyaan & opsi dari Google Form URL, lalu otomatis menyimpannya ke riwayat formulir."""
     data = request.json or {}
     url = data.get("url") or FORM_URL
     if not url:
@@ -511,15 +519,91 @@ def parse_form():
             "message": "Gagal membaca struktur Google Form. Pastikan link Google Form benar, publik, dan berformat https://docs.google.com/forms/d/e/.../viewform"
         }), 400
         
+    canonical_url = handler.form_url
+    form_title = structure.get("form_title", "Formulir Google")
+    
+    # Otomatis simpan formulir yang baru di-parse ke riwayat formulir tersimpan
+    saved_data = save_form_entry(
+        url=canonical_url,
+        title=form_title,
+        structure=structure,
+        original_url=url
+    )
+    
     return jsonify({
         "success": True,
-        "form_title": structure.get("form_title", "Formulir Google"),
+        "form_title": form_title,
         "form_description": structure.get("form_description", ""),
         "num_pages": structure.get("num_pages", len(structure.get("pages", []))),
         "questions": structure.get("questions", []),
         "has_email_page": structure.get("has_email_page", False),
-        "canonical_url": handler.form_url
+        "canonical_url": canonical_url,
+        "saved_forms": saved_data.get("forms", [])
     })
+
+@app.route("/api/forms/history", methods=["GET"])
+def get_forms_history():
+    """Mengembalikan daftar seluruh formulir yang tersimpan dan formulir yang terakhir aktif."""
+    data = load_saved_forms()
+    return jsonify({
+        "success": True,
+        "last_active_url": data.get("last_active_url", ""),
+        "forms": data.get("forms", [])
+    })
+
+@app.route("/api/forms/save", methods=["POST"])
+def save_form():
+    """Menyimpan atau memperbarui formulir dan konfigurasi aturan kustomnya."""
+    data = request.json or {}
+    url = data.get("url")
+    if not url:
+        return jsonify({"success": False, "message": "URL formulir wajib diisi."}), 400
+        
+    title = data.get("title", "")
+    structure = data.get("structure")
+    question_rules = data.get("question_rules")
+    original_url = data.get("original_url")
+    
+    updated = save_form_entry(
+        url=url,
+        title=title,
+        structure=structure,
+        question_rules=question_rules,
+        original_url=original_url
+    )
+    return jsonify({
+        "success": True,
+        "message": "Formulir dan konfigurasi aturan berhasil disimpan.",
+        "last_active_url": updated.get("last_active_url"),
+        "forms": updated.get("forms", [])
+    })
+
+@app.route("/api/forms/delete", methods=["POST"])
+def delete_form():
+    """Menghapus formulir dari daftar tersimpan."""
+    data = request.json or {}
+    url = data.get("url")
+    if not url:
+        return jsonify({"success": False, "message": "URL formulir wajib diisi."}), 400
+        
+    updated = delete_saved_form(url)
+    return jsonify({
+        "success": True,
+        "message": "Formulir berhasil dihapus dari riwayat.",
+        "last_active_url": updated.get("last_active_url"),
+        "forms": updated.get("forms", [])
+    })
+
+@app.route("/api/forms/set-active", methods=["POST"])
+def set_active_form():
+    """Mengatur URL formulir aktif saat ini."""
+    data = request.json or {}
+    url = data.get("url")
+    if not url:
+        return jsonify({"success": False, "message": "URL formulir wajib diisi."}), 400
+        
+    set_last_active_url(url)
+    return jsonify({"success": True, "active_url": url})
 
 @app.route("/api/status", methods=["GET"])
 def get_status():
@@ -537,9 +621,17 @@ def get_status():
             "filled": filled,
             "remaining": total - filled
         })
+        
+    # Ambil formulir terakhir yang digunakan pengguna agar tidak kembali ke default link
+    last_form = get_last_active_form()
+    active_url = last_form.get("url") if last_form else FORM_URL
+    saved_forms_data = load_saved_forms()
+    
     return jsonify({
         "stats": stats,
-        "default_url": FORM_URL,
+        "default_url": active_url,
+        "last_active_form": last_form,
+        "saved_forms": saved_forms_data.get("forms", []),
         "default_target": TARGET_SUBMISSIONS,
         "default_delay_min": SUBMISSION_DELAY_MIN,
         "default_delay_max": SUBMISSION_DELAY_MAX,

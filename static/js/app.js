@@ -31,7 +31,18 @@ document.addEventListener("DOMContentLoaded", () => {
     const btnQuickStart = document.getElementById("btn-quick-start");
     const btnQuickStop = document.getElementById("btn-quick-stop");
 
-    // Tab 1: Form Inspector
+    // Tab 1: Form Inspector & Saved Forms Toolbar
+    const savedFormsSelect = document.getElementById("saved-forms-select");
+    const savedFormsChips = document.getElementById("saved-forms-chips");
+    const savedFormsCount = document.getElementById("saved-forms-count");
+    const btnSaveCurrentForm = document.getElementById("btn-save-current-form");
+    const btnDeleteSavedForm = document.getElementById("btn-delete-saved-form");
+    const btnCopyFormUrl = document.getElementById("btn-copy-form-url");
+    const formAutosaveBadge = document.getElementById("form-autosave-badge");
+    let savedFormsList = [];
+    let currentSavedFormUrl = "";
+    let autoSaveRulesTimer = null;
+
     const formUrlInput = document.getElementById("form-url");
     const btnScanForm = document.getElementById("btn-scan-form");
     const formMetaCard = document.getElementById("form-meta-card");
@@ -109,6 +120,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Modal & Toast
     const modalConfirm = document.getElementById("modal-confirm");
+    const btnConfirmClose = document.getElementById("btn-confirm-close");
     const btnConfirmCancel = document.getElementById("btn-confirm-cancel");
     const btnConfirmReset = document.getElementById("btn-confirm-reset");
     const modalDetail = document.getElementById("modal-detail");
@@ -184,6 +196,109 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // --- Event Listeners ---
     function setupEventListeners() {
+        // Saved Forms Toolbar Listeners
+        if (savedFormsSelect) {
+            savedFormsSelect.addEventListener("change", (e) => {
+                const val = e.target.value;
+                if (val) {
+                    selectSavedForm(val);
+                }
+            });
+        }
+
+        if (btnSaveCurrentForm) {
+            btnSaveCurrentForm.addEventListener("click", () => {
+                const url = formUrlInput.value.trim();
+                if (!url) {
+                    showToast("Masukkan URL Google Form terlebih dahulu.", "error");
+                    return;
+                }
+                btnSaveCurrentForm.disabled = true;
+                btnSaveCurrentForm.innerHTML = `<i data-lucide="loader-2" class="spin"></i> Menyimpan...`;
+                renderIcons();
+
+                fetch("/api/forms/save", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        url: url,
+                        title: metaFormTitle.textContent && metaFormTitle.textContent !== "-" ? metaFormTitle.textContent : "Formulir Kuesioner Google",
+                        structure: {
+                            form_title: metaFormTitle.textContent,
+                            form_description: metaFormDesc.textContent,
+                            questions: formQuestions,
+                            num_pages: parseInt(metaFormPages.textContent) || 1,
+                            has_email_page: metaFormEmail.textContent === "Wajib Diisi"
+                        },
+                        question_rules: questionRules
+                    })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    btnSaveCurrentForm.disabled = false;
+                    btnSaveCurrentForm.innerHTML = `<i data-lucide="save"></i> Simpan Preset`;
+                    renderIcons();
+                    if (data.success) {
+                        savedFormsList = data.forms || [];
+                        currentSavedFormUrl = url;
+                        localStorage.setItem("last_form_url", url);
+                        renderSavedFormsUI(url);
+                        showToast("✓ Formulir dan seluruh konfigurasi aturan berhasil disimpan sebagai preset!", "success");
+                    } else {
+                        showToast(data.message || "Gagal menyimpan formulir.", "error");
+                    }
+                })
+                .catch(() => {
+                    btnSaveCurrentForm.disabled = false;
+                    btnSaveCurrentForm.innerHTML = `<i data-lucide="save"></i> Simpan Preset`;
+                    renderIcons();
+                    showToast("Terjadi kesalahan jaringan saat menyimpan formulir.", "error");
+                });
+            });
+        }
+
+        if (btnDeleteSavedForm) {
+            btnDeleteSavedForm.addEventListener("click", () => {
+                const url = formUrlInput.value.trim();
+                if (!url) return;
+                const formObj = savedFormsList.find(f => f.url === url || f.original_url === url);
+                const formTitle = formObj ? formObj.title : "formulir ini";
+                if (!confirm(`Hapus "${formTitle}" dari riwayat formulir tersimpan?`)) return;
+
+                fetch("/api/forms/delete", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ url: url })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        savedFormsList = data.forms || [];
+                        showToast("✓ Formulir berhasil dihapus dari riwayat.", "info");
+                        if (savedFormsList.length > 0) {
+                            selectSavedForm(savedFormsList[0].url);
+                        } else {
+                            renderSavedFormsUI("");
+                        }
+                    }
+                })
+                .catch(() => showToast("Gagal menghapus formulir.", "error"));
+            });
+        }
+
+        if (btnCopyFormUrl) {
+            btnCopyFormUrl.addEventListener("click", () => {
+                const url = formUrlInput.value.trim();
+                if (!url) {
+                    showToast("Belum ada URL formulir yang diinput.", "warning");
+                    return;
+                }
+                navigator.clipboard.writeText(url).then(() => {
+                    showToast("✓ URL formulir berhasil disalin ke clipboard!", "success");
+                });
+            });
+        }
+
         // Scan Form
         btnScanForm.addEventListener("click", () => {
             const url = formUrlInput.value.trim();
@@ -378,7 +493,27 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         btnResetHistory.addEventListener("click", () => modalConfirm.classList.remove("hidden"));
         btnConfirmCancel.addEventListener("click", () => modalConfirm.classList.add("hidden"));
+        if (btnConfirmClose) {
+            btnConfirmClose.addEventListener("click", () => modalConfirm.classList.add("hidden"));
+        }
+        if (modalConfirm) {
+            modalConfirm.addEventListener("click", (e) => {
+                if (e.target === modalConfirm) modalConfirm.classList.add("hidden");
+            });
+        }
         btnConfirmReset.addEventListener("click", confirmResetHistory);
+
+        // Global Escape key listener to close modals
+        document.addEventListener("keydown", (e) => {
+            if (e.key === "Escape") {
+                if (modalConfirm && !modalConfirm.classList.contains("hidden")) {
+                    modalConfirm.classList.add("hidden");
+                }
+                if (modalDetail && !modalDetail.classList.contains("hidden")) {
+                    modalDetail.classList.add("hidden");
+                }
+            }
+        });
 
         // Detail Modal
         if (btnCloseDetail) {
@@ -423,16 +558,35 @@ document.addEventListener("DOMContentLoaded", () => {
         fetch("/api/status")
             .then(res => res.json())
             .then(data => {
+                if (data.saved_forms) {
+                    savedFormsList = data.saved_forms;
+                }
+
                 if (isInitial) {
-                    if (data.default_url) formUrlInput.value = data.default_url;
+                    // Prioritas: 1) local storage user, 2) last active form dari server, 3) default config
+                    const savedLocalUrl = localStorage.getItem("last_form_url");
+                    const targetUrl = savedLocalUrl || data.default_url;
+                    
+                    if (targetUrl) {
+                        formUrlInput.value = targetUrl;
+                        currentSavedFormUrl = targetUrl;
+                    }
                     if (data.default_target) targetInput.value = data.default_target;
                     if (data.default_delay_min !== undefined) delayMinInput.value = data.default_delay_min;
                     if (data.default_delay_max !== undefined) delayMaxInput.value = data.default_delay_max;
 
-                    // Auto-scan initial form if present
-                    if (data.default_url) {
-                        fetchFormStructure(data.default_url);
+                    // Muat daftar riwayat formulir di UI
+                    loadSavedForms(targetUrl);
+
+                    // Periksa apakah form sudah memiliki cache struktur di savedFormsList agar instan tanpa loading
+                    const cachedForm = (savedFormsList || []).find(f => f.url === targetUrl || f.original_url === targetUrl);
+                    if (cachedForm && cachedForm.questions && cachedForm.questions.length > 0) {
+                        selectSavedForm(targetUrl, true);
+                    } else if (targetUrl) {
+                        fetchFormStructure(targetUrl);
                     }
+                } else {
+                    renderSavedFormsUI(currentSavedFormUrl);
                 }
 
                 cohortsData = data.stats || [];
@@ -462,6 +616,138 @@ document.addEventListener("DOMContentLoaded", () => {
             });
     }
 
+    function loadSavedForms(preferredUrl = null) {
+        fetch("/api/forms/history")
+            .then(res => res.json())
+            .then(data => {
+                if (!data.success) return;
+                savedFormsList = data.forms || [];
+                const activeUrl = preferredUrl || currentSavedFormUrl || data.last_active_url || (savedFormsList[0] ? savedFormsList[0].url : "");
+                currentSavedFormUrl = activeUrl;
+                renderSavedFormsUI(activeUrl);
+            })
+            .catch(err => console.error("Gagal memuat riwayat formulir:", err));
+    }
+
+    function renderSavedFormsUI(activeUrl = "") {
+        if (savedFormsCount) {
+            savedFormsCount.textContent = `${savedFormsList.length} tersimpan`;
+        }
+
+        // Render Select Dropdown
+        if (savedFormsSelect) {
+            savedFormsSelect.innerHTML = `<option value="">-- ⚡ Pilih dari Riwayat Formulir (${savedFormsList.length} tersimpan) --</option>`;
+            savedFormsList.forEach(f => {
+                const opt = document.createElement("option");
+                opt.value = f.url;
+                const isSelected = activeUrl && (f.url === activeUrl || f.original_url === activeUrl);
+                if (isSelected) opt.selected = true;
+                const qCount = f.questions_count || (f.questions ? f.questions.length : 0);
+                opt.textContent = `${f.title || "Formulir"} (${qCount} Soal) • [${f.last_used || "Tersimpan"}]`;
+                savedFormsSelect.appendChild(opt);
+            });
+        }
+
+        // Render Quick Chips (Top 4 most recent)
+        if (savedFormsChips) {
+            savedFormsChips.innerHTML = "";
+            const topForms = savedFormsList.slice(0, 4);
+            topForms.forEach(f => {
+                const chip = document.createElement("button");
+                chip.type = "button";
+                const isSelected = activeUrl && (f.url === activeUrl || f.original_url === activeUrl);
+                chip.className = `saved-form-chip ${isSelected ? "active" : ""}`;
+                const qCount = f.questions_count || (f.questions ? f.questions.length : 0);
+                chip.innerHTML = `<i data-lucide="bookmark"></i> <span>${f.title || "Formulir"}</span> <span class="badge badge-zinc" style="padding:1px 5px; font-size:10px;">${qCount} soal</span>`;
+                chip.title = `${f.title}\nURL: ${f.url}\nTerakhir digunakan: ${f.last_used || "-"}`;
+                chip.addEventListener("click", () => {
+                    selectSavedForm(f.url);
+                });
+                savedFormsChips.appendChild(chip);
+            });
+            renderIcons();
+        }
+
+        // Toggle Delete Button
+        if (btnDeleteSavedForm) {
+            const isSaved = savedFormsList.some(f => f.url === activeUrl || f.original_url === activeUrl);
+            btnDeleteSavedForm.classList.toggle("hidden", !isSaved);
+        }
+    }
+
+    function selectSavedForm(url, skipServerNotify = false) {
+        if (!url) return;
+        const formObj = savedFormsList.find(f => f.url === url || f.original_url === url);
+        if (!formObj) return;
+
+        currentSavedFormUrl = formObj.url;
+        formUrlInput.value = formObj.url;
+        localStorage.setItem("last_form_url", formObj.url);
+
+        if (!skipServerNotify) {
+            fetch("/api/forms/set-active", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ url: formObj.url })
+            }).catch(() => {});
+        }
+
+        // Jika formulir memiliki struktur dan aturan tersimpan, muat instan tanpa tunggu request network!
+        if (formObj.questions && formObj.questions.length > 0) {
+            formQuestions = formObj.questions;
+            questionRules = formObj.question_rules ? { ...formObj.question_rules } : {};
+            tabQuestionsBadge.textContent = formQuestions.length;
+            tabQuestionsBadge.classList.remove("hidden");
+
+            metaFormTitle.textContent = formObj.title || "Formulir Google";
+            metaFormPages.textContent = `${formObj.num_pages || 1} Halaman`;
+            metaFormCount.textContent = `${formQuestions.length} Pertanyaan`;
+            metaFormEmail.textContent = formObj.has_email_page ? "Wajib Diisi" : "Tidak";
+            metaFormDesc.textContent = formObj.description || "Formulir tidak memiliki deskripsi tambahan.";
+            formMetaCard.classList.remove("hidden");
+
+            renderQuestionsList();
+            renderSavedFormsUI(formObj.url);
+            showToast(`✓ Formulir "${formObj.title}" dan ${formQuestions.length} pertanyaan berhasil dimuat dari riwayat!`, "success");
+        } else {
+            // Ambil struktur baru
+            fetchFormStructure(formObj.url);
+        }
+    }
+
+    function triggerAutoSaveRules() {
+        if (autoSaveRulesTimer) clearTimeout(autoSaveRulesTimer);
+        autoSaveRulesTimer = setTimeout(() => {
+            const currentUrl = formUrlInput.value.trim();
+            if (!currentUrl || formQuestions.length === 0) return;
+
+            fetch("/api/forms/save", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    url: currentUrl,
+                    title: metaFormTitle.textContent && metaFormTitle.textContent !== "-" ? metaFormTitle.textContent : "Formulir Google",
+                    structure: {
+                        form_title: metaFormTitle.textContent,
+                        form_description: metaFormDesc.textContent,
+                        questions: formQuestions,
+                        num_pages: parseInt(metaFormPages.textContent) || 1,
+                        has_email_page: metaFormEmail.textContent === "Wajib Diisi"
+                    },
+                    question_rules: questionRules
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success && data.forms) {
+                    savedFormsList = data.forms;
+                    renderSavedFormsUI(currentUrl);
+                }
+            })
+            .catch(() => {});
+        }, 800);
+    }
+
     function fetchFormStructure(url) {
         btnScanForm.disabled = true;
         btnScanForm.innerHTML = `<i data-lucide="loader-2" class="spin"></i> <span>Menganalisis...</span>`;
@@ -479,10 +765,24 @@ document.addEventListener("DOMContentLoaded", () => {
             renderIcons();
 
             if (data.success) {
-                if (data.canonical_url) {
-                    formUrlInput.value = data.canonical_url;
+                const activeUrl = data.canonical_url || url;
+                formUrlInput.value = activeUrl;
+                currentSavedFormUrl = activeUrl;
+                localStorage.setItem("last_form_url", activeUrl);
+
+                if (data.saved_forms) {
+                    savedFormsList = data.saved_forms;
                 }
-                questionRules = {};
+                loadSavedForms(activeUrl);
+
+                // Cek apakah form ini sudah punya konfigurasi aturan tersimpan sebelumnya
+                const existingForm = (savedFormsList || []).find(f => f.url === activeUrl || f.original_url === activeUrl);
+                if (existingForm && existingForm.question_rules && Object.keys(existingForm.question_rules).length > 0) {
+                    questionRules = { ...existingForm.question_rules };
+                } else {
+                    questionRules = {};
+                }
+
                 formQuestions = data.questions || [];
                 tabQuestionsBadge.textContent = formQuestions.length;
                 tabQuestionsBadge.classList.remove("hidden");
@@ -496,7 +796,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 formMetaCard.classList.remove("hidden");
 
                 renderQuestionsList();
-                showToast(`Form berhasil dianalisis: ${formQuestions.length} pertanyaan terdeteksi.`, "success");
+                showToast(`Form berhasil dianalisis: ${formQuestions.length} pertanyaan terdeteksi & tersimpan otomatis.`, "success");
             } else {
                 showToast(data.message || "Gagal membaca struktur formulir.", "error");
             }
@@ -732,6 +1032,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 questionRules[entryId] = { mode: newMode };
                 renderSubControl(question, questionRules[entryId]);
+                triggerAutoSaveRules();
             });
         });
 
@@ -741,6 +1042,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 const key = e.target.getAttribute("data-key");
                 if (questionRules[entryId]) {
                     questionRules[entryId][key] = e.target.value;
+                    triggerAutoSaveRules();
                 }
             });
         });
@@ -752,6 +1054,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (container && questionRules[entryId]) {
                     const checkedValues = Array.from(container.querySelectorAll(".sub-checkbox:checked")).map(c => c.value);
                     questionRules[entryId].allowed_options = checkedValues;
+                    triggerAutoSaveRules();
                 }
             });
         });
@@ -764,6 +1067,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (questionRules[entryId]) {
                     if (!questionRules[entryId].weights) questionRules[entryId].weights = {};
                     questionRules[entryId].weights[opt] = val;
+                    triggerAutoSaveRules();
                 }
             });
         });
@@ -793,6 +1097,7 @@ document.addEventListener("DOMContentLoaded", () => {
             questionRules[entryId] = { ...(q.suggested_rule || { mode: "auto" }) };
         });
         renderQuestionsList();
+        triggerAutoSaveRules();
         showToast("Seluruh aturan pertanyaan dikembalikan ke rekomendasi cerdas.", "info");
     }
 
@@ -832,6 +1137,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
 
         renderQuestionsList();
+        triggerAutoSaveRules();
 
         const presetNames = {
             "sus": "SUS (System Usability Scale)",
